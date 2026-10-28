@@ -1,10 +1,14 @@
-// Geeft bij een fout een leesbare JSON-melding in plaats van Cloudflare-fout 1101.
-import { json } from '../../lib/db.js'
+// Alle API-routes: databaseverbinding klaarzetten en fouten als JSON teruggeven.
+import { db } from '../../lib/db.js'
+import { json, HttpError } from '../../lib/http.js'
 
-export async function onRequest ({ next }) {
+export async function onRequest (context) {
   try {
-    return await next()
+    context.data.conn = db(context.env)
+    return await context.next()
   } catch (err) {
-    return json({ error: err.message }, 500)
+    if (err instanceof HttpError) return json({ error: err.message }, err.status)
+    console.error(err)
+    return json({ error: 'Er ging iets mis op de server' }, 500)
   }
 }

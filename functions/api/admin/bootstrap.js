@@ -1,15 +1,12 @@
-// POST /api/admin/bootstrap {email}: alleen zolang er nog geen enkele beheerder
-// of uitnodiging is. Maakt een uitnodiging voor de eigenaar en geeft de link terug.
-import { json } from '../../../lib/db.js'
-import { randomToken, sha256 } from '../../../lib/auth.js'
-import { body, fail } from '../../../lib/admin.js'
+// POST {email}: alleen zolang er nog geen enkele gebruiker of open uitnodiging is.
+// Maakt een uitnodiging voor de eerste superbeheerder en geeft de link terug.
+import { json, body, fail, str } from '../../../lib/http.js'
+import { createInvitation } from '../../../lib/users.js'
 
 export async function onRequestPost ({ request, data: { conn } }) {
-  const { email } = await body(request)
-  const [{ n }] = await conn.execute('SELECT (SELECT COUNT(*) FROM admins) + (SELECT COUNT(*) FROM invites) AS n')
-  if (Number(n) > 0) return fail('Er is al een beheerder', 403)
-  const token = randomToken()
-  await conn.execute(`INSERT INTO invites (token_hash, email, role, expires_at)
-    VALUES (?, ?, 'owner', NOW() + INTERVAL 7 DAY)`, [await sha256(token), String(email).trim().toLowerCase()])
-  return json({ link: new URL(`/beheer/?uitnodiging=${token}`, request.url).href })
+  const [{ n }] = await conn.execute(`SELECT (SELECT COUNT(*) FROM users) +
+    (SELECT COUNT(*) FROM invitations WHERE accepted_at IS NULL AND revoked_at IS NULL AND expires_at > NOW()) AS n`)
+  if (Number(n) > 0) fail(403, 'Er is al een beheerder')
+  const email = str((await body(request)).email, 255).toLowerCase()
+  return json({ link: await createInvitation(conn, request, email, 'superadmin', null) })
 }
