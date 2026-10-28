@@ -35,7 +35,7 @@ a.card:hover{border-color:var(--accent)}
 <body>
 <div class="wrap">
   <h1>المكتبة</h1>
-  <p class="sub">كتب ومذكرات في الفقه وأصوله</p>
+  <p class="sub">كتب ومذكرات في الفقه وأصوله <a id="full" href="/bibliotheek" hidden>· المكتبة الكاملة والبحث</a></p>
   <div class="grid">
     <a class="card" href="index.html">
       <h2>القواعد الفقهية</h2>
@@ -52,6 +52,7 @@ a.card:hover{border-color:var(--accent)}
 <script>
 // Op de Cloudflare-versie komen boeken uit de database erbij; op GitHub Pages faalt dit stil.
 fetch('/api/books').then(function (r) { return r.ok ? r.json() : [] }).then(function (books) {
+  if (books.length) document.getElementById('full').hidden = false
   var grid = document.querySelector('.grid')
   books.forEach(function (b) {
     if (document.querySelector('a.card[href^="' + b.slug + '/"]')) return

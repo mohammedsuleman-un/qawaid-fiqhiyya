@@ -1,18 +1,19 @@
-// Alle /api/admin-routes vragen een ingelogde beheerder, behalve inloggen,
-// een uitnodiging accepteren en het aanmaken van de allereerste beheerder.
-import { db, json } from '../../../lib/db.js'
-import { currentAdmin } from '../../../lib/auth.js'
+// /api/admin vraagt een ingelogde gebruiker met een actief account. Elke route
+// controleert daarna zelf het recht dat hij nodig heeft (lib/rbac.js).
+import { currentUser } from '../../../lib/auth.js'
+import { fail } from '../../../lib/http.js'
 
-const OPEN = ['/api/admin/login', '/api/admin/accept-invite', '/api/admin/bootstrap']
+const OPEN = new Set(['login', 'login-2fa', 'accept-invite', 'reset-password', 'bootstrap', 'invitation'])
 
 export async function onRequest (context) {
-  const { request, env, data } = context
-  data.conn = db(env)
-  if (OPEN.includes(new URL(request.url).pathname)) return context.next()
-  data.admin = await currentAdmin(data.conn, request)
-  if (!data.admin) return json({ error: 'Niet ingelogd' }, 401)
+  const { request, data } = context
+  const name = new URL(request.url).pathname.replace(/^\/api\/admin\/?/, '').split('/')[0]
   if (request.method !== 'GET' && !(request.headers.get('content-type') || '').includes('application/json')) {
-    return json({ error: 'Verwacht JSON' }, 415)
+    fail(415, 'Verwacht JSON')
+  }
+  if (!OPEN.has(name)) {
+    data.user = await currentUser(data.conn, request)
+    if (!data.user) fail(401, 'Niet ingelogd')
   }
   return context.next()
 }

@@ -1,8 +1,6 @@
-import { json } from '../../../lib/db.js'
+import { json } from '../../../lib/http.js'
 import { endSession } from '../../../lib/auth.js'
 
 export async function onRequestPost ({ request, data: { conn } }) {
-  const res = json({ ok: true })
-  res.headers.append('set-cookie', await endSession(conn, request))
-  return res
+  return json({ ok: true }, 200, { 'set-cookie': await endSession(conn, request) })
 }

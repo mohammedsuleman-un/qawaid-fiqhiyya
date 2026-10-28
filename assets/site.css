@@ -1,0 +1,80 @@
+/* Aanvullingen op book.css: bibliotheek, kopbalk, taalwissel, feedback en print. */
+:root{--gold:#b5873f;--green:#04403a}
+html[dir="ltr"] body{direction:ltr}
+html[dir="ltr"] aside{border-left:0;border-right:1px solid var(--line)}
+html[dir="ltr"] .book{text-align:start}
+.sharh-l{color:var(--sharh);font-style:italic}
+
+/* Kopbalk */
+.top{display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.logo img{border-radius:10px}
+.logo span{display:flex;flex-direction:column;line-height:1.2}
+.logo b{font-family:var(--display);font-size:22px;color:var(--green)}
+.logo small{color:var(--gold);font-size:12px}
+.topsearch{flex:1;min-width:180px}
+.topsearch input{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px}
+.langsw{display:inline-block;font-size:13px;border:1px solid var(--line);border-radius:99px;padding:2px 12px;text-decoration:none;white-space:nowrap}
+.brand .langsw{margin-top:8px}
+.brand a.back{display:inline-flex;align-items:center;gap:6px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .logo img,:root:not([data-theme="light"]) .brand img{background:#f3efe6}
+  :root:not([data-theme="light"]) .logo b{color:var(--accent)}}
+
+/* Bibliotheek */
+.lib h1{font-family:var(--display);font-size:clamp(32px,6vw,46px);color:var(--green);margin:0 0 2px}
+.lib .sub{color:var(--muted);margin:0 0 18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.chip{border:1px solid var(--line);border-radius:99px;padding:3px 14px;font-size:14px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.chip.on{background:var(--green);border-color:var(--green);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+a.card{display:block;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:14px;padding:18px;color:var(--ink);text-decoration:none}
+a.card:hover{border-color:var(--accent)}
+.card h2{font-family:var(--display);font-size:25px;margin:0 0 6px;color:var(--green)}
+.card p{margin:0 0 4px;color:var(--muted);font-size:14px;line-height:1.7}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:0 10px}
+.tag.draft{border-color:var(--gold);color:var(--gold)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.results{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 18px 12px;margin:0 0 24px}
+.results h2{font-size:18px}
+.results ol{padding-inline-start:20px;margin:0}
+.results li{margin:0 0 12px}
+.results p{margin:2px 0 0;font-family:var(--display);font-size:17px;line-height:1.9;color:var(--muted)}
+.results mark{background:var(--y-bg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lib h1,:root:not([data-theme="light"]) .card h2{color:var(--accent)}}
+
+/* Leespagina */
+.byline{text-align:center;color:var(--muted);margin:0 0 8px}
+.notice{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-family:var(--body);font-size:15px}
+nav#toc a.on{background:var(--surface2);font-weight:600}
+nav#toc a[data-missing]{opacity:.6}
+.chapter h2{position:relative}
+.tools{float:inline-end;display:inline-flex;gap:4px;opacity:.25;transition:opacity .15s}
+.chapter h2:hover .tools,.tools:focus-within{opacity:1}
+.tools a,.tools button{font:inherit;font-size:15px;border:0;background:none;color:var(--head-ink);cursor:pointer;text-decoration:none;padding:0 4px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:30px 0 0;font-family:var(--body);font-size:14px;flex-wrap:wrap}
+.selfb{position:absolute;z-index:5;font:inherit;font-size:13px;background:var(--green);color:#fff;border:0;border-radius:99px;padding:4px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+
+/* Feedbackformulier */
+dialog.fbd{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);max-width:520px;width:calc(100% - 32px);padding:20px;font-family:var(--body)}
+dialog.fbd::backdrop{background:rgba(0,0,0,.35)}
+.fbd h3{margin:0 0 10px;color:var(--green)}
+.fbd label{display:block;font-size:14px;margin:10px 0 4px}
+.fbd input,.fbd select,.fbd textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px}
+.fbd blockquote{margin:0;padding:6px 10px;border-inline-start:3px solid var(--gold);background:var(--surface2);font-family:var(--display);max-height:120px;overflow:auto}
+.fbd .hp{position:absolute;left:-9999px}
+.fbd .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.fbd button{font:inherit;border-radius:8px;padding:6px 16px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);cursor:pointer}
+.fbd button.primary{background:var(--green);border-color:var(--green);color:#fff}
+.fbd .msg{font-size:14px;margin:8px 0 0}
+
+@media print{
+  aside,.top,.tools,.pager,.legend,.dl,.selfb,.langsw{display:none!important}
+  .app{display:block}
+  body{background:#fff;color:#000}
+  .wrap{max-width:none;padding:0}
+  .book{font-size:14pt}
+  .book h2{break-after:avoid}
+  .chapter{break-inside:auto}
+  a{color:inherit;text-decoration:none}
+}

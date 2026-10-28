@@ -3,6 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "seed": "node scripts/build-seed.mjs talkhis-jam-al-jawami"
+    "seed": "node scripts/build-seed.mjs talkhis-jam-al-jawami",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
+  },
+  "devDependencies": {
+    "mysql2": "^3.24.6"
   }
 }

@@ -17,6 +17,9 @@ const book = {
   pdf: pick(/<p class="dl"><a href="([^"]+)"/)
 }
 if (book.pdf) book.pdf = `/${slug}/${book.pdf}`
+// Categorie en auteur staan niet in de HTML; vul ze hier per boek aan.
+const META = { 'talkhis-jam-al-jawami': { category: 'usul-al-fiqh', author: 'تاج الدين السبكي' } }
+Object.assign(book, META[slug])
 
 const article = pick(/<article class="book">([\s\S]*?)<\/article>/)
 

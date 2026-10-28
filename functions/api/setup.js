@@ -1,40 +1,38 @@
-// POST /api/setup: maakt de tabellen aan en vult een lege database met de boeken
-// uit db/seed/. Bestaat er al een boek, dan verandert er niets.
-import { db, json, stripTags } from '../../lib/db.js'
-import { normalizeArabic } from '../../lib/arabic.js'
-import schema from '../../db/schema.js'
+// POST /api/setup: voert de databasemigraties uit en vult een lege database met de
+// boeken uit db/seed/. Zolang er nog geen gebruikers zijn mag iedereen dit starten
+// (er gebeurt dan alleen wat al zou moeten gebeuren); daarna alleen settings.manage.
+// Per aanroep gebeurt één stap (Cloudflare staat per verzoek maar 50 databaseverzoeken
+// toe): roep dit aan tot done: true terugkomt.
+import { json, need } from '../../lib/http.js'
+import { currentUser } from '../../lib/auth.js'
+import { migrate } from '../../lib/migrate.js'
+import { insert } from '../../lib/content.js'
+import { importChapters } from '../../db/migrations/003_inhoud.js'
 
-export async function onRequestPost ({ request, env }) {
-  const conn = db(env)
-  for (const sql of schema.replace(/^--.*$/gm, '').split(';').map((s) => s.trim()).filter(Boolean)) {
-    await conn.execute(sql)
-  }
-
-  const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM books')
-  if (Number(n) > 0) return json({ ok: true, seeded: false, books: Number(n) })
-
-  const asset = (path) => env.ASSETS.fetch(new URL(path, request.url)).then((r) => r.json())
-  const slugs = await asset('/db/seed/index.json')
-  const tx = await conn.begin()
+async function hasUsers (conn) {
   try {
-    for (const slug of slugs) {
-      const { book, blocks } = await asset(`/db/seed/${slug}.json`)
-      await tx.execute('INSERT INTO books (slug, title, subtitle, pdf) VALUES (?, ?, ?, ?)',
-        [book.slug, book.title, book.subtitle, book.pdf])
-      const [{ id }] = await tx.execute('SELECT id FROM books WHERE slug = ?', [book.slug])
-      for (let i = 0; i < blocks.length; i += 50) {
-        const rows = blocks.slice(i, i + 50)
-        await tx.execute(
-          'INSERT INTO blocks (book_id, position, page, kind, anchor, html, plain) VALUES ' +
-            rows.map(() => '(?, ?, ?, ?, ?, ?, ?)').join(', '),
-          rows.flatMap((b, j) => [id, i + j, b.page, b.kind, b.anchor, b.html, normalizeArabic(stripTags(b.html))])
-        )
-      }
-    }
-    await tx.commit()
-  } catch (err) {
-    await tx.rollback()
-    throw err
-  }
-  return json({ ok: true, seeded: true, books: slugs.length })
+    return Number((await conn.execute('SELECT COUNT(*) AS n FROM users'))[0].n) > 0
+  } catch { return false } // tabel bestaat nog niet
+}
+
+export async function onRequestPost ({ request, env, data: { conn } }) {
+  if (await hasUsers(conn)) need(await currentUser(conn, request), 'settings.manage')
+  const applied = await migrate(conn, { max: 1 })
+  if (applied.length) return json({ ok: true, migrations: applied, pending: applied.pending, done: false })
+
+  // Alleen een lege database krijgt de startboeken, één boek per aanroep.
+  const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM users')
+  const asset = (path) => env.ASSETS.fetch(new URL(path, request.url)).then((r) => r.json())
+  const have = new Set((await conn.execute('SELECT slug FROM books')).map((r) => r.slug))
+  const slug = Number(n) === 0 && (await asset('/db/seed/index.json')).find((s) => !have.has(s))
+  if (!slug) return json({ ok: true, migrations: [], seeded: false, done: true })
+
+  const { book, blocks } = await asset(`/db/seed/${slug}.json`)
+  const [cat] = await conn.execute('SELECT id FROM categories WHERE slug = ?', [book.category || 'usul-al-fiqh'])
+  const bookId = await insert(conn, `INSERT INTO books (slug, title, subtitle, pdf, status, category_id, author)
+    VALUES (?, ?, ?, ?, 'published', ?, ?)`, [book.slug, book.title, book.subtitle, book.pdf, cat?.id ?? null, book.author || ''])
+  await conn.execute("INSERT INTO book_translations (book_id, lang, title, subtitle) VALUES (?, 'ar', ?, ?)",
+    [bookId, book.title, book.subtitle])
+  await importChapters(conn, bookId, blocks)
+  return json({ ok: true, migrations: [], seeded: slug, done: false })
 }
