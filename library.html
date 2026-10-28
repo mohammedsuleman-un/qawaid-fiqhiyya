@@ -49,5 +49,21 @@ a.card:hover{border-color:var(--accent)}
     </a>
   </div>
 </div>
+<script>
+// Op de Cloudflare-versie komen boeken uit de database erbij; op GitHub Pages faalt dit stil.
+fetch('/api/books').then(function (r) { return r.ok ? r.json() : [] }).then(function (books) {
+  var grid = document.querySelector('.grid')
+  books.forEach(function (b) {
+    if (document.querySelector('a.card[href^="' + b.slug + '/"]')) return
+    var a = document.createElement('a')
+    a.className = 'card'
+    a.href = '/boek/' + encodeURIComponent(b.slug)
+    a.innerHTML = '<h2></h2><p></p>'
+    a.querySelector('h2').textContent = b.title
+    a.querySelector('p').textContent = b.subtitle
+    grid.appendChild(a)
+  })
+}).catch(function () {})
+</script>
 </body>
 </html>
