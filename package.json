@@ -1,0 +1,8 @@
+{
+  "name": "zuiverebron",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed": "node scripts/build-seed.mjs talkhis-jam-al-jawami"
+  }
+}
