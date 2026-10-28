@@ -71,8 +71,8 @@ test('eerste superbeheerder via bootstrap, daarna kan dat niet meer', async () =
   assert.equal(reuse.status, 404)
   const second = await call(conn, 'POST', '/api/admin/bootstrap', bootstrap, { body: { email: 'indringer@example.org' } })
   assert.equal(second.status, 403)
-  // Setup mag nu alleen nog met settings.manage (en dus 2FA).
-  assert.equal((await call(conn, 'POST', '/api/setup', setup)).status, 401)
+  // Setup doet nu niets meer: geen migraties open en de database heeft gebruikers.
+  assert.equal((await call(conn, 'POST', '/api/setup', setup)).data.done, true)
 })
 
 test('zonder 2FA geen gebruikersbeheer; met 2FA wel', async () => {

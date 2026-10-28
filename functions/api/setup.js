@@ -1,22 +1,15 @@
 // POST /api/setup: voert de databasemigraties uit en vult een lege database met de
-// boeken uit db/seed/. Zolang er nog geen gebruikers zijn mag iedereen dit starten
-// (er gebeurt dan alleen wat al zou moeten gebeuren); daarna alleen settings.manage.
+// boeken uit db/seed/. Iedereen mag dit starten: het voert alleen migraties uit die
+// met de code zijn meegeleverd (nooit terugdraaien) en vult alleen een database zonder
+// gebruikers. Zo kan een update ook doorgaan als nog niemand kan inloggen.
 // Per aanroep gebeurt één stap (Cloudflare staat per verzoek maar 50 databaseverzoeken
 // toe): roep dit aan tot done: true terugkomt.
-import { json, need } from '../../lib/http.js'
-import { currentUser } from '../../lib/auth.js'
+import { json } from '../../lib/http.js'
 import { migrate } from '../../lib/migrate.js'
 import { insert } from '../../lib/content.js'
 import { importChapters } from '../../db/migrations/003_inhoud.js'
 
-async function hasUsers (conn) {
-  try {
-    return Number((await conn.execute('SELECT COUNT(*) AS n FROM users'))[0].n) > 0
-  } catch { return false } // tabel bestaat nog niet
-}
-
 export async function onRequestPost ({ request, env, data: { conn } }) {
-  if (await hasUsers(conn)) need(await currentUser(conn, request), 'settings.manage')
   const applied = await migrate(conn, { max: 1 })
   if (applied.length) return json({ ok: true, migrations: applied, pending: applied.pending, done: false })
 
