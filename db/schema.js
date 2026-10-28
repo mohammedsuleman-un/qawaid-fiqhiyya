@@ -1,4 +1,4 @@
-// Tabellen voor de bibliotheek. /api/setup voert dit uit; alles is CREATE ... IF NOT EXISTS.
+// Tabellen voor de bibliotheek. /api/setup voert dit uit; elke opdracht mag vaker draaien (IF NOT EXISTS).
 export default `
 CREATE TABLE IF NOT EXISTS books (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -38,8 +38,26 @@ CREATE TABLE IF NOT EXISTS block_revisions (
   KEY block_id (block_id)
 );
 
+-- Beheerders: owner (mag beheerders uitnodigen) of editor.
 CREATE TABLE IF NOT EXISTS admins (
   email VARCHAR(255) PRIMARY KEY,
   role VARCHAR(16) NOT NULL DEFAULT 'editor'
+);
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255) NULL;
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- Inlogsessies en uitnodigingen. Tokens staan alleen als SHA-256-hash in de database.
+CREATE TABLE IF NOT EXISTS sessions (
+  token_hash CHAR(64) PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  expires_at DATETIME NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS invites (
+  token_hash CHAR(64) PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  role VARCHAR(16) NOT NULL DEFAULT 'editor',
+  created_by VARCHAR(255) NULL,
+  expires_at DATETIME NOT NULL
 );
 `

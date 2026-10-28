@@ -1,0 +1,35 @@
+body{direction:ltr;font-family:var(--body)}
+.top{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top nav{display:flex;gap:14px}
+.top nav a{text-decoration:none;font-size:14px}
+#who{margin-left:auto;font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:center}
+.adm{max-width:900px;margin:0 auto;padding:24px 16px 80px}
+.adm h1{font-size:22px;margin:0 0 16px;color:var(--ink)}
+.adm h2.sec{font-size:17px;margin:28px 0 10px;color:var(--ink);background:none;border:0;padding:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px}
+textarea{font-family:var(--display);font-size:18px;line-height:1.9;min-height:140px;direction:rtl}
+button{font:inherit;font-size:14px;padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.danger{color:#b42318}
+button.small{font-size:12px;padding:3px 9px}
+.err{color:#b42318;font-size:14px;margin:8px 0 0}
+.ok{color:var(--accent);font-size:14px;margin:8px 0 0}
+.badge{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:0 9px;color:var(--muted)}
+.badge.pub{border-color:var(--accent);color:var(--accent)}
+.muted{color:var(--muted);font-size:13px}
+.ar{direction:rtl;font-family:var(--display);font-size:20px}
+.book .blk{position:relative;border-radius:6px;margin:0 -8px;padding:0 8px}
+.book .blk:hover{background:var(--surface2)}
+.book .blk .tools{display:none;position:absolute;left:4px;top:2px;gap:4px;direction:ltr;font-family:var(--body);z-index:2}
+.book .blk:hover .tools{display:flex}
+.book .blk.editing{background:none}
+.editor{direction:ltr;font-family:var(--body);background:var(--surface);border:2px solid var(--accent);border-radius:10px;padding:12px;margin:8px 0}
+.editor .preview{direction:rtl;border-top:1px dashed var(--line);margin-top:10px;padding-top:6px}
+.editor .wrapbtns{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;direction:rtl}
+.editor .wrapbtns button{font-family:var(--display);font-size:16px}
+.rev{border-top:1px solid var(--line);padding:8px 0}
+.jump{position:sticky;top:52px;z-index:4;background:var(--bg);padding:8px 0}
