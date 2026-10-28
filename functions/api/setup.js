@@ -6,7 +6,7 @@ import schema from '../../db/schema.js'
 
 export async function onRequestPost ({ request, env }) {
   const conn = db(env)
-  for (const sql of schema.split(';').map((s) => s.trim()).filter((s) => s.startsWith('CREATE'))) {
+  for (const sql of schema.replace(/^--.*$/gm, '').split(';').map((s) => s.trim()).filter(Boolean)) {
     await conn.execute(sql)
   }
 
