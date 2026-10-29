@@ -66,7 +66,7 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   // Alles na hoofdstukkaarten 2–4 terugdraaien (boeken hebben geen down-stap: de inhoud blijft staan).
   const later = migrations.slice(migrations.findIndex((m) => m.name === 'hoofdstukkaarten-aqeedah-1-eenheid-2-4') + 1).map((m) => m.name).reverse()
   for (const name of later) assert.equal(await rollback(conn), name)
-  for (const b of ['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'za', 'zb', 'zc', 'zd', 'ze', 'zf', 'zg', 'zh', 'zi']) assert.equal((await conn.execute(`SHOW TABLES LIKE 'zb_backup_20261029${b}_%'`)).length, 0)
+  for (const b of ['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'za', 'zb', 'zc', 'zd', 'ze', 'zf', 'zg', 'zh', 'zi', 'zj']) assert.equal((await conn.execute(`SHOW TABLES LIKE 'zb_backup_20261029${b}_%'`)).length, 0)
   // Hoofdstukkaarten 2–4 terugdraaien laat alleen de kaart van eenheid 1 over.
   assert.equal(await rollback(conn), 'hoofdstukkaarten-aqeedah-1-eenheid-2-4')
   const left = await conn.execute("SELECT t.lang, v.body FROM content_translations t JOIN content_versions v ON v.id = t.published_version_id WHERE t.entity_type = 'study' ORDER BY t.lang")
@@ -164,7 +164,7 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   }
   const cards = await conn.execute(`SELECT b.slug, COUNT(*) AS n FROM content_translations t JOIN content_versions v ON v.id = t.published_version_id
     JOIN chapters c ON c.id = t.entity_id JOIN books b ON b.id = c.book_id WHERE t.entity_type = 'study' AND v.body LIKE '%"scope":"unit"%' GROUP BY b.slug ORDER BY b.slug`)
-  assert.deepEqual(cards.map((r) => [r.slug, Number(r.n)]), [['zad-n1-aqeedah', 8], ['zad-n1-arabic', 10], ['zad-n1-fiqh', 12], ['zad-n1-hadith', 8], ['zad-n1-seerah', 10], ['zad-n1-tafsir', 8], ['zad-n1-tarbiyah', 12], ['zad-n2-aqeedah', 10], ['zad-n2-arabic', 6], ['zad-n2-fiqh', 16], ['zad-n2-hadith', 8], ['zad-n2-seerah', 8], ['zad-n2-tafsir', 12], ['zad-n2-tarbiyah', 24], ['zad-n3-aqeedah', 12], ['zad-n3-hadith', 8], ['zad-n3-tafsir', 20], ['zad-n4-aqeedah', 12]]) // per eenheid AR en NL
+  assert.deepEqual(cards.map((r) => [r.slug, Number(r.n)]), [['zad-n1-aqeedah', 8], ['zad-n1-arabic', 10], ['zad-n1-fiqh', 12], ['zad-n1-hadith', 8], ['zad-n1-seerah', 10], ['zad-n1-tafsir', 8], ['zad-n1-tarbiyah', 12], ['zad-n2-aqeedah', 10], ['zad-n2-arabic', 6], ['zad-n2-fiqh', 16], ['zad-n2-hadith', 8], ['zad-n2-seerah', 8], ['zad-n2-tafsir', 12], ['zad-n2-tarbiyah', 24], ['zad-n3-aqeedah', 12], ['zad-n3-hadith', 8], ['zad-n3-seerah', 8], ['zad-n3-tafsir', 20], ['zad-n4-aqeedah', 12]]) // per eenheid AR en NL
   // Niveau 3 en Tafsir (4): geïmporteerd en gepubliceerd (Mohammed, 29 okt 2026: "Je mag ze publiceren"); daarna Hadith (4) en Sīra (4) ("Je mag alles publiceren").
   const n3 = await conn.execute(`SELECT b.slug, b.status, (SELECT COUNT(*) FROM chapters c WHERE c.book_id = b.id AND c.archived_at IS NULL) AS lessons,
     (SELECT COUNT(*) FROM chapters c JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id
