@@ -16,5 +16,7 @@ import publiceerAqeedah2 from './014_publiceer_zad_aqeedah2.js'
 import hoofdstukkaartenAqeedah2 from './015_hoofdstukkaarten_aqeedah2.js'
 import zadAqeedah3 from './016_zad_aqeedah3.js'
 import publiceerAqeedah3 from './017_publiceer_zad_aqeedah3.js'
+import hoofdstukkaartenAqeedah3a from './018_hoofdstukkaarten_aqeedah3_eenheid1_3.js'
+import hoofdstukkaartenAqeedah3b from './019_hoofdstukkaarten_aqeedah3_eenheid4_6.js'
 
-export default [basis, accounts, inhoud, omzetting, registers, zad, zadAqeedah1, personenPerBoek, publiceerAqeedah1, studiekaart1, hoofdstukkaart1, hoofdstukkaarten2tot4, zadAqeedah2, publiceerAqeedah2, hoofdstukkaartenAqeedah2, zadAqeedah3, publiceerAqeedah3]
+export default [basis, accounts, inhoud, omzetting, registers, zad, zadAqeedah1, personenPerBoek, publiceerAqeedah1, studiekaart1, hoofdstukkaart1, hoofdstukkaarten2tot4, zadAqeedah2, publiceerAqeedah2, hoofdstukkaartenAqeedah2, zadAqeedah3, publiceerAqeedah3, hoofdstukkaartenAqeedah3a, hoofdstukkaartenAqeedah3b]
