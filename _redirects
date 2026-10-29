@@ -1,8 +1,2 @@
-/admin                     /beheer/                     301
-/admin/                    /beheer/                     301
-# De startpagina is de bibliotheek; oude adressen van de eerste (statische) site.
-/                          /bibliotheek                 302
-/index.html                /qawaid/                     301
-/library.html              /bibliotheek                 301
-/talkhis-jam-al-jawami     /boek/talkhis-jam-al-jawami  301
-/talkhis-jam-al-jawami/    /boek/talkhis-jam-al-jawami  301
+/admin         /beheer/      301
+/admin/        /beheer/      301
