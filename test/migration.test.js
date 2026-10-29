@@ -29,7 +29,7 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('eigenaar@example.org', 'owner', 'pbkdf2$1$x$y')")
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('redacteur@example.org', 'editor', 'pbkdf2$1$x$y')")
 
-  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers'])
+  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers', 'zad'])
 
   const chapters = await conn.execute(`SELECT c.position, t.title, v.body FROM chapters c
     JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
@@ -60,6 +60,7 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
 })
 
 test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
+  assert.equal(await rollback(conn), 'zad')
   assert.equal(await rollback(conn), 'registers')
   assert.equal(await rollback(conn), 'omzetting')
   assert.equal(await rollback(conn), 'inhoud')
@@ -71,7 +72,15 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   const before2 = conn.queries
   assert.deepEqual([...await migrate(conn, { max: 1 })], ['registers'])
   checkQueries(conn.queries - before2 + 6, 'migratie registers')
+  const before3 = conn.queries
+  assert.deepEqual([...await migrate(conn, { max: 1 })], ['zad'])
+  checkQueries(conn.queries - before3 + 6, 'migratie zad')
+  const [{ zb, zc, zv, zp }] = await conn.execute(`SELECT (SELECT COUNT(*) FROM books WHERE zad_level IS NOT NULL) AS zb,
+    (SELECT COUNT(*) FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = 'zad-n1-aqeedah') AS zc,
+    (SELECT COUNT(*) FROM content_versions WHERE reason LIKE 'ZAD-import%') AS zv,
+    (SELECT COUNT(*) FROM books WHERE zad_level IS NOT NULL AND status = 'published') AS zp`)
+  assert.deepEqual([zb, zc, zv, zp].map(Number), [28, 24, 12, 0]) // 28 boeken, 24 lessen waarvan 6 uitgewerkt in 2 talen, niets gepubliceerd
   assert.deepEqual([...await migrate(conn)], [])
-  const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM chapters')
+  const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.zad_level IS NULL')
   assert.equal(Number(n), 60)
 })
