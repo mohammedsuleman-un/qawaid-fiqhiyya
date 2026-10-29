@@ -531,6 +531,17 @@ test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow
     assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n1-arabic/${les}\\?lang=nl">Les ${les}<`))
     assert.match((await page(unitPage, `/boek/zad-n1-arabic/eenheid/${n}`, { slug: 'zad-n1-arabic', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
   }
+  // Koranexegese (2): één eenheid per soera.
+  for (const [n, hd, lessen, les] of [[1, 4, 6, 6], [2, 2, 7, 13], [3, 4, 4, 17], [4, 3, 2, 19], [5, 1, 2, 21], [6, 3, 3, 24]]) {
+    before = conn.queries
+    const u = await page(unitPage, `/boek/zad-n2-tafsir/eenheid/${n}?lang=nl`, { slug: 'zad-n2-tafsir', n: String(n) })
+    checkQueries(conn.queries - before, `hoofdstukpagina tafsir2-${n}`)
+    assert.equal(u.status, 200, n)
+    assert.match(u.html, new RegExp(`class="kicker">Eenheid ${n} · ${lessen} lessen<`))
+    assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
+    assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n2-tafsir/${les}\\?lang=nl">Les ${les}<`))
+    assert.match((await page(unitPage, `/boek/zad-n2-tafsir/eenheid/${n}`, { slug: 'zad-n2-tafsir', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
+  }
   assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/x', { slug: 'zad-n1-aqeedah', n: 'x' })).status, 404)
   assert.equal((await page(unitPage, '/boek/talkhis-jam-al-jawami/eenheid/1', { slug: 'talkhis-jam-al-jawami', n: '1' })).status, 404)
 
