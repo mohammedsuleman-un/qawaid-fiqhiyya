@@ -247,6 +247,8 @@ async function bookView (id) {
     const label = x ? badge(x.status) + (x.open ? ` <small>+${x.open} ${t.open}</small>` : '') : `<small>${t.notYet}</small>`
     return `<td><a href="#/bewerk/chapter/${c.id}/${l}">${label}</a></td>`
   }
+  // ZAD-lessen hebben daarnaast een studiekaart per taal.
+  const studyCell = (c) => book.zad_level ? `<td class="nowrap">${t.study}: <a href="#/bewerk/study/${c.id}/ar">AR</a> · <a href="#/bewerk/study/${c.id}/nl">NL</a></td>` : ''
   render(html`<p><a href="#/boeken">← ${t.nav.books}</a></p>
     <div class="head"><h1 dir="rtl">${esc(tr.ar?.title || tr.nl?.title || book.slug)}</h1>${badge(book.status)}
       <a class="btn" href="/boek/${esc(book.slug)}" target="_blank" rel="noopener">${t.view}</a></div>
@@ -269,10 +271,10 @@ async function bookView (id) {
       <label>${t.pdf}<input name="pdf" dir="ltr" value="${esc(book.pdf)}"></label>
     </div><button class="primary">${t.save}</button><p class="msg"></p></form>
     <div class="head"><h2>${t.chapters}</h2>${has('content.create') ? `<button id="addCh">${t.addChapter}</button>` : ''}</div>
-    <table class="tbl"><thead><tr><th>#</th><th>${t.title}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th><th></th></tr></thead><tbody>
+    <table class="tbl"><thead><tr><th>#</th><th>${t.title}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th>${book.zad_level ? `<th>${t.study}</th>` : ''}<th></th></tr></thead><tbody>
     ${chapters.map((c, i) => `<tr class="${c.archived ? 'archived' : ''}"><td>${i + 1}</td>
       <td><span dir="rtl">${esc(stripTags(c.langs.ar?.title || ''))}</span>${c.langs.nl?.title ? `<br><small dir="ltr">${esc(c.langs.nl.title)}</small>` : ''}</td>
-      ${cell(c, 'ar')}${cell(c, 'nl')}
+      ${cell(c, 'ar')}${cell(c, 'nl')}${studyCell(c)}
       <td class="nowrap">${has('content.create') ? `<button class="icon" data-move="up" data-id="${c.id}" title="${t.up}">↑</button><button class="icon" data-move="down" data-id="${c.id}" title="${t.down}">↓</button>` : ''}
       ${has('content.publish') ? `<button class="icon" data-arch="${c.archived ? 0 : 1}" data-id="${c.id}" title="${c.archived ? t.restore : t.archive}">${c.archived ? '↺' : '🗄'}</button>` : ''}
       <a class="icon" href="/boek/${esc(book.slug)}/${esc(c.slug)}" target="_blank" rel="noopener" title="${t.view}">↗</a></td></tr>`).join('')}
@@ -312,7 +314,7 @@ async function articlesView () {
       <label>${t.category}<select name="category_id"><option value="">${t.none}</option>${options(cats.map((c) => [c.id, catName(c)]))}</select></label>
       <label>${t.access}<select name="access_level">${options(Object.entries(t.accessLevels))}</select></label>
     </div><button class="primary">${t.create}</button><p class="msg"></p></form>
-    <table class="tbl"><thead><tr><th>${t.title}</th><th>${t.kind}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th><th></th></tr></thead><tbody>
+    <table class="tbl"><thead><tr><th>${t.title}</th><th>${t.kind}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th>${book.zad_level ? `<th>${t.study}</th>` : ''}<th></th></tr></thead><tbody>
     ${rows.map((a) => `<tr class="${a.archived_at ? 'archived' : ''}"><td><span dir="rtl">${esc(a.title_ar || '')}</span> <span dir="ltr">${esc(a.title_nl || '')}</span><br><small dir="ltr">${esc(a.slug)}</small></td>
       <td>${esc(t.kinds[a.kind])}</td>
       <td><a href="#/bewerk/article/${a.id}/ar">${a.status_ar ? badge(a.status_ar) : `<small>${t.notYet}</small>`}</a></td>
@@ -357,7 +359,7 @@ async function personsView () {
     <form class="card" id="nf" hidden><div class="grid2">
       <label>${t.slug}<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required dir="ltr"></label><span></span>${fields()}
     </div><button class="primary">${t.create}</button><p class="msg"></p></form>
-    <table class="tbl"><thead><tr><th>${t.name}</th><th>${t.personKind}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th><th></th></tr></thead><tbody>
+    <table class="tbl"><thead><tr><th>${t.name}</th><th>${t.personKind}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th>${book.zad_level ? `<th>${t.study}</th>` : ''}<th></th></tr></thead><tbody>
     ${rows.map((p) => `<tr><td><span dir="rtl">${esc(p.name_ar)}</span> <span dir="ltr">${esc(p.name_nl || '')}</span><br><small dir="ltr">${esc(p.slug)}${p.death_hijri ? ' · ' + esc(p.death_hijri) + ' AH' : ''}</small></td>
       <td>${esc(t.personKinds[p.kind] || p.kind)}</td>
       <td><a href="#/bewerk/article/${p.article_id}/ar">${p.status_ar ? badge(p.status_ar) : `<small>${t.notYet}</small>`}</a></td>
@@ -406,7 +408,8 @@ async function editView (type, id, l) {
   const other = l === 'ar' ? 'nl' : 'ar'
   const ref = data.langs[other]?.published
   const info = data.info
-  const back = type === 'chapter' ? `#/boek/${info.book_id}` : info.kind === 'person' ? '#/personen' : '#/artikelen'
+  const back = type === 'chapter' || type === 'study' ? `#/boek/${info.book_id}` : info.kind === 'person' ? '#/personen' : '#/artikelen'
+  if (type === 'study') return studyEditView(id, l, data, mine, base, back)
   const dir = l === 'ar' ? 'rtl' : 'ltr'
   render(html`<p><a href="${back}">← ${t.back}</a></p>
     <div class="head"><h1>${t.editor}: <span dir="rtl">${esc(stripTags(info.title_ar || ''))}</span> ${info.title_nl ? `<span dir="ltr">${esc(info.title_nl)}</span>` : ''}</h1>
@@ -454,6 +457,45 @@ async function editView (type, id, l) {
   window.onbeforeunload = () => (dirty ? true : undefined)
 }
 
+// Studiekaart: JSON-editor met controle door de server en een voorbeeld op de lespagina.
+function studyEditView (id, l, data, mine, base, back) {
+  const info = data.info
+  const pretty = (body) => { try { return JSON.stringify(JSON.parse(body), null, 2) } catch { return body || '' } }
+  const other = l === 'ar' ? 'nl' : 'ar'
+  const preview = `/boek/${info.book_slug}/${info.slug}?voorbeeld&lang=${l}`
+  render(html`<p><a href="${back}">← ${t.back}</a></p>
+    <div class="head"><h1>${t.study}: <span dir="rtl">${esc(stripTags(info.title_ar || ''))}</span> ${info.title_nl ? `<span dir="ltr">${esc(info.title_nl)}</span>` : ''}</h1>
+      <span class="pill">${esc(t.langs[l])}</span> ${mine ? badge(mine.status) : ''}
+      <a class="btn" href="#/bewerk/study/${id}/${other}">${t.otherLang}: ${esc(t.langs[other])}</a>
+      <a class="btn" href="${esc(preview)}" target="_blank" rel="noopener">${t.preview} ↗</a></div>
+    ${mine?.review_comment ? `<p class="warn"><b>${t.comment}:</b> ${esc(mine.review_comment)}</p>` : ''}
+    <p class="muted">${t.studyHelp}</p>
+    <section class="ed card">
+      <label>${t.title}<input id="title" dir="${l === 'ar' ? 'rtl' : 'ltr'}" value="${esc(stripTags(base?.title ?? data.langs[l]?.title ?? ''))}"></label>
+      <textarea id="json" dir="ltr" rows="28" spellcheck="false" style="width:100%;font:13px/1.5 ui-monospace,monospace">${esc(pretty(base?.body || '{"title": ""}'))}</textarea>
+      <label>${t.reason}<input id="reason" value="${esc(mine ? mine.reason : '')}" maxlength="500"></label>
+      <p class="actions"><button id="save" class="primary">${t.saveDraft}</button> <button id="submit">${t.submit}</button><span id="state" class="muted"></span></p>
+      <p class="msg" id="msg"></p>
+    </section>
+    <section class="card"><h2>${t.versions}</h2>${versionList(data.langs[l]?.versions || [])}</section>`)
+  let versionId = mine?.id || null
+  const msg = $('#msg')
+  const save = async () => {
+    msg.textContent = ''
+    try { JSON.parse($('#json').value) } catch (e) { throw new Error(t.invalidJson + ': ' + e.message) }
+    $('#state').textContent = t.saving
+    const r = await api('versions', 'POST', { entity_type: 'study', entity_id: id, lang: l, title: $('#title').value, body: $('#json').value, reason: $('#reason').value, based_on_id: data.langs[l]?.published?.id })
+    versionId = r.id
+    $('#state').textContent = `${t.saved} · ${new Date().toLocaleTimeString()}`
+    return r
+  }
+  const fail = (e) => { msg.className = 'msg err'; msg.textContent = e.message; $('#state').textContent = '' }
+  $('#save').addEventListener('click', () => save().catch(fail))
+  $('#submit').addEventListener('click', async () => {
+    try { await save(); await api(`versions/${versionId}/submit`, 'POST'); location.hash = '#/versie/' + versionId } catch (e) { fail(e) }
+  })
+}
+
 const versionList = (versions) => versions.length
   ? `<ul class="list">${versions.map((v) => `<li><a href="#/versie/${v.id}">${t.version} ${v.id}</a> ${badge(v.status)} <small>${esc(v.created_by_email || '')} · ${date(v.updated_at)}${v.reason ? ' · ' + esc(v.reason) : ''}</small></li>`).join('')}</ul>`
   : `<p>${t.noItems}</p>`
@@ -471,14 +513,19 @@ async function versionView (vid) {
   if (['in_review', 'approved'].includes(v.status) && can('content.review')) acts.push(btn('reject', t.reject, 'danger'))
   if (v.status === 'approved' && can('content.publish')) acts.push(btn('publish', t.publish, 'primary'))
   if (['published', 'superseded'].includes(v.status) && has('content.edit')) acts.push(`<a class="btn" href="#/bewerk/${v.entity_type}/${v.entity_id}/${v.lang}?van=${v.id}">${t.fromVersion}</a>`)
-  render(html`<p><a href="#/beoordelen">← ${t.nav.review}</a> · <a href="#/bewerk/${v.entity_type}/${v.entity_id}/${v.lang}">${t.editor}</a> · <a href="${esc(info.url)}?lang=${v.lang}" target="_blank" rel="noopener">${t.view} ↗</a></p>
+  // Een studiekaart is JSON: leesbaar tonen en als tekst vergelijken, nooit als HTML invoegen.
+  const study = v.entity_type === 'study'
+  const pretty = (body) => { try { return JSON.stringify(JSON.parse(body), null, 2) } catch { return String(body || '') } }
+  const bodyHtml = (title, body) => study ? `<pre dir="ltr" style="white-space:pre-wrap">${esc(pretty(body))}</pre>` : `<h2>${esc(stripTags(title))}</h2>${body}`
+  const viewUrl = `${info.url}?${study ? 'voorbeeld&' : ''}lang=${v.lang}`
+  render(html`<p><a href="#/beoordelen">← ${t.nav.review}</a> · <a href="#/bewerk/${v.entity_type}/${v.entity_id}/${v.lang}">${t.editor}</a> · <a href="${esc(viewUrl)}" target="_blank" rel="noopener">${t.view} ↗</a></p>
     <div class="head"><h1>${t.version} ${v.id}: <span dir="${dir}">${esc(stripTags(v.title))}</span></h1>${badge(v.status)}<span class="pill">${esc(t.langs[v.lang])}</span></div>
     <p class="muted">${t.by} ${esc(author?.name || author?.email || '')} · ${date(v.updated_at)}${v.reason ? ` · ${t.reason}: ${esc(v.reason)}` : ''}</p>
     ${v.review_comment ? `<p class="warn"><b>${t.comment}:</b> ${esc(v.review_comment)}</p>` : ''}
     ${['draft', 'rejected', 'in_review'].includes(v.status) && !acts.length && !own ? `<p class="muted">${t.lockedVersion}</p>` : ''}
     <p class="actions">${acts.join(' ')}</p><p class="msg" id="msg"></p>
     <h2>${t.diff}</h2>
-    ${published && published.id !== v.id ? `<div class="book diff" dir="${dir}">${diffHtml(published.title + '\n' + published.body, v.title + '\n' + v.body)}</div>` : `<p class="muted">${published ? '' : t.noPublished}</p><div class="book" dir="${dir}"><h2>${esc(stripTags(v.title))}</h2>${v.body}</div>`}`)
+    ${published && published.id !== v.id ? `<div class="book diff" dir="${dir}">${diffHtml(published.title + '\n' + (study ? pretty(published.body) : published.body), v.title + '\n' + (study ? pretty(v.body) : v.body))}</div>` : `<p class="muted">${published ? '' : t.noPublished}</p><div class="book" dir="${dir}">${bodyHtml(v.title, v.body)}</div>`}`)
   $$('[data-act]').forEach((b) => b.addEventListener('click', async () => {
     let comment = ''
     if (b.dataset.act === 'reject') { comment = prompt(t.rejectReason); if (!comment) return }
@@ -657,7 +704,7 @@ const ROUTES = [
   [/^categorieen$/, categoriesView, 'categories.manage'],
   [/^personen$/, personsView, 'content.edit'],
   [/^hadith$/, hadithView, 'content.edit'],
-  [/^bewerk\/(chapter|article)\/(\d+)\/(ar|nl)$/, (type, id, l) => editView(type, Number(id), l), 'content.edit'],
+  [/^bewerk\/(chapter|article|study)\/(\d+)\/(ar|nl)$/, (type, id, l) => editView(type, Number(id), l), 'content.edit'],
   [/^versie\/(\d+)$/, versionView, 'content.edit'],
   [/^beoordelen$/, reviewView, 'content.edit'],
   [/^feedback$/, feedbackView, 'feedback.assigned'],

@@ -62,7 +62,7 @@ test('installatie: migraties en het eerste boek', async () => {
     steps.push(r.data.migrations[0] || r.data.seeded)
     if (r.data.done) break
   }
-  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'talkhis-jam-al-jawami', false])
+  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1', 'talkhis-jam-al-jawami', false])
   const list = await call(conn, 'GET', '/api/books', publicBooks)
   assert.equal(list.data[0].slug, 'talkhis-jam-al-jawami')
   assert.equal(list.data[0].category, 'usul-al-fiqh')
@@ -381,4 +381,40 @@ test('bibliotheek: ZAD-boeken samen onder één kop', async () => {
   const admin = await call(conn, 'GET', '/api/admin/books', books, { cookie: s.adminCookie })
   const firstZad = admin.data.findIndex((b) => b.zad_level)
   assert.ok(firstZad > 0 && admin.data.slice(firstZad).every((b) => b.zad_level))
+})
+
+test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow, geen HTML', async () => {
+  await conn.execute("UPDATE books SET status = 'published' WHERE slug = 'zad-n1-aqeedah'")
+  const path = '/boek/zad-n1-aqeedah/1?lang=nl'
+  const params = { slug: 'zad-n1-aqeedah', chapter: '1' }
+  assert.ok(!(await page(chapterPage, path, params)).html.includes('class="study"')) // concept: openbaar de gewone les
+  assert.ok(!(await page(chapterPage, path + '&voorbeeld', params)).html.includes('class="study"')) // voorbeeld alleen voor medewerkers
+  const before = conn.queries
+  const prev = await page(chapterPage, path + '&voorbeeld', params, s.adminCookie)
+  checkQueries(conn.queries - before, 'les met studiekaart')
+  assert.match(prev.html, /class="study"/)
+  assert.match(prev.html, /nog niet gepubliceerd/)
+  for (const tab of ['overview', 'schema', 'terms', 'explain', 'keys', 'review', 'quiz', 'text']) assert.match(prev.html, new RegExp(`id="st-${tab}"`))
+  assert.match(prev.html, /class="dg dg-mindmap"/)
+  assert.match(prev.html, /archive\.org\/details\/zad-academy-books_202309\/CourseBook_Semester1_AlAqeedah\/page\/n11\//) // bronlink naar p. 11
+
+  const [ch] = await conn.execute("SELECT c.id FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = 'zad-n1-aqeedah' AND c.slug = '1'")
+  const save = (body) => call(conn, 'POST', '/api/admin/versions', versions, { cookie: s.adminCookie, body: { entity_type: 'study', entity_id: ch.id, lang: 'nl', title: 'x', body } })
+  assert.equal((await save('{geen json')).status, 400)
+  assert.equal((await save({ title: 'x', diagrams: [{ type: 'onbekend' }] })).status, 400)
+  const ok = await save({ title: 'Les<script>alert(1)</script> één', summary: '<b onclick="x()">kort</b>', quiz: [{ type: 'mc', q: 'V?', options: ['a', 'b'], answer: 1 }, { type: 'mc', q: 'zonder antwoord', options: ['a'], answer: 3 }] })
+  assert.equal(ok.status, 200, JSON.stringify(ok.data))
+  const [v] = await conn.execute('SELECT body FROM content_versions WHERE id = ?', [ok.data.id])
+  const card = JSON.parse(v.body)
+  assert.deepEqual([card.title, card.summary, card.quiz.length], ['Lesalert(1) één', 'kort', 1])
+  const act = (a) => call(conn, 'POST', `/api/admin/versions/${ok.data.id}/${a}`, action, { cookie: s.adminCookie, params: { id: String(ok.data.id), action: a }, body: {} })
+  for (const a of ['submit', 'approve', 'publish']) assert.equal((await act(a)).status, 200, a)
+  const pub = await page(chapterPage, path, params)
+  assert.match(pub.html, /class="study"/)
+  assert.match(pub.html, /Lesalert\(1\) één/)
+  assert.ok(!pub.html.includes('<script>alert'))
+  assert.match(pub.html, /id="st-text"/) // de oorspronkelijke samenvatting blijft bereikbaar
+  assert.ok(!(await page(chapterPage, '/boek/zad-n1-aqeedah/1', params)).html.includes('class="study"')) // Arabisch nog niet gepubliceerd
+  const [{ n }] = await conn.execute("SELECT COUNT(*) AS n FROM search_index WHERE entity_type = 'study'")
+  assert.equal(Number(n), 0)
 })

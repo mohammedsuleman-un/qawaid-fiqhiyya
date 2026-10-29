@@ -4,6 +4,7 @@
 import { json, body, need, fail, str, id } from '../../../../lib/http.js'
 import { ENTITY_TYPES, LANGS, ensureTranslation, insert, describe } from '../../../../lib/content.js'
 import { sanitizeHtml } from '../../../../lib/sanitize.js'
+import { parseStudy } from '../../../../lib/study.js'
 import { audit } from '../../../../lib/audit.js'
 
 export async function onRequestPost ({ request, data: { conn, user } }) {
@@ -14,7 +15,8 @@ export async function onRequestPost ({ request, data: { conn, user } }) {
   if (!(await describe(conn, input.entity_type, entityId))) fail(404, 'Niet gevonden')
   const translation = await ensureTranslation(conn, input.entity_type, entityId, input.lang, str(input.title))
   const title = str(input.title)
-  const html = sanitizeHtml(input.body)
+  // Een studiekaart is JSON (gecontroleerd en zonder HTML), al het andere is opgeschoonde HTML.
+  const html = input.entity_type === 'study' ? JSON.stringify(parseStudy(input.body)) : sanitizeHtml(input.body)
   const reason = str(input.reason)
   const [open] = await conn.execute(`SELECT id FROM content_versions WHERE translation_id = ? AND created_by = ?
     AND status IN ('draft', 'rejected') ORDER BY id DESC LIMIT 1`, [translation.id, user.id])

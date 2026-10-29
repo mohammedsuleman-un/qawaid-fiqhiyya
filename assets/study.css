@@ -1,0 +1,236 @@
+/* Studieomgeving per les (lib/render-study.js, assets/study.js). Logische eigenschappen
+   (inline-start/end) zodat dezelfde opmaak in het Arabisch van rechts naar links werkt. */
+.wrap.wide{max-width:1040px}
+.study{--st-gold:#b5873f;--st-green:#04403a;--st-red:#9b2c2c;--st-blue:#1d5a8a;--st-violet:#5b3f8c;--st-radius:14px;
+  font-family:var(--body);font-size:16px;line-height:1.7;text-align:start}
+html[dir="rtl"] .study{font-size:17px}
+.study h2,.study h3{font-family:var(--body);background:none;border:0;padding:0;color:var(--ink);line-height:1.4}
+.study .ayah{font-family:var(--display);font-size:1.12em}
+.study .hadith{font-family:var(--display)}
+.study .ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.study button{font:inherit;cursor:pointer}
+.study :focus-visible{outline:3px solid var(--st-gold);outline-offset:2px}
+.study .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.study .muted{color:var(--muted)}
+
+/* Tabbladen: op een telefoon horizontaal te vegen, nooit breder dan het scherm. */
+.st-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;background:var(--surface2);border-radius:999px;padding:4px;margin:0 0 18px;position:sticky;top:0;z-index:5}
+.st-tabs a{flex:none;padding:7px 14px;border-radius:999px;text-decoration:none;color:var(--muted);font-size:14px;font-weight:600;white-space:nowrap}
+.st-tabs a[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.st-panel{margin:0 0 34px;scroll-margin-top:60px}
+.st-panel:focus{outline:none}
+.st-ph{font-size:20px!important;margin:0 0 12px!important}
+.js-study .st-panel[hidden]{display:none}
+.js-study .st-ph{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* Kaarten */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--st-radius);padding:16px 18px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card header{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h3{margin:4px 0 6px;font-size:17px}
+.card footer{margin-top:8px}
+.card ul,.card ol{margin:6px 0 0;padding-inline-start:20px}
+.card li{margin:3px 0}
+
+/* Overzicht (niveau A) */
+.ovh{border-top:5px solid var(--st-green);display:grid;gap:6px}
+.kicker{margin:0;color:var(--st-gold);font-size:13px;font-weight:700;letter-spacing:.02em}
+.st-title{font-size:clamp(24px,4vw,32px)!important;margin:0!important;font-family:var(--display)!important;color:var(--head-ink)!important}
+.st-sub{margin:0;font-size:17px;font-weight:600}
+.st-sum{margin:4px 0 0;font-size:17px}
+.st-src{display:flex;align-items:center;gap:6px;margin:4px 0 0;color:var(--muted);font-size:14px}
+.prog{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:13px;color:var(--muted)}
+.prog .bar{flex:1;height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.prog .bar span{display:block;height:100%;width:0;background:var(--st-green);transition:width .3s}
+html[dir="rtl"] .prog .bar span{margin-inline-start:auto}
+.ovact{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 0}
+.ovact button,.xall button,.flash button.repeat,.qreset{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:999px;padding:6px 14px;font-size:14px}
+.mark-lesson[aria-pressed="true"]{background:var(--st-green);border-color:var(--st-green);color:#fff}
+.pts h3,.ov section h3{font-size:17px;margin:22px 0 10px}
+.points{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:pt}
+.points>li{counter-increment:pt;position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;padding-inline-start:52px}
+.points>li::before{content:counter(pt);position:absolute;inset-inline-start:12px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--st-green);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+.points summary{font-weight:600}
+details>summary{cursor:pointer;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"+";display:inline-grid;place-items:center;width:20px;height:20px;margin-inline-start:8px;border-radius:50%;border:1px solid var(--line);font-size:13px;color:var(--muted);vertical-align:middle}
+details[open]>summary::after{content:"−"}
+.ndd{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:15px}
+.ndd p{margin:0 0 6px}
+.tchips{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px}
+.tchips a{display:inline-flex;align-items:baseline;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.tchips span{font-family:var(--display);font-size:19px}
+.tchips small{color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:22px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 8px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:14px}
+.tile .ic{width:26px;height:26px;color:var(--st-green)}
+.tile:hover{border-color:var(--st-green)}
+.st-note,.st-foot{font-size:13px;color:var(--muted)}
+.src{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--surface2);color:var(--accent);text-decoration:none;white-space:nowrap}
+.src .ic{width:15px;height:15px}
+
+/* Schema's */
+.dg{margin:0 0 22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--st-radius);padding:16px}
+.dg figcaption h3{margin:0 0 4px;font-size:18px}
+.dg figcaption p{margin:0 0 12px;color:var(--muted);font-size:14px}
+.dgnote{margin:12px 0 0;font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.nd{display:block;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:8px 12px}
+.nd b{display:block}
+.nd small,.chip2 small{display:block;color:var(--muted);font-size:13px}
+details.nd[open]{border-color:var(--st-gold)}
+.chips2{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+.chip2{display:inline-block;background:var(--surface2);border-radius:8px;padding:4px 10px;font-size:14px}
+.chip2 b{font-weight:500}
+
+/* Mindmap: kern in het midden, takken links en rechts; op een telefoon onder elkaar. */
+.mm{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,190px) minmax(0,1fr);gap:14px 26px;align-items:center}
+.mm-c{grid-column:2;grid-row:1;align-self:center;aspect-ratio:1;border-radius:50%;background:var(--st-green);color:#fff;display:grid;place-content:center;text-align:center;padding:14px;box-shadow:0 0 0 6px color-mix(in srgb,var(--st-green) 20%,transparent)}
+.mm-c b{font-family:var(--display);font-size:26px;line-height:1.3}
+.mm-c small{display:block;opacity:.85;font-size:13px}
+.mm-s,.mm-e{list-style:none;margin:0;padding:0;display:grid;gap:14px;grid-row:1}
+.mm-s{grid-column:1}.mm-e{grid-column:3}
+.mm-b{position:relative;background:var(--surface);border:1.5px solid var(--st-gold);border-radius:12px;padding:10px 12px}
+.mm-b>.nd{border:0;padding:0;background:none}
+.mm-b>.nd b{color:var(--st-green);font-size:16px}
+.mm-b::after{content:"";position:absolute;top:50%;width:27px;border-top:2px solid var(--st-gold)}
+.mm-s .mm-b::after{inset-inline-start:100%}
+.mm-e .mm-b::after{inset-inline-end:100%}
+
+/* Boomdiagram: verticaal, met verbindingslijnen aan de beginkant. */
+.tree ul{list-style:none;margin:0;padding-inline-start:26px}
+.tree>ul{padding-inline-start:18px;margin-top:10px}
+.tree li{position:relative;padding:5px 0}
+.tree li::before{content:"";position:absolute;inset-inline-start:-16px;top:0;bottom:0;border-inline-start:2px solid var(--line)}
+.tree li:last-child::before{bottom:calc(100% - 24px)}
+.tree li::after{content:"";position:absolute;inset-inline-start:-16px;top:24px;width:14px;border-top:2px solid var(--line)}
+.tree .nd{display:inline-block;min-width:min(240px,100%)}
+.tree>.t-root,.tree>details.t-root{background:var(--st-green);border-color:var(--st-green);color:#fff;display:inline-block}
+.tree>.t-root small{color:#e7efe9}
+.tree>ul>li>.nd{border-color:var(--st-gold)}
+
+/* Stappen, tijdlijn en genummerde kaarten */
+.steps{list-style:none;margin:0;padding:0;counter-reset:st;display:grid;gap:10px}
+.steps>li{counter-increment:st;display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:start}
+.steps>li::before{content:counter(st);width:30px;height:30px;border-radius:50%;background:var(--st-blue);color:#fff;display:grid;place-items:center;font-weight:700}
+.steps>li>*{grid-column:2}
+.steps.tl>li::before{content:"";width:14px;height:14px;margin:8px;border-radius:50%;background:var(--st-gold)}
+.ncards{list-style:none;margin:0;padding:0;counter-reset:nc;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.ncards>li{counter-increment:nc;position:relative;padding-top:18px}
+.ncards>li::before{content:counter(nc);position:absolute;top:0;inset-inline-start:14px;width:34px;height:34px;border-radius:9px;background:var(--st-violet);color:#fff;display:grid;place-items:center;font-weight:700;z-index:1}
+.ncards .nd{height:100%;padding-top:22px}
+.ncards .nd small{font-size:14px;color:var(--ink);margin-top:4px}
+
+/* Stroomschema met banen (bijv. juiste tegenover bedorven geloofsleer) */
+.lane{border-radius:12px;padding:10px 12px;margin:0 0 10px;background:var(--surface2);border-inline-start:5px solid var(--st-green)}
+.lane1{border-inline-start-color:var(--st-red)}.lane2{border-inline-start-color:var(--st-blue)}.lane3{border-inline-start-color:var(--st-violet)}
+.lane-h{font-weight:700;margin:0 0 8px}
+.lane-h small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.flow{list-style:none;margin:0;padding:0;display:flex;align-items:stretch;gap:6px}
+.flow>li{flex:1;min-width:0}
+.flow>li.arr{flex:none;display:grid;place-items:center;color:var(--muted)}
+html[dir="rtl"] .flow .arr span{display:inline-block;transform:scaleX(-1)}
+.flow .nd{height:100%}
+
+/* Vergelijkingstabel */
+.cmpw{overflow-x:auto}
+.cmp{width:100%;border-collapse:separate;border-spacing:0;font-size:15px}
+.cmp th,.cmp td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}
+.cmp thead th{background:var(--surface2);font-size:14px}
+.cmp tbody th{color:var(--st-green);width:28%}
+
+/* Begrippen- en kernpuntkaarten */
+.dcard h3{font-family:var(--display)!important;font-size:28px!important;color:var(--head-ink)!important;margin:0!important;flex:1}
+.dcard .tl{margin:0;color:var(--muted)}
+.dcard .mean{font-weight:600;font-size:17px;margin:6px 0}
+.dcard .notes{color:var(--muted);font-size:15px}
+.ctools{display:inline-flex;align-items:center;gap:8px;margin-inline-start:auto;font-size:13px;color:var(--muted)}
+.star{border:0;background:none;padding:2px;color:var(--muted);line-height:0}
+.star[aria-pressed="true"]{color:var(--st-gold)}
+.star[aria-pressed="true"] .ic{fill:currentColor}
+.lrn{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.card.is-learned{border-color:var(--st-green);box-shadow:inset 0 0 0 1px var(--st-green)}
+.kcard{border-top:4px solid var(--st-blue)}
+.k-definitie{border-top-color:var(--st-green)}.k-voorwaarde{border-top-color:var(--st-gold)}.k-opsomming{border-top-color:var(--st-violet)}
+.k-uitzondering{border-top-color:var(--st-red)}.k-onderscheid{border-top-color:var(--st-blue)}.k-bewijs{border-top-color:#2f7d4e}
+.kind{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.org{font-size:12px;border-radius:99px;padding:1px 8px;background:var(--surface2)}
+.org-boek{color:#2f7d4e}.org-toelichting{color:var(--st-blue)}
+
+/* Uitleg */
+.secs{list-style:none;margin:0;padding:0;display:grid;gap:12px;counter-reset:sc}
+.sec{counter-increment:sc}
+.sec h3::before{content:counter(sc) ". ";color:var(--st-gold)}
+.sec p{margin:0 0 6px}
+.sec details{margin-top:6px}
+.sec summary{color:var(--accent);font-weight:600;font-size:15px}
+.xall{margin:0 0 12px}
+
+/* Herhaling */
+.quick{border-inline-start:5px solid var(--st-gold)}
+.quick h3,.flash h3,.favs h3{display:flex;align-items:center;gap:6px;font-size:17px;margin:0 0 8px}
+.flash,.favs{margin-top:22px}
+.fcards{list-style:none;padding:0;margin:10px 0 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.fcard{width:100%;min-height:130px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:14px;display:grid;place-items:center;text-align:center}
+.fcard .ff{font-family:var(--display);font-size:28px;color:var(--head-ink)}
+.fcard .fb{display:none;font-size:15px}
+.fcard[aria-pressed="true"]{background:var(--surface2);border-color:var(--st-green)}
+.fcard[aria-pressed="true"] .ff{display:none}
+.fcard[aria-pressed="true"] .fb{display:block}
+.fcards.solo>li{display:none}
+.fcards.solo>li.cur{display:block}
+.rep-bar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.rep-bar button{border:1px solid var(--line);border-radius:999px;padding:6px 14px;background:var(--surface2);color:var(--ink)}
+.favlist{display:grid;gap:8px}
+.favlist .card{padding:10px 14px}
+
+/* Toets */
+.quiz{margin:0;padding-inline-start:22px;display:grid;gap:14px}
+.qz{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.qq{font-weight:600;margin:0 0 8px}
+.qopts{display:grid;gap:6px}
+.qopts button{text-align:start;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:10px;padding:8px 12px}
+.qopts button.ok{border-color:#2f7d4e;background:color-mix(in srgb,#2f7d4e 15%,var(--surface))}
+.qopts button.no{border-color:var(--st-red);background:color-mix(in srgb,var(--st-red) 12%,var(--surface))}
+.qopts button:disabled{cursor:default;opacity:1}
+.qfb{margin-top:8px;font-size:15px}
+.qfb p{margin:0 0 4px}
+.qres{font-weight:700}
+.qscore{font-weight:700;font-size:17px}
+
+@media (max-width:760px){
+  .mm{grid-template-columns:minmax(0,1fr)}
+  .mm-c{grid-column:1;grid-row:auto;width:150px;justify-self:center}
+  .mm-s,.mm-e{grid-column:1;grid-row:auto;padding-inline-start:16px;border-inline-start:2px solid var(--st-gold)}
+  .mm-b::after{display:none}
+  .mm-s .mm-b::before,.mm-e .mm-b::before{content:"";position:absolute;inset-inline-start:-17px;top:20px;width:16px;border-top:2px solid var(--st-gold)}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flow{flex-direction:column}
+  .flow>li.arr span{display:inline-block;transform:rotate(90deg)}
+  html[dir="rtl"] .flow .arr span{transform:rotate(90deg)}
+  .cmp thead{display:none}
+  .cmp,.cmp tbody,.cmp tr,.cmp th,.cmp td{display:block;width:auto}
+  .cmp tr{border:1px solid var(--line);border-radius:10px;margin:0 0 10px;overflow:hidden}
+  .cmp tbody th{width:auto;background:var(--surface2)}
+  .cmp td::before{content:attr(data-col);display:block;font-size:12px;font-weight:700;color:var(--muted)}
+  .card{padding:14px}
+  .dcard h3{font-size:24px!important}
+}
+
+/* Afdrukken: overzicht, schema's, begrippen, uitleg en kernpunten als studiekaarten. */
+@media print{
+  .st-tabs,.ovact,.prog,.tiles,.p-quiz,.p-text,.flash,.favs,.xall,.ctools,.st-foot,.notice{display:none!important}
+  .js-study .st-panel[hidden]{display:block!important}
+  .js-study .st-ph{position:static;width:auto;height:auto;clip:auto}
+  .card,.dg,.points>li{break-inside:avoid}
+  .study details>*{display:block}
+  .study details:not([open])>.ndd,.study details:not([open])>p{display:block}
+  details>summary::after{display:none}
+  .src{background:none;padding:0}
+}
+.st-chap{font-family:var(--body)!important;font-size:14px!important;color:var(--muted)!important;background:none!important;border:0!important;padding:0!important;margin:0 0 10px!important;display:flex;align-items:center;gap:8px}
+#toc a.learned::after{content:" ✓";color:#2f7d4e;font-weight:700}
+.study .hit{outline:3px solid var(--st-gold)}
+details.nd>summary,details.chip2>summary,.points details>summary{position:relative;padding-inline-end:28px}
+details.nd>summary::after,details.chip2>summary::after,.points details>summary::after{position:absolute;inset-inline-end:0;top:2px;margin:0}
+.points summary{font-weight:500}
+.saw{font-family:var(--display);font-weight:400}
