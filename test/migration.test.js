@@ -31,7 +31,7 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('eigenaar@example.org', 'owner', 'pbkdf2$1$x$y')")
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('redacteur@example.org', 'editor', 'pbkdf2$1$x$y')")
 
-  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1'])
+  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1', 'hoofdstukkaart-aqeedah-1-eenheid-1'])
 
   const chapters = await conn.execute(`SELECT c.position, t.title, v.body FROM chapters c
     JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
@@ -63,6 +63,11 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
 })
 
 test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
+  // Hoofdstukkaart terugdraaien zet de kaart van les 1 terug uit de back-up.
+  assert.equal(await rollback(conn), 'hoofdstukkaart-aqeedah-1-eenheid-1')
+  const back = await conn.execute("SELECT t.lang, v.status, v.body FROM content_translations t JOIN content_versions v ON v.id = t.published_version_id WHERE t.entity_type = 'study' ORDER BY t.lang")
+  assert.deepEqual(back.map((r) => [r.lang, r.status, JSON.parse(r.body).scope]), [['ar', 'published', 'lesson'], ['nl', 'published', 'lesson']])
+  assert.equal((await conn.execute("SHOW TABLES LIKE 'zb_backup_%'")).length, 0)
   assert.equal(await rollback(conn), 'studiekaart-aqeedah-1-les-1')
   assert.equal(await rollback(conn), 'publiceer-zad-aqeedah-1')
   assert.equal(await rollback(conn), 'personen-per-boek')
@@ -115,6 +120,13 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   checkQueries(conn.queries - before7 + 6, 'migratie studiekaart')
   const study = await conn.execute("SELECT t.lang, v.status FROM content_translations t JOIN content_versions v ON v.translation_id = t.id WHERE t.entity_type = 'study' ORDER BY t.lang")
   assert.deepEqual(study.map((r) => [r.lang, r.status]), [['ar', 'published'], ['nl', 'published']])
+  const before8 = conn.queries
+  assert.deepEqual([...await migrate(conn, { max: 1 })], ['hoofdstukkaart-aqeedah-1-eenheid-1'])
+  checkQueries(conn.queries - before8 + 6, 'migratie hoofdstukkaart')
+  const unit = await conn.execute("SELECT t.lang, v.status, v.body FROM content_translations t JOIN content_versions v ON v.translation_id = t.id WHERE t.entity_type = 'study' ORDER BY t.lang, v.id")
+  assert.deepEqual(unit.map((r) => [r.lang, r.status, JSON.parse(r.body).scope]), [['ar', 'superseded', 'lesson'], ['ar', 'published', 'unit'], ['nl', 'superseded', 'lesson'], ['nl', 'published', 'unit']])
+  const [{ bk }] = await conn.execute('SELECT COUNT(*) AS bk FROM zb_backup_20261029_study_versions')
+  assert.equal(Number(bk), 2) // back-up van de kaart per les
   assert.deepEqual([...await migrate(conn)], [])
   const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.zad_level IS NULL')
   assert.equal(Number(n), 60)

@@ -30,6 +30,7 @@ import * as search from '../functions/api/search.js'
 import * as publicBooks from '../functions/api/books/index.js'
 import * as chapterPage from '../functions/boek/[slug]/[chapter].js'
 import * as bookPage from '../functions/boek/[slug]/index.js'
+import * as unitPage from '../functions/boek/[slug]/eenheid/[n].js'
 import * as library from '../functions/bibliotheek/index.js'
 import * as hadithPage from '../functions/hadith/index.js'
 import * as personsPage from '../functions/personen/index.js'
@@ -56,13 +57,13 @@ const page = async (mod, path, params, cookie) => {
 
 test('installatie: migraties en het eerste boek', async () => {
   const steps = []
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < 15; i++) {
     const r = await call(conn, 'POST', '/api/setup', setup)
     assert.equal(r.status, 200, JSON.stringify(r.data))
     steps.push(r.data.migrations[0] || r.data.seeded)
     if (r.data.done) break
   }
-  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1', 'talkhis-jam-al-jawami', false])
+  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1', 'hoofdstukkaart-aqeedah-1-eenheid-1', 'talkhis-jam-al-jawami', false])
   const list = await call(conn, 'GET', '/api/books', publicBooks)
   assert.equal(list.data[0].slug, 'talkhis-jam-al-jawami')
   assert.equal(list.data[0].category, 'usul-al-fiqh')
@@ -330,8 +331,9 @@ test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', asy
   assert.match(pub.html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
   const ov = await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })
   assert.equal(ov.status, 200)
-  assert.equal((ov.html.match(/class="lix-card/g) || []).length, 24) // lesoverzicht in plaats van alle tekst
-  assert.equal((ov.html.match(/lix-card has-study/g) || []).length, 1) // les 1 heeft een studiekaart
+  assert.equal((ov.html.match(/class="lix-card/g) || []).length, 18) // lesoverzicht in plaats van alle tekst; eenheid 1 als hoofdstuk
+  assert.equal((ov.html.match(/class="unit-card" href="\/boek\/zad-n1-aqeedah\/eenheid\/1\?lang=ar"/g) || []).length, 1)
+  assert.equal((ov.html.match(/class="ulx"/g) || []).length, 1) // met de zes lessen als korte inhoudsopgave
   assert.ok(!ov.html.includes('class="chapter"'))
   assert.match((await page(bookPage, '/boek/zad-n1-aqeedah?tekst', { slug: 'zad-n1-aqeedah' })).html, /class="chapter"/) // hele tekst blijft bereikbaar
   await conn.execute("UPDATE books SET status = 'draft' WHERE slug = 'zad-n1-aqeedah'")
@@ -391,21 +393,47 @@ test('bibliotheek: ZAD-boeken samen onder één kop', async () => {
 test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow, geen HTML', async () => {
   await conn.execute("UPDATE books SET status = 'published' WHERE slug = 'zad-n1-aqeedah'")
   const path = '/boek/zad-n1-aqeedah/1?lang=nl'
-  // Migratie 10 publiceert de kaart van les 1; hier eerst de hele route vanaf een concept.
-  assert.match((await page(chapterPage, path, { slug: 'zad-n1-aqeedah', chapter: '1' })).html, /class="study"/)
+  const params = { slug: 'zad-n1-aqeedah', chapter: '1' }
+  const upath = '/boek/zad-n1-aqeedah/eenheid/1?lang=nl'
+  const uparams = { slug: 'zad-n1-aqeedah', n: '1' }
+  // Migratie 11: eenheid 1 heeft één hoofdstukkaart; de lessen tonen hun samenvatting met een verwijzing.
+  for (const les of ['1', '3', '6']) {
+    const html = (await page(chapterPage, `/boek/zad-n1-aqeedah/${les}?lang=nl`, { slug: 'zad-n1-aqeedah', chapter: les })).html
+    assert.ok(!html.includes('class="study'), les)
+    assert.match(html, /class="unit-banner" href="\/boek\/zad-n1-aqeedah\/eenheid\/1\?lang=nl"/)
+  }
+  assert.ok(!(await page(chapterPage, '/boek/zad-n1-aqeedah/7?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '7' })).html.includes('unit-banner'))
+  let before = conn.queries
+  const unit = await page(unitPage, upath, uparams)
+  checkQueries(conn.queries - before, 'hoofdstukpagina')
+  assert.equal(unit.status, 200)
+  assert.match(unit.html, /class="study unit-study"/)
+  for (const tab of ['overview', 'schema', 'terms', 'explain', 'keys', 'hadith', 'persons', 'review', 'quiz', 'text']) assert.match(unit.html, new RegExp(`id="st-${tab}"`))
+  assert.match(unit.html, /class="kicker">Eenheid 1 · 6 lessen/)
+  assert.match(unit.html, /class="dg dg-main dg-mindmap"/) // één hoofdschema voor de hele eenheid
+  assert.equal((unit.html.match(/class="card hd"/g) || []).length, 13) // alle hadith uit de zes lessen
+  assert.match(unit.html, /href="\/persoon\/abu-hurayra\?lang=nl"/)
+  assert.match(unit.html, /class="lref" href="\/boek\/zad-n1-aqeedah\/3\?lang=nl">Les 3</) // verwijzing naar de les
+  assert.match(unit.html, /archive\.org\/details\/zad-academy-books_202309\/CourseBook_Semester1_AlAqeedah\/page\/n11\//) // bronlink naar p. 11
+  assert.match(unit.html, /Originele tekst/)
+  const unitAr = await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/1', uparams)
+  assert.match(unitAr.html, /<html lang="ar" dir="rtl">/)
+  assert.match(unitAr.html, /الأحاديث/)
+  assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/2', { slug: 'zad-n1-aqeedah', n: '2' })).status, 404)
+  assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/x', { slug: 'zad-n1-aqeedah', n: 'x' })).status, 404)
+  assert.equal((await page(unitPage, '/boek/talkhis-jam-al-jawami/eenheid/1', { slug: 'talkhis-jam-al-jawami', n: '1' })).status, 404)
+
+  // Concept: openbaar niets, medewerkers zien met ?voorbeeld de hoofdstukkaart.
   await conn.execute("UPDATE content_translations SET published_version_id = NULL, status = 'draft' WHERE entity_type = 'study'")
   await conn.execute("UPDATE content_versions v JOIN content_translations t ON t.id = v.translation_id SET v.status = 'draft' WHERE t.entity_type = 'study'")
-  const params = { slug: 'zad-n1-aqeedah', chapter: '1' }
-  assert.ok(!(await page(chapterPage, path, params)).html.includes('class="study"')) // concept: openbaar de gewone les
-  assert.ok(!(await page(chapterPage, path + '&voorbeeld', params)).html.includes('class="study"')) // voorbeeld alleen voor medewerkers
-  const before = conn.queries
-  const prev = await page(chapterPage, path + '&voorbeeld', params, s.adminCookie)
-  checkQueries(conn.queries - before, 'les met studiekaart')
-  assert.match(prev.html, /class="study"/)
+  assert.equal((await page(unitPage, upath, uparams)).status, 404)
+  assert.equal((await page(unitPage, upath + '&voorbeeld', uparams)).status, 404) // voorbeeld alleen voor medewerkers
+  assert.ok(!(await page(chapterPage, path, params)).html.includes('unit-banner'))
+  before = conn.queries
+  const prev = await page(unitPage, upath + '&voorbeeld', uparams, s.adminCookie)
+  checkQueries(conn.queries - before, 'hoofdstukpagina als voorbeeld')
+  assert.match(prev.html, /class="study unit-study"/)
   assert.match(prev.html, /nog niet gepubliceerd/)
-  for (const tab of ['overview', 'schema', 'terms', 'explain', 'keys', 'review', 'quiz', 'text']) assert.match(prev.html, new RegExp(`id="st-${tab}"`))
-  assert.match(prev.html, /class="dg dg-mindmap"/)
-  assert.match(prev.html, /archive\.org\/details\/zad-academy-books_202309\/CourseBook_Semester1_AlAqeedah\/page\/n11\//) // bronlink naar p. 11
 
   const [ch] = await conn.execute("SELECT c.id FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = 'zad-n1-aqeedah' AND c.slug = '1'")
   const save = (body) => call(conn, 'POST', '/api/admin/versions', versions, { cookie: s.adminCookie, body: { entity_type: 'study', entity_id: ch.id, lang: 'nl', title: 'x', body } })
