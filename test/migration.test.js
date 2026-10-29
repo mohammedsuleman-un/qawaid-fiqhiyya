@@ -31,7 +31,7 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('eigenaar@example.org', 'owner', 'pbkdf2$1$x$y')")
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('redacteur@example.org', 'editor', 'pbkdf2$1$x$y')")
 
-  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1', 'hoofdstukkaart-aqeedah-1-eenheid-1', 'hoofdstukkaarten-aqeedah-1-eenheid-2-4', 'zad-aqeedah-2', 'publiceer-zad-aqeedah-2'])
+  assert.deepEqual([...await migrate(conn)], migrations.slice(1).map((m) => m.name))
 
   const chapters = await conn.execute(`SELECT c.position, t.title, v.body FROM chapters c
     JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
@@ -63,9 +63,10 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
 })
 
 test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
-  // Geloofsleer (2) heeft geen down-stap: terugdraaien laat de inhoud staan.
-  assert.equal(await rollback(conn), 'publiceer-zad-aqeedah-2')
-  assert.equal(await rollback(conn), 'zad-aqeedah-2')
+  // Alles na hoofdstukkaarten 2–4 terugdraaien (boeken hebben geen down-stap: de inhoud blijft staan).
+  const later = migrations.slice(migrations.findIndex((m) => m.name === 'hoofdstukkaarten-aqeedah-1-eenheid-2-4') + 1).map((m) => m.name).reverse()
+  for (const name of later) assert.equal(await rollback(conn), name)
+  assert.equal((await conn.execute("SHOW TABLES LIKE 'zb_backup_20261029c_%'")).length, 0)
   // Hoofdstukkaarten 2–4 terugdraaien laat alleen de kaart van eenheid 1 over.
   assert.equal(await rollback(conn), 'hoofdstukkaarten-aqeedah-1-eenheid-2-4')
   const left = await conn.execute("SELECT t.lang, v.body FROM content_translations t JOIN content_versions v ON v.id = t.published_version_id WHERE t.entity_type = 'study' ORDER BY t.lang")
@@ -154,7 +155,16 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
       AND t.published_version_id IS NOT NULL WHERE c.book_id = b.id) AS pub, (SELECT COUNT(DISTINCT c.unit) FROM chapters c WHERE c.book_id = b.id) AS units
       FROM books b WHERE b.slug = 'zad-n2-aqeedah'`)
   assert.deepEqual([z2.status, Number(z2.pub), Number(z2.units)], ['published', 48, 5])
-  assert.deepEqual([...await migrate(conn)], [])
+  // De rest één voor één, elk binnen de limiet van één verzoek.
+  for (;;) {
+    const before = conn.queries
+    const [name] = await migrate(conn, { max: 1 })
+    if (!name) break
+    checkQueries(conn.queries - before + 6, 'migratie ' + name)
+  }
+  const cards = await conn.execute(`SELECT b.slug, COUNT(*) AS n FROM content_translations t JOIN content_versions v ON v.id = t.published_version_id
+    JOIN chapters c ON c.id = t.entity_id JOIN books b ON b.id = c.book_id WHERE t.entity_type = 'study' AND v.body LIKE '%"scope":"unit"%' GROUP BY b.slug ORDER BY b.slug`)
+  assert.deepEqual(cards.map((r) => [r.slug, Number(r.n)]), [['zad-n1-aqeedah', 8], ['zad-n2-aqeedah', 10]]) // per eenheid AR en NL
   const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.zad_level IS NULL')
   assert.equal(Number(n), 60)
 })
