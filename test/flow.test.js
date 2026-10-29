@@ -328,7 +328,12 @@ test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', asy
   assert.equal(pub.status, 200)
   assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 27) // alleen Geloofsleer (1) gepubliceerd
   assert.match(pub.html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
-  assert.equal((await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })).status, 200)
+  const ov = await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })
+  assert.equal(ov.status, 200)
+  assert.equal((ov.html.match(/class="lix-card/g) || []).length, 24) // lesoverzicht in plaats van alle tekst
+  assert.equal((ov.html.match(/lix-card has-study/g) || []).length, 1) // les 1 heeft een studiekaart
+  assert.ok(!ov.html.includes('class="chapter"'))
+  assert.match((await page(bookPage, '/boek/zad-n1-aqeedah?tekst', { slug: 'zad-n1-aqeedah' })).html, /class="chapter"/) // hele tekst blijft bereikbaar
   await conn.execute("UPDATE books SET status = 'draft' WHERE slug = 'zad-n1-aqeedah'")
   const staff = await page(zadPage, '/zad?lang=nl', {}, s.adminCookie)
   assert.match(staff.html, /href="\/boek\/zad-n1-aqeedah\?lang=nl"/)
