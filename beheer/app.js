@@ -207,7 +207,9 @@ const catName = (c) => c ? (lang === 'ar' ? c.name_ar : c.name_nl) : t.none
 
 async function booksView () {
   const [books, cats] = await Promise.all([api('books'), categories()])
-  render(html`<div class="head"><h1>${t.nav.books}</h1>${has('content.create') ? `<button id="new" class="primary">${t.newBook}</button>` : ''}</div>
+  render(html`<div class="head"><h1>${t.nav.books}</h1>${has('content.create') ? `<button id="new" class="primary">${t.newBook}</button>
+      <label class="btn">${t.zadImport}<input type="file" id="zadfile" accept=".json,application/json" hidden></label>` : ''}</div>
+    <p class="msg" id="zadmsg"></p>
     <form class="card" id="nf" hidden>
       <div class="grid2">
         <label>${t.slug}<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required dir="ltr"></label>
@@ -224,6 +226,17 @@ async function booksView () {
       <td>${b.published_ar}/${b.chapters}</td><td>${b.published_nl}/${b.chapters}</td></tr>`).join('')}</tbody></table>`)
   $('#new')?.addEventListener('click', () => { $('#nf').hidden = !$('#nf').hidden })
   form($('#nf'), async (d) => { const r = await api('books', 'POST', d); location.hash = '#/boek/' + r.id })
+  // ZAD-boek in het importformaat: alle lessen komen binnen als concept.
+  $('#zadfile')?.addEventListener('change', async (e) => {
+    const msg = $('#zadmsg')
+    try {
+      const data = JSON.parse(await e.target.files[0].text())
+      const r = await api('import/zad', 'POST', data)
+      msg.className = 'msg ok'
+      msg.innerHTML = fmt(t.zadImported, r) + ` <a href="#/boek/${r.bookId}">${t.open}</a>`
+    } catch (err) { msg.className = 'msg err'; msg.textContent = err.message }
+    e.target.value = ''
+  })
 }
 
 async function bookView (id) {

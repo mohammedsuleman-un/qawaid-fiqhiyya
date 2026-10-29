@@ -38,6 +38,8 @@ import * as adminHadith from '../functions/api/admin/hadith/index.js'
 import * as adminPersons from '../functions/api/admin/persons/index.js'
 import * as adminPerson from '../functions/api/admin/persons/[id].js'
 import * as adminArticles from '../functions/api/admin/articles/index.js'
+import * as zadPage from '../functions/zad/index.js'
+import * as zadImport from '../functions/api/admin/import/zad.js'
 
 const conn = await freshDb()
 after(() => conn.close())
@@ -60,7 +62,7 @@ test('installatie: migraties en het eerste boek', async () => {
     steps.push(r.data.migrations[0] || r.data.seeded)
     if (r.data.done) break
   }
-  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'talkhis-jam-al-jawami', false])
+  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'talkhis-jam-al-jawami', false])
   const list = await call(conn, 'GET', '/api/books', publicBooks)
   assert.equal(list.data[0].slug, 'talkhis-jam-al-jawami')
   assert.equal(list.data[0].category, 'usul-al-fiqh')
@@ -140,7 +142,7 @@ test('de laatste superbeheerder is beschermd', async () => {
 
 test('redacteur schrijft een Nederlandse vertaling; die is pas zichtbaar na goedkeuring en publicatie', async () => {
   const list = await call(conn, 'GET', '/api/admin/books', books, { cookie: s.editorCookie })
-  s.bookId = list.data[0].id
+  s.bookId = list.data.find((b) => b.slug === 'talkhis-jam-al-jawami').id
   const b = await call(conn, 'GET', `/api/admin/books/${s.bookId}`, book, { cookie: s.editorCookie, params: { id: String(s.bookId) } })
   s.chapter = b.data.chapters[1]
   const draft = await call(conn, 'POST', '/api/admin/versions', versions, {
@@ -309,4 +311,44 @@ test('gedeactiveerd account kan niet meer inloggen', async () => {
   assert.equal((await call(conn, 'GET', '/api/admin/me', me, { cookie: s.editorCookie })).status, 401)
   const l = await call(conn, 'POST', '/api/admin/login', login, { body: { email: 'redacteur@example.org', password: 'nog-een-lang-wachtwoord' }, ip: '9.9.9.9' })
   assert.equal(l.status, 401)
+})
+
+test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', async () => {
+  const pub = await page(zadPage, '/zad', {})
+  assert.equal(pub.status, 200)
+  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 28) // nog niets gepubliceerd
+  const staff = await page(zadPage, '/zad?lang=nl', {}, s.adminCookie)
+  assert.match(staff.html, /href="\/boek\/zad-n1-aqeedah\?lang=nl"/)
+  assert.equal((await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })).status, 404)
+
+  const file = { book: { level: 1, subject: 'aqeedah', title_ar: 'العقيدة (١)' }, lessons: [
+    { slug: '7', unit: 2, unit_title_nl: 'Afwijking', title_ar: 'أسباب الانحراف', title_nl: 'Oorzaken van afwijking', body_nl: '<p>Tekst<script>x()</script></p>',
+      terms: [{ ar: 'الهوى', nl: 'begeerte', uitleg_nl: 'uitleg' }], questions: [{ type: 'mc', vraag_nl: 'Vraag?', opties: ['a', 'b'], antwoord: 0 }, { type: 'onbekend' }] }
+  ] }
+  assert.equal((await call(conn, 'POST', '/api/admin/import/zad', zadImport, { body: file })).status, 401)
+  assert.equal((await call(conn, 'POST', '/api/admin/import/zad', zadImport, { cookie: s.adminCookie, body: { book: { level: 9, subject: 'x' }, lessons: [] } })).status, 400)
+  const r = await call(conn, 'POST', '/api/admin/import/zad', zadImport, { cookie: s.adminCookie, body: file })
+  assert.equal(r.status, 200, JSON.stringify(r.data))
+  assert.deepEqual([r.data.lessons, r.data.versions, r.data.terms, r.data.questions], [1, 1, 1, 1])
+  const [{ n }] = await conn.execute("SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = 'zad-n1-aqeedah'")
+  assert.equal(Number(n), 24) // bestaande les 7 bijgewerkt, geen dubbele
+  const [v] = await conn.execute("SELECT v.body, v.status FROM content_versions v ORDER BY v.id DESC LIMIT 1")
+  assert.equal(v.status, 'draft')
+  assert.ok(!v.body.includes('script'))
+
+  // Na publicatie van boek en les: zichtbaar met eenheden en begrippen.
+  await conn.execute("UPDATE books SET status = 'published' WHERE slug = 'zad-n1-aqeedah'")
+  const [ch] = await conn.execute("SELECT c.id FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = 'zad-n1-aqeedah' AND c.slug = '1'")
+  const content1 = await call(conn, 'GET', '/api/admin/content/chapter/x', content, { cookie: s.adminCookie, params: { type: 'chapter', id: String(ch.id) } })
+  const vid = content1.data.langs.nl.versions[0].id
+  const act = (a) => call(conn, 'POST', `/api/admin/versions/${vid}/${a}`, action, { cookie: s.adminCookie, params: { id: String(vid), action: a }, body: {} })
+  assert.equal((await act('submit')).status, 200)
+  assert.equal((await act('approve')).status, 200)
+  assert.equal((await act('publish')).status, 200)
+  const lesson = await page(chapterPage, '/boek/zad-n1-aqeedah/1?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '1' })
+  assert.equal(lesson.status, 200)
+  assert.match(lesson.html, /class="unit">Eenheid 1/)
+  assert.match(lesson.html, /<h3>Begrippen<\/h3>/)
+  assert.match(lesson.html, /studiesamenvatting/)
+  assert.match((await page(zadPage, '/zad', {})).html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
 })
