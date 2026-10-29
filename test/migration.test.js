@@ -31,7 +31,7 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('eigenaar@example.org', 'owner', 'pbkdf2$1$x$y')")
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('redacteur@example.org', 'editor', 'pbkdf2$1$x$y')")
 
-  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1'])
+  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek'])
 
   const chapters = await conn.execute(`SELECT c.position, t.title, v.body FROM chapters c
     JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
@@ -62,6 +62,7 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
 })
 
 test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
+  assert.equal(await rollback(conn), 'personen-per-boek')
   assert.equal(await rollback(conn), 'zad-aqeedah-1')
   assert.equal(await rollback(conn), 'zad')
   assert.equal(await rollback(conn), 'registers')
@@ -95,6 +96,9 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   checkQueries(conn.queries - before5 + 6, 'volledige ZAD-import')
   assert.equal(r.lessons, 24)
   assert.ok(r.persons > 20)
+  assert.deepEqual([...await migrate(conn)], ['personen-per-boek'])
+  const [{ pb }] = await conn.execute("SELECT COUNT(*) AS pb FROM person_books pb JOIN books b ON b.id = pb.book_id WHERE b.slug = 'zad-n1-aqeedah'")
+  assert.equal(Number(pb), aqeedah1.persons.length)
   assert.deepEqual([...await migrate(conn)], [])
   const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.zad_level IS NULL')
   assert.equal(Number(n), 60)
