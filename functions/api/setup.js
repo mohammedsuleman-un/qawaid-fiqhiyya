@@ -8,6 +8,7 @@ import { json } from '../../lib/http.js'
 import { migrate } from '../../lib/migrate.js'
 import { insert } from '../../lib/content.js'
 import { importChapters } from '../../db/migrations/003_inhoud.js'
+import persons from '../../db/seed/personen.js'
 
 export async function onRequestPost ({ request, env, data: { conn } }) {
   const applied = await migrate(conn, { max: 1 })
@@ -27,5 +28,10 @@ export async function onRequestPost ({ request, env, data: { conn } }) {
   await conn.execute("INSERT INTO book_translations (book_id, lang, title, subtitle) VALUES (?, 'ar', ?, ?)",
     [bookId, book.title, book.subtitle])
   await importChapters(conn, bookId, blocks)
+  // Het eerste personenregister (migratie 5) hoort bij dit boek.
+  if (slug === 'talkhis-jam-al-jawami') {
+    await conn.execute(`INSERT IGNORE INTO person_books (person_id, book_id) SELECT id, ? FROM persons WHERE slug IN (${persons.map(() => '?').join(', ')})`,
+      [bookId, ...persons.map((p) => p.slug)])
+  }
   return json({ ok: true, migrations: [], seeded: slug, done: false })
 }
