@@ -1,5 +1,7 @@
 // De omzetting van de eerste versie (blokken, beheerders) naar het nieuwe model:
 // geen tekstverlies, beheerders worden gebruikers met de juiste rol.
+import { importZad } from '../lib/zad.js'
+import aqeedah1 from '../db/seed/zad/n1-aqeedah.js'
 import { test, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -29,7 +31,7 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('eigenaar@example.org', 'owner', 'pbkdf2$1$x$y')")
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('redacteur@example.org', 'editor', 'pbkdf2$1$x$y')")
 
-  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers', 'zad'])
+  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1'])
 
   const chapters = await conn.execute(`SELECT c.position, t.title, v.body FROM chapters c
     JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
@@ -60,6 +62,7 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
 })
 
 test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
+  assert.equal(await rollback(conn), 'zad-aqeedah-1')
   assert.equal(await rollback(conn), 'zad')
   assert.equal(await rollback(conn), 'registers')
   assert.equal(await rollback(conn), 'omzetting')
@@ -79,7 +82,19 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
     (SELECT COUNT(*) FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = 'zad-n1-aqeedah') AS zc,
     (SELECT COUNT(*) FROM content_versions WHERE reason LIKE 'ZAD-import%') AS zv,
     (SELECT COUNT(*) FROM books WHERE zad_level IS NOT NULL AND status = 'published') AS zp`)
-  assert.deepEqual([zb, zc, zv, zp].map(Number), [28, 24, 12, 0]) // 28 boeken, 24 lessen waarvan 6 uitgewerkt in 2 talen, niets gepubliceerd
+  assert.deepEqual([zb, zc, zv, zp].map(Number), [28, 24, 48, 0]) // 28 boeken, 24 lessen in 2 talen, niets gepubliceerd
+  const before4 = conn.queries
+  assert.deepEqual([...await migrate(conn, { max: 1 })], ['zad-aqeedah-1'])
+  checkQueries(conn.queries - before4 + 6, 'migratie zad-aqeedah-1')
+  // Zoals op productie: het hele boek met personen opnieuw importeren past ook binnen één verzoek.
+  const slugs = aqeedah1.persons.map((p) => p.slug)
+  await conn.execute(`DELETE FROM persons WHERE slug IN (${slugs.map(() => '?').join(',')})`, slugs)
+  await conn.execute(`DELETE FROM articles WHERE slug IN (${slugs.map(() => '?').join(',')})`, slugs.map((x) => 'persoon-' + x))
+  const before5 = conn.queries
+  const r = await importZad(conn, aqeedah1)
+  checkQueries(conn.queries - before5 + 6, 'volledige ZAD-import')
+  assert.equal(r.lessons, 24)
+  assert.ok(r.persons > 20)
   assert.deepEqual([...await migrate(conn)], [])
   const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.zad_level IS NULL')
   assert.equal(Number(n), 60)
