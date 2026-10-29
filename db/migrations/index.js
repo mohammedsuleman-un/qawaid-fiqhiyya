@@ -24,5 +24,6 @@ import hoofdstukkaartenAqeedah4a from './022_hoofdstukkaarten_aqeedah4_eenheid1_
 import hoofdstukkaartenAqeedah4b from './023_hoofdstukkaarten_aqeedah4_eenheid4_6.js'
 import zadTafsir1 from './024_zad_tafsir1.js'
 import publiceerTafsir1 from './025_publiceer_zad_tafsir1.js'
+import hoofdstukkaartenTafsir1 from './026_hoofdstukkaarten_tafsir1.js'
 
-export default [basis, accounts, inhoud, omzetting, registers, zad, zadAqeedah1, personenPerBoek, publiceerAqeedah1, studiekaart1, hoofdstukkaart1, hoofdstukkaarten2tot4, zadAqeedah2, publiceerAqeedah2, hoofdstukkaartenAqeedah2, zadAqeedah3, publiceerAqeedah3, hoofdstukkaartenAqeedah3a, hoofdstukkaartenAqeedah3b, zadAqeedah4, publiceerAqeedah4, hoofdstukkaartenAqeedah4a, hoofdstukkaartenAqeedah4b, zadTafsir1, publiceerTafsir1]
+export default [basis, accounts, inhoud, omzetting, registers, zad, zadAqeedah1, personenPerBoek, publiceerAqeedah1, studiekaart1, hoofdstukkaart1, hoofdstukkaarten2tot4, zadAqeedah2, publiceerAqeedah2, hoofdstukkaartenAqeedah2, zadAqeedah3, publiceerAqeedah3, hoofdstukkaartenAqeedah3a, hoofdstukkaartenAqeedah3b, zadAqeedah4, publiceerAqeedah4, hoofdstukkaartenAqeedah4a, hoofdstukkaartenAqeedah4b, zadTafsir1, publiceerTafsir1, hoofdstukkaartenTafsir1]
