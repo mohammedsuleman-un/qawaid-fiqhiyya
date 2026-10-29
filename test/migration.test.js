@@ -169,8 +169,8 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   const n3 = await conn.execute(`SELECT b.slug, b.status, (SELECT COUNT(*) FROM chapters c WHERE c.book_id = b.id AND c.archived_at IS NULL) AS lessons,
     (SELECT COUNT(*) FROM chapters c JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id
       AND t.published_version_id IS NOT NULL WHERE c.book_id = b.id) AS pub
-    FROM books b WHERE b.slug IN ('zad-n3-tafsir', 'zad-n3-hadith', 'zad-n3-seerah', 'zad-n3-fiqh') ORDER BY b.slug`)
-  assert.deepEqual(n3.map((r) => [r.slug, r.status, Number(r.lessons), Number(r.pub)]), [['zad-n3-fiqh', 'draft', 36, 0], ['zad-n3-hadith', 'draft', 24, 0], ['zad-n3-seerah', 'draft', 24, 0], ['zad-n3-tafsir', 'draft', 24, 0]])
+    FROM books b WHERE b.slug IN ('zad-n3-tafsir', 'zad-n3-hadith', 'zad-n3-seerah', 'zad-n3-fiqh', 'zad-n3-tarbiyah') ORDER BY b.slug`)
+  assert.deepEqual(n3.map((r) => [r.slug, r.status, Number(r.lessons), Number(r.pub)]), [['zad-n3-fiqh', 'draft', 36, 0], ['zad-n3-hadith', 'draft', 24, 0], ['zad-n3-seerah', 'draft', 24, 0], ['zad-n3-tafsir', 'draft', 24, 0], ['zad-n3-tarbiyah', 'draft', 24, 0]])
   const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.zad_level IS NULL')
   assert.equal(Number(n), 60)
 })
