@@ -58,7 +58,7 @@ const page = async (mod, path, params, cookie) => {
 
 test('installatie: migraties en het eerste boek', async () => {
   const steps = []
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 90; i++) {
     const r = await call(conn, 'POST', '/api/setup', setup)
     assert.equal(r.status, 200, JSON.stringify(r.data))
     steps.push(r.data.migrations[0] || r.data.seeded)
@@ -585,6 +585,17 @@ test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow
     assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
     assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n2-fiqh/${les}\\?lang=nl">Les ${les}<`))
     assert.match((await page(unitPage, `/boek/zad-n2-fiqh/eenheid/${n}`, { slug: 'zad-n2-fiqh', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
+  }
+  // Opvoeding (2): twaalf eenheden.
+  for (const [n, hd, lessen, les] of [[1, 10, 2, 1], [2, 9, 2, 3], [3, 8, 3, 5], [4, 5, 1, 8], [5, 5, 2, 9], [6, 11, 1, 11], [7, 8, 2, 12], [8, 8, 2, 14], [9, 7, 3, 16], [10, 2, 3, 19], [11, 1, 2, 22], [12, 12, 1, 24]]) {
+    before = conn.queries
+    const u = await page(unitPage, `/boek/zad-n2-tarbiyah/eenheid/${n}?lang=nl`, { slug: 'zad-n2-tarbiyah', n: String(n) })
+    checkQueries(conn.queries - before, `hoofdstukpagina tarbiyah2-${n}`)
+    assert.equal(u.status, 200, n)
+    assert.match(u.html, new RegExp(`class="kicker">Eenheid ${n} · ${lessen} les(sen)?<`))
+    assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
+    assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n2-tarbiyah/${les}\\?lang=nl">Les ${les}<`))
+    assert.match((await page(unitPage, `/boek/zad-n2-tarbiyah/eenheid/${n}`, { slug: 'zad-n2-tarbiyah', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
   }
   assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/x', { slug: 'zad-n1-aqeedah', n: 'x' })).status, 404)
   assert.equal((await page(unitPage, '/boek/talkhis-jam-al-jawami/eenheid/1', { slug: 'talkhis-jam-al-jawami', n: '1' })).status, 404)
