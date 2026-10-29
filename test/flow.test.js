@@ -324,12 +324,19 @@ test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', asy
   const file = { book: { level: 1, subject: 'aqeedah', title_ar: 'العقيدة (١)' }, lessons: [
     { slug: '7', unit: 2, unit_title_nl: 'Afwijking', title_ar: 'أسباب الانحراف', title_nl: 'Oorzaken van afwijking', body_nl: '<p>Tekst<script>x()</script></p>',
       terms: [{ ar: 'الهوى', nl: 'begeerte', uitleg_nl: 'uitleg' }], questions: [{ type: 'mc', vraag_nl: 'Vraag?', opties: ['a', 'b'], antwoord: 0 }, { type: 'onbekend' }] }
+  ], persons: [
+    { slug: 'ibn-abbas', name_ar: 'عبد الله بن عباس', aliases: ['حبر الأمة', 'ترجمان القرآن'] },
+    { slug: 'al-lalakai', name_ar: 'اللالكائي', name_nl: 'al-Lālakāʾī', kind: 'alim', death_hijri: 418, aliases: ['اللالكائي'], bio_nl: '<p>Bio<script>x</script></p>' }
   ] }
   assert.equal((await call(conn, 'POST', '/api/admin/import/zad', zadImport, { body: file })).status, 401)
   assert.equal((await call(conn, 'POST', '/api/admin/import/zad', zadImport, { cookie: s.adminCookie, body: { book: { level: 9, subject: 'x' }, lessons: [] } })).status, 400)
   const r = await call(conn, 'POST', '/api/admin/import/zad', zadImport, { cookie: s.adminCookie, body: file })
   assert.equal(r.status, 200, JSON.stringify(r.data))
-  assert.deepEqual([r.data.lessons, r.data.versions, r.data.terms, r.data.questions], [1, 1, 1, 1])
+  assert.deepEqual([r.data.lessons, r.data.versions, r.data.terms, r.data.questions, r.data.persons, r.data.personsMerged], [1, 1, 1, 1, 1, 1])
+  const [lal] = await conn.execute("SELECT p.death_hijri, v.body, v.status FROM persons p JOIN content_translations t ON t.entity_type = 'article' AND t.entity_id = p.article_id AND t.lang = 'nl' JOIN content_versions v ON v.translation_id = t.id WHERE p.slug = 'al-lalakai'")
+  assert.deepEqual([Number(lal.death_hijri), lal.status, lal.body.includes('script')], [418, 'draft', false])
+  const [abbas] = await conn.execute("SELECT aliases FROM persons WHERE slug = 'ibn-abbas'")
+  assert.match(abbas.aliases, /ترجمان القرآن/)
   const [{ n }] = await conn.execute("SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = 'zad-n1-aqeedah'")
   assert.equal(Number(n), 24) // bestaande les 7 bijgewerkt, geen dubbele
   const [v] = await conn.execute("SELECT v.body, v.status FROM content_versions v ORDER BY v.id DESC LIMIT 1")
@@ -350,6 +357,7 @@ test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', asy
   assert.match(lesson.html, /class="unit">Eenheid 1/)
   assert.match(lesson.html, /<h3>Begrippen<\/h3>/)
   assert.match(lesson.html, /studiesamenvatting/)
+  assert.ok(!lesson.html.includes('class="legend"'))
   assert.match((await page(zadPage, '/zad', {})).html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
 })
 
