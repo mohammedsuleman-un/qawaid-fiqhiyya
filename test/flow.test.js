@@ -58,7 +58,7 @@ const page = async (mod, path, params, cookie) => {
 
 test('installatie: migraties en het eerste boek', async () => {
   const steps = []
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 60; i++) {
     const r = await call(conn, 'POST', '/api/setup', setup)
     assert.equal(r.status, 200, JSON.stringify(r.data))
     steps.push(r.data.migrations[0] || r.data.seeded)
@@ -232,7 +232,7 @@ test('feedback verwerken: toewijzen, redacteur ziet alleen eigen, concept uit fe
 
 test('dashboard, auditlog en back-up', async () => {
   const d = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.superCookie })
-  assert.equal(d.data.books.published, 9) // talkhis, ZAD Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1) en Fiqh (1)
+  assert.equal(d.data.books.published, 10) // talkhis, ZAD Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1) en Opvoeding (1)
   assert.ok(d.data.users.length >= 3)
   assert.ok(d.data.activity.length > 0)
   const ed = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.editorCookie })
@@ -328,7 +328,7 @@ test('gedeactiveerd account kan niet meer inloggen', async () => {
 test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', async () => {
   const pub = await page(zadPage, '/zad', {})
   assert.equal(pub.status, 200)
-  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 20) // Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1) en Fiqh (1) gepubliceerd
+  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 19) // Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1) en Opvoeding (1) gepubliceerd
   assert.match(pub.html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
   const ov = await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })
   assert.equal(ov.status, 200)
