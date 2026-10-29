@@ -57,13 +57,13 @@ const page = async (mod, path, params, cookie) => {
 
 test('installatie: migraties en het eerste boek', async () => {
   const steps = []
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 40; i++) {
     const r = await call(conn, 'POST', '/api/setup', setup)
     assert.equal(r.status, 200, JSON.stringify(r.data))
     steps.push(r.data.migrations[0] || r.data.seeded)
     if (r.data.done) break
   }
-  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1', 'hoofdstukkaart-aqeedah-1-eenheid-1', 'hoofdstukkaarten-aqeedah-1-eenheid-2-4', 'talkhis-jam-al-jawami', false])
+  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1', 'hoofdstukkaart-aqeedah-1-eenheid-1', 'hoofdstukkaarten-aqeedah-1-eenheid-2-4', 'zad-aqeedah-2', 'publiceer-zad-aqeedah-2', 'talkhis-jam-al-jawami', false])
   const list = await call(conn, 'GET', '/api/books', publicBooks)
   assert.equal(list.data[0].slug, 'talkhis-jam-al-jawami')
   assert.equal(list.data[0].category, 'usul-al-fiqh')
@@ -231,7 +231,7 @@ test('feedback verwerken: toewijzen, redacteur ziet alleen eigen, concept uit fe
 
 test('dashboard, auditlog en back-up', async () => {
   const d = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.superCookie })
-  assert.equal(d.data.books.published, 2) // talkhis en ZAD Geloofsleer (1)
+  assert.equal(d.data.books.published, 3) // talkhis en ZAD Geloofsleer (1) en (2)
   assert.ok(d.data.users.length >= 3)
   assert.ok(d.data.activity.length > 0)
   const ed = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.editorCookie })
@@ -327,7 +327,7 @@ test('gedeactiveerd account kan niet meer inloggen', async () => {
 test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', async () => {
   const pub = await page(zadPage, '/zad', {})
   assert.equal(pub.status, 200)
-  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 27) // alleen Geloofsleer (1) gepubliceerd
+  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 26) // Geloofsleer (1) en (2) gepubliceerd
   assert.match(pub.html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
   const ov = await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })
   assert.equal(ov.status, 200)
