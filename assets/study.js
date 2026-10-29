@@ -141,7 +141,7 @@
 
 // Inhoudsopgave: lessen die in deze browser als geleerd zijn gemarkeerd krijgen een vinkje.
 (function () {
-  [].slice.call(document.querySelectorAll('#toc a[data-id], .lix-card[data-id]')).forEach(function (a) {
+  [].slice.call(document.querySelectorAll('#toc a[data-id], .lix-card[data-id], .unit-card[data-id], .ulx a[data-id]')).forEach(function (a) {
     try { var s = JSON.parse(localStorage.getItem('zb:study:' + a.getAttribute('data-id')) || 'null'); if (s && s.done) a.classList.add('learned') } catch (e) {}
   })
 })();

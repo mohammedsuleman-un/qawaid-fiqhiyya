@@ -249,3 +249,58 @@ details.nd>summary::after,details.chip2>summary::after,.points details>summary::
 .lix-card.has-study{border-top:4px solid #04403a}
 .lix-card.has-study .lix-tag{background:#04403a;color:#fff}
 .lix-card.learned b::after{content:" ✓";color:#2f7d4e}
+
+/* Hoofdstukpagina (eenheid): tabbladgroepen, hoofdschema, hadith en personen */
+.st-grp{flex:none;align-self:center;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--st-gold);padding:0 4px 0 10px}
+.st-grp:first-child{padding-inline-start:8px}
+html[dir="rtl"] .st-grp{text-transform:none;font-size:12px}
+.st-grp:not(:first-child){border-inline-start:1px solid var(--line);margin-inline-start:4px}
+.dg-main{border:2px solid var(--st-gold);background:linear-gradient(180deg,color-mix(in srgb,var(--st-gold) 7%,var(--surface)),var(--surface))}
+.dg-main figcaption h3{font-size:20px}
+.lref{display:inline-flex;align-items:center;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--st-green);color:#fff!important;text-decoration:none;white-space:nowrap;margin-inline-end:4px}
+.study footer{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ulx{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.ulx a{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);text-decoration:none;line-height:1.5}
+.ulx a:hover{border-color:var(--st-gold)}
+.ulx a.learned::after{content:"✓";color:#2f7d4e;font-weight:700;margin-inline-start:auto}
+.ulxs h3{font-size:17px;margin:0 0 8px}
+.srcl{gap:10px}
+.srcl .card p{margin:6px 0 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:15px}
+.hds{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.hd{border-inline-start:5px solid var(--st-gold)}
+.hd p{margin:0 0 6px}
+.hd-n{font-size:13px;font-weight:700;color:var(--st-gold)}
+.hd .htext{font-size:21px;line-height:1.9;color:var(--head-ink)}
+.hd-m{color:var(--ink)}
+.hd-t{font-size:14px;color:var(--muted)}
+.hd-x{font-size:14px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px}
+.prs{list-style:none;padding:0;margin:0 0 18px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.pr h3{font-size:18px;margin:0}
+.pr h3 a{color:var(--head-ink);text-decoration:none}
+.pr h3 a:hover{text-decoration:underline}
+.pr p{margin:0 0 6px;font-size:15px}
+.pr-ar{font-family:var(--display);font-size:18px!important;color:var(--muted)}
+.pr-k{font-size:13px!important;color:var(--st-gold);font-weight:600}
+.pr-g{font-size:17px;margin:4px 0 10px}
+
+/* Boekoverzicht: eenheid met hoofdstukkaart */
+.unit-card{display:grid;gap:4px;padding:18px 20px;border-radius:16px;background:#04403a;color:#fff;text-decoration:none;margin:24px 0 10px;line-height:1.5}
+.unit-card .lix-n{color:#e2c48a}
+.unit-card b{font-family:var(--display);font-size:24px;font-weight:700}
+.unit-card small{color:#cfe3df;font-size:14px}
+.unit-card .lix-tag{background:#b5873f;color:#fff;margin-top:6px;font-size:14px;padding:4px 14px}
+.unit-card:hover,.unit-card:focus-visible{box-shadow:0 0 0 3px #b5873f}
+.unit-card.learned b::after{content:" ✓"}
+.has-unit .ulx{padding-inline-start:12px;border-inline-start:3px solid var(--line)}
+.has-unit .ulx a{border:0;background:none;padding:4px 8px}
+
+/* Lespagina: verwijzing naar de hoofdstukpagina */
+.unit-banner{display:flex;flex-direction:column;gap:2px;padding:12px 16px;margin:0 0 18px;border-radius:12px;background:color-mix(in srgb,#04403a 9%,var(--surface));border:1px solid #04403a;color:var(--ink);text-decoration:none;font-family:var(--body);text-align:start}
+.unit-banner b{color:#04403a;font-size:16px}
+.unit-banner span{font-size:14px;color:var(--muted)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .unit-banner b{color:#9fd4c9}}
+@media print{.p-hadith,.p-persons{display:block}.lref{background:none;color:inherit!important;padding:0}}
+@media (min-width:761px){.unit-study .st-tabs{flex-wrap:wrap;border-radius:18px;overflow:visible}}
+.refg{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center}
+.ulx{font-family:var(--body);font-size:16px;text-align:start}
+.has-unit .ulx a{font-size:15px}
