@@ -352,3 +352,12 @@ test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', asy
   assert.match(lesson.html, /studiesamenvatting/)
   assert.match((await page(zadPage, '/zad', {})).html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
 })
+
+test('bibliotheek: ZAD-boeken samen onder één kop', async () => {
+  const lib = await page(library, '/bibliotheek', {}, s.adminCookie)
+  assert.match(lib.html, /<h2>سلسلة زاد<\/h2>/)
+  assert.ok(!lib.html.includes('/boek/zad-n'))
+  const admin = await call(conn, 'GET', '/api/admin/books', books, { cookie: s.adminCookie })
+  const firstZad = admin.data.findIndex((b) => b.zad_level)
+  assert.ok(firstZad > 0 && admin.data.slice(firstZad).every((b) => b.zad_level))
+})

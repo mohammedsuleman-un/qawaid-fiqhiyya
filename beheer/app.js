@@ -221,7 +221,7 @@ async function booksView () {
       </div>
       <button class="primary">${t.create}</button><p class="msg"></p></form>
     <table class="tbl"><thead><tr><th>${t.title}</th><th>${t.category}</th><th>${t.bookStatus}</th><th>${t.chapters}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th></tr></thead>
-    <tbody>${books.map((b) => `<tr><td><a href="#/boek/${b.id}"><b dir="rtl">${esc(b.title_ar || '')}</b> ${b.title_nl ? `<span dir="ltr">${esc(b.title_nl)}</span>` : ''}</a><br><small dir="ltr">${esc(b.slug)}</small></td>
+    <tbody>${books.map((b, i) => (b.zad_level && !books[i - 1]?.zad_level ? `<tr class="group"><th colspan="6">سلسلة زاد · ${t.zadSeries}</th></tr>` : '') + `<tr><td><a href="#/boek/${b.id}"><b dir="rtl">${esc(b.title_ar || '')}</b> ${b.title_nl ? `<span dir="ltr">${esc(b.title_nl)}</span>` : ''}</a><br><small dir="ltr">${esc(b.slug)}</small></td>
       <td>${esc(lang === 'ar' ? b.category_ar || '' : b.category_nl || '')}</td><td>${badge(b.status)}</td><td>${b.chapters}</td>
       <td>${b.published_ar}/${b.chapters}</td><td>${b.published_nl}/${b.chapters}</td></tr>`).join('')}</tbody></table>`)
   $('#new')?.addEventListener('click', () => { $('#nf').hidden = !$('#nf').hidden })
