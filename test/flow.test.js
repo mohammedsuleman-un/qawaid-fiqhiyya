@@ -403,6 +403,15 @@ test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow
     assert.ok(!html.includes('class="study'), les)
     assert.match(html, /class="unit-banner" href="\/boek\/zad-n1-aqeedah\/eenheid\/1\?lang=nl"/)
   }
+  // Navigatieknoppen boven en onder elke les: vorige/volgende les, boekoverzicht, eenheid en ZAD.
+  const les3 = (await page(chapterPage, '/boek/zad-n1-aqeedah/3?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '3' })).html
+  assert.equal((les3.match(/<nav class="lnav/g) || []).length, 2)
+  assert.match(les3, /class="ln-prev" rel="prev" href="\/boek\/zad-n1-aqeedah\/2\?lang=nl"><small>← Vorige les/)
+  assert.match(les3, /class="ln-next" rel="next" href="\/boek\/zad-n1-aqeedah\/4\?lang=nl"><small>Volgende les →/)
+  for (const href of ['/boek/zad-n1-aqeedah?lang=nl', '/boek/zad-n1-aqeedah/eenheid/1?lang=nl', '/zad?lang=nl']) assert.ok(les3.includes(`href="${href}"`), href)
+  const les1Ar = (await page(chapterPage, '/boek/zad-n1-aqeedah/1', { slug: 'zad-n1-aqeedah', chapter: '1' })).html
+  assert.match(les1Ar, /class="ln-prev ln-none"/)
+  assert.match(les1Ar, /<small>الدرس التالي ←<\/small>/)
   assert.match((await page(chapterPage, '/boek/zad-n1-aqeedah/7?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '7' })).html, /class="unit-banner" href="\/boek\/zad-n1-aqeedah\/eenheid\/2\?lang=nl"/)
   assert.match((await page(chapterPage, '/boek/zad-n1-aqeedah/24?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '24' })).html, /class="unit-banner" href="\/boek\/zad-n1-aqeedah\/eenheid\/4\?lang=nl"/)
   let before = conn.queries
@@ -421,6 +430,8 @@ test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow
   const unitAr = await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/1', uparams)
   assert.match(unitAr.html, /<html lang="ar" dir="rtl">/)
   assert.match(unitAr.html, /الأحاديث/)
+  assert.match(unitAr.html, /class="ln-next" rel="next" href="\/boek\/zad-n1-aqeedah\/eenheid\/2\?lang=ar"><small>الوحدة التالية ←/)
+  assert.ok(unitAr.html.includes('href="/zad?lang=ar"'))
   // Migratie 12: eenheid 2, 3 en 4 met hun eigen kaart, hadith en lesverwijzingen.
   for (const [n, lessen, hd, les] of [[2, 5, 15, 9], [3, 5, 10, 14], [4, 8, 3, 22]]) {
     before = conn.queries
