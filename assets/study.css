@@ -234,3 +234,18 @@ details.nd>summary,details.chip2>summary,.points details>summary{position:relati
 details.nd>summary::after,details.chip2>summary::after,.points details>summary::after{position:absolute;inset-inline-end:0;top:2px;margin:0}
 .points summary{font-weight:500}
 .saw{font-family:var(--display);font-weight:400}
+
+/* Lesoverzicht van een ZAD-boek */
+.lix{font-family:var(--body);text-align:start}
+.lix-intro{color:var(--muted);font-size:15px;display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:space-between}
+.lix-unit h2{font-family:var(--body)!important;font-size:19px!important;background:none!important;border:0!important;padding:0!important;margin:26px 0 12px!important;color:var(--ink)!important;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lix-unit h2 span{font-size:13px;font-weight:700;color:#fff;background:#04403a;border-radius:99px;padding:2px 10px}
+.lix-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.lix-card{display:flex;flex-direction:column;gap:6px;height:100%;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);text-decoration:none;line-height:1.5}
+.lix-card:hover,.lix-card:focus-visible{border-color:#b5873f}
+.lix-card b{font-size:16px}
+.lix-n{font-size:12px;font-weight:700;color:#b5873f}
+.lix-tag{margin-top:auto;align-self:flex-start;font-size:12px;border-radius:99px;padding:2px 10px;background:var(--surface2);color:var(--muted)}
+.lix-card.has-study{border-top:4px solid #04403a}
+.lix-card.has-study .lix-tag{background:#04403a;color:#fff}
+.lix-card.learned b::after{content:" ✓";color:#2f7d4e}
