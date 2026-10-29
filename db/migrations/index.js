@@ -30,5 +30,7 @@ import publiceerHadith1 from './028_publiceer_zad_hadith1.js'
 import hoofdstukkaartenHadith1 from './029_hoofdstukkaarten_hadith1.js'
 import zadSira1 from './030_zad_sira1.js'
 import publiceerSira1 from './031_publiceer_zad_sira1.js'
+import hoofdstukkaartenSeerah1a from './032_hoofdstukkaarten_seerah1a.js'
+import hoofdstukkaartenSeerah1b from './033_hoofdstukkaarten_seerah1b.js'
 
-export default [basis, accounts, inhoud, omzetting, registers, zad, zadAqeedah1, personenPerBoek, publiceerAqeedah1, studiekaart1, hoofdstukkaart1, hoofdstukkaarten2tot4, zadAqeedah2, publiceerAqeedah2, hoofdstukkaartenAqeedah2, zadAqeedah3, publiceerAqeedah3, hoofdstukkaartenAqeedah3a, hoofdstukkaartenAqeedah3b, zadAqeedah4, publiceerAqeedah4, hoofdstukkaartenAqeedah4a, hoofdstukkaartenAqeedah4b, zadTafsir1, publiceerTafsir1, hoofdstukkaartenTafsir1, zadHadith1, publiceerHadith1, hoofdstukkaartenHadith1, zadSira1, publiceerSira1]
+export default [basis, accounts, inhoud, omzetting, registers, zad, zadAqeedah1, personenPerBoek, publiceerAqeedah1, studiekaart1, hoofdstukkaart1, hoofdstukkaarten2tot4, zadAqeedah2, publiceerAqeedah2, hoofdstukkaartenAqeedah2, zadAqeedah3, publiceerAqeedah3, hoofdstukkaartenAqeedah3a, hoofdstukkaartenAqeedah3b, zadAqeedah4, publiceerAqeedah4, hoofdstukkaartenAqeedah4a, hoofdstukkaartenAqeedah4b, zadTafsir1, publiceerTafsir1, hoofdstukkaartenTafsir1, zadHadith1, publiceerHadith1, hoofdstukkaartenHadith1, zadSira1, publiceerSira1, hoofdstukkaartenSeerah1a, hoofdstukkaartenSeerah1b]
