@@ -58,7 +58,7 @@ const page = async (mod, path, params, cookie) => {
 
 test('installatie: migraties en het eerste boek', async () => {
   const steps = []
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 80; i++) {
     const r = await call(conn, 'POST', '/api/setup', setup)
     assert.equal(r.status, 200, JSON.stringify(r.data))
     steps.push(r.data.migrations[0] || r.data.seeded)
@@ -232,7 +232,7 @@ test('feedback verwerken: toewijzen, redacteur ziet alleen eigen, concept uit fe
 
 test('dashboard, auditlog en back-up', async () => {
   const d = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.superCookie })
-  assert.equal(d.data.books.published, 11) // talkhis, ZAD Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1) en Arabisch (1)
+  assert.equal(d.data.books.published, 17) // talkhis, ZAD Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1), Arabisch (1), Koranexegese (2), Hadith (2), Profetische biografie (2), Fiqh (2), Opvoeding (2) en Arabisch (2)
   assert.ok(d.data.users.length >= 3)
   assert.ok(d.data.activity.length > 0)
   const ed = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.editorCookie })
@@ -328,7 +328,7 @@ test('gedeactiveerd account kan niet meer inloggen', async () => {
 test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', async () => {
   const pub = await page(zadPage, '/zad', {})
   assert.equal(pub.status, 200)
-  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 18) // Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1) en Arabisch (1) gepubliceerd
+  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 12) // Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1), Arabisch (1), Koranexegese (2), Hadith (2), Profetische biografie (2), Fiqh (2), Opvoeding (2) en Arabisch (2) gepubliceerd
   assert.match(pub.html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
   const ov = await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })
   assert.equal(ov.status, 200)
@@ -530,6 +530,50 @@ test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow
     assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
     assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n1-arabic/${les}\\?lang=nl">Les ${les}<`))
     assert.match((await page(unitPage, `/boek/zad-n1-arabic/eenheid/${n}`, { slug: 'zad-n1-arabic', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
+  }
+  // Koranexegese (2): één eenheid per soera.
+  for (const [n, hd, lessen, les] of [[1, 4, 6, 6], [2, 2, 7, 13], [3, 4, 4, 17], [4, 3, 2, 19], [5, 1, 2, 21], [6, 3, 3, 24]]) {
+    before = conn.queries
+    const u = await page(unitPage, `/boek/zad-n2-tafsir/eenheid/${n}?lang=nl`, { slug: 'zad-n2-tafsir', n: String(n) })
+    checkQueries(conn.queries - before, `hoofdstukpagina tafsir2-${n}`)
+    assert.equal(u.status, 200, n)
+    assert.match(u.html, new RegExp(`class="kicker">Eenheid ${n} · ${lessen} lessen<`))
+    assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
+    assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n2-tafsir/${les}\\?lang=nl">Les ${les}<`))
+    assert.match((await page(unitPage, `/boek/zad-n2-tafsir/eenheid/${n}`, { slug: 'zad-n2-tafsir', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
+  }
+  // Hadith (2): vier eenheden van zes lessen.
+  for (const [n, hd, les] of [[1, 18, 6], [2, 13, 12], [3, 9, 18], [4, 8, 24]]) {
+    before = conn.queries
+    const u = await page(unitPage, `/boek/zad-n2-hadith/eenheid/${n}?lang=nl`, { slug: 'zad-n2-hadith', n: String(n) })
+    checkQueries(conn.queries - before, `hoofdstukpagina hadith2-${n}`)
+    assert.equal(u.status, 200, n)
+    assert.match(u.html, new RegExp(`class="kicker">Eenheid ${n} · 6 lessen<`))
+    assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
+    assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n2-hadith/${les}\\?lang=nl">Les ${les}<`))
+    assert.match((await page(unitPage, `/boek/zad-n2-hadith/eenheid/${n}`, { slug: 'zad-n2-hadith', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
+  }
+  // Profetische biografie (2): vier eenheden.
+  for (const [n, hd, lessen, les] of [[1, 27, 5, 5], [2, 32, 5, 10], [3, 40, 6, 16], [4, 40, 8, 24]]) {
+    before = conn.queries
+    const u = await page(unitPage, `/boek/zad-n2-seerah/eenheid/${n}?lang=nl`, { slug: 'zad-n2-seerah', n: String(n) })
+    checkQueries(conn.queries - before, `hoofdstukpagina seerah2-${n}`)
+    assert.equal(u.status, 200, n)
+    assert.match(u.html, new RegExp(`class="kicker">Eenheid ${n} · ${lessen} lessen<`))
+    assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
+    assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n2-seerah/${les}\\?lang=nl">Les ${les}<`))
+    assert.match((await page(unitPage, `/boek/zad-n2-seerah/eenheid/${n}`, { slug: 'zad-n2-seerah', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
+  }
+  // Fiqh (2): acht eenheden.
+  for (const [n, hd, lessen, les] of [[1, 33, 5, 5], [2, 26, 4, 9], [3, 34, 4, 13], [4, 23, 4, 17], [5, 32, 5, 22], [6, 14, 6, 28], [7, 10, 4, 32], [8, 9, 4, 36]]) {
+    before = conn.queries
+    const u = await page(unitPage, `/boek/zad-n2-fiqh/eenheid/${n}?lang=nl`, { slug: 'zad-n2-fiqh', n: String(n) })
+    checkQueries(conn.queries - before, `hoofdstukpagina fiqh2-${n}`)
+    assert.equal(u.status, 200, n)
+    assert.match(u.html, new RegExp(`class="kicker">Eenheid ${n} · ${lessen} lessen<`))
+    assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
+    assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n2-fiqh/${les}\\?lang=nl">Les ${les}<`))
+    assert.match((await page(unitPage, `/boek/zad-n2-fiqh/eenheid/${n}`, { slug: 'zad-n2-fiqh', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
   }
   assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/x', { slug: 'zad-n1-aqeedah', n: 'x' })).status, 404)
   assert.equal((await page(unitPage, '/boek/talkhis-jam-al-jawami/eenheid/1', { slug: 'talkhis-jam-al-jawami', n: '1' })).status, 404)
