@@ -597,6 +597,17 @@ test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow
     assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n2-tarbiyah/${les}\\?lang=nl">Les ${les}<`))
     assert.match((await page(unitPage, `/boek/zad-n2-tarbiyah/eenheid/${n}`, { slug: 'zad-n2-tarbiyah', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
   }
+  // Arabisch (2): drie eenheden.
+  for (const [n, hd, lessen, les] of [[1, 3, 10, 1], [2, 0, 9, 11], [3, 0, 5, 20]]) {
+    before = conn.queries
+    const u = await page(unitPage, `/boek/zad-n2-arabic/eenheid/${n}?lang=nl`, { slug: 'zad-n2-arabic', n: String(n) })
+    checkQueries(conn.queries - before, `hoofdstukpagina arabic2-${n}`)
+    assert.equal(u.status, 200, n)
+    assert.match(u.html, new RegExp(`class="kicker">Eenheid ${n} · ${lessen} lessen<`))
+    assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
+    assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n2-arabic/${les}\\?lang=nl">Les ${les}<`))
+    assert.match((await page(unitPage, `/boek/zad-n2-arabic/eenheid/${n}`, { slug: 'zad-n2-arabic', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
+  }
   assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/x', { slug: 'zad-n1-aqeedah', n: 'x' })).status, 404)
   assert.equal((await page(unitPage, '/boek/talkhis-jam-al-jawami/eenheid/1', { slug: 'talkhis-jam-al-jawami', n: '1' })).status, 404)
 
