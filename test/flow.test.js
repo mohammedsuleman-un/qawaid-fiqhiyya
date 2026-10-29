@@ -63,7 +63,7 @@ test('installatie: migraties en het eerste boek', async () => {
     steps.push(r.data.migrations[0] || r.data.seeded)
     if (r.data.done) break
   }
-  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1', 'hoofdstukkaart-aqeedah-1-eenheid-1', 'talkhis-jam-al-jawami', false])
+  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1', 'hoofdstukkaart-aqeedah-1-eenheid-1', 'hoofdstukkaarten-aqeedah-1-eenheid-2-4', 'talkhis-jam-al-jawami', false])
   const list = await call(conn, 'GET', '/api/books', publicBooks)
   assert.equal(list.data[0].slug, 'talkhis-jam-al-jawami')
   assert.equal(list.data[0].category, 'usul-al-fiqh')
@@ -331,9 +331,9 @@ test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', asy
   assert.match(pub.html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
   const ov = await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })
   assert.equal(ov.status, 200)
-  assert.equal((ov.html.match(/class="lix-card/g) || []).length, 18) // lesoverzicht in plaats van alle tekst; eenheid 1 als hoofdstuk
-  assert.equal((ov.html.match(/class="unit-card" href="\/boek\/zad-n1-aqeedah\/eenheid\/1\?lang=ar"/g) || []).length, 1)
-  assert.equal((ov.html.match(/class="ulx"/g) || []).length, 1) // met de zes lessen als korte inhoudsopgave
+  assert.equal((ov.html.match(/class="lix-card/g) || []).length, 0) // overzicht per hoofdstuk in plaats van alle tekst; alle vier eenheden hebben een kaart
+  for (const n of [1, 2, 3, 4]) assert.equal((ov.html.match(new RegExp(`class="unit-card" href="/boek/zad-n1-aqeedah/eenheid/${n}\\?lang=ar"`, 'g')) || []).length, 1, n)
+  assert.equal((ov.html.match(/class="ulx"/g) || []).length, 4) // met de lessen als korte inhoudsopgave
   assert.ok(!ov.html.includes('class="chapter"'))
   assert.match((await page(bookPage, '/boek/zad-n1-aqeedah?tekst', { slug: 'zad-n1-aqeedah' })).html, /class="chapter"/) // hele tekst blijft bereikbaar
   await conn.execute("UPDATE books SET status = 'draft' WHERE slug = 'zad-n1-aqeedah'")
@@ -402,7 +402,8 @@ test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow
     assert.ok(!html.includes('class="study'), les)
     assert.match(html, /class="unit-banner" href="\/boek\/zad-n1-aqeedah\/eenheid\/1\?lang=nl"/)
   }
-  assert.ok(!(await page(chapterPage, '/boek/zad-n1-aqeedah/7?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '7' })).html.includes('unit-banner'))
+  assert.match((await page(chapterPage, '/boek/zad-n1-aqeedah/7?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '7' })).html, /class="unit-banner" href="\/boek\/zad-n1-aqeedah\/eenheid\/2\?lang=nl"/)
+  assert.match((await page(chapterPage, '/boek/zad-n1-aqeedah/24?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '24' })).html, /class="unit-banner" href="\/boek\/zad-n1-aqeedah\/eenheid\/4\?lang=nl"/)
   let before = conn.queries
   const unit = await page(unitPage, upath, uparams)
   checkQueries(conn.queries - before, 'hoofdstukpagina')
@@ -419,7 +420,18 @@ test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow
   const unitAr = await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/1', uparams)
   assert.match(unitAr.html, /<html lang="ar" dir="rtl">/)
   assert.match(unitAr.html, /الأحاديث/)
-  assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/2', { slug: 'zad-n1-aqeedah', n: '2' })).status, 404)
+  // Migratie 12: eenheid 2, 3 en 4 met hun eigen kaart, hadith en lesverwijzingen.
+  for (const [n, lessen, hd, les] of [[2, 5, 15, 9], [3, 5, 10, 14], [4, 8, 3, 22]]) {
+    before = conn.queries
+    const u = await page(unitPage, `/boek/zad-n1-aqeedah/eenheid/${n}?lang=nl`, { slug: 'zad-n1-aqeedah', n: String(n) })
+    checkQueries(conn.queries - before, `hoofdstukpagina ${n}`)
+    assert.equal(u.status, 200, n)
+    assert.match(u.html, new RegExp(`class="kicker">Eenheid ${n} · ${lessen} lessen`))
+    assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
+    assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n1-aqeedah/${les}\\?lang=nl">Les ${les}<`))
+    assert.match((await page(unitPage, `/boek/zad-n1-aqeedah/eenheid/${n}`, { slug: 'zad-n1-aqeedah', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
+  }
+  assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/5', { slug: 'zad-n1-aqeedah', n: '5' })).status, 404)
   assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/x', { slug: 'zad-n1-aqeedah', n: 'x' })).status, 404)
   assert.equal((await page(unitPage, '/boek/talkhis-jam-al-jawami/eenheid/1', { slug: 'talkhis-jam-al-jawami', n: '1' })).status, 404)
 
