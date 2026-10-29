@@ -31,11 +31,11 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('eigenaar@example.org', 'owner', 'pbkdf2$1$x$y')")
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('redacteur@example.org', 'editor', 'pbkdf2$1$x$y')")
 
-  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek'])
+  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1'])
 
   const chapters = await conn.execute(`SELECT c.position, t.title, v.body FROM chapters c
     JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
-    JOIN content_versions v ON v.id = t.published_version_id ORDER BY c.position`)
+    JOIN content_versions v ON v.id = t.published_version_id WHERE c.book_id = 1 ORDER BY c.position`)
   assert.equal(chapters.length, blocks.filter((b) => b.kind === 'heading').length)
   // Paginanummers die voor een kopje stonden, staan nu na de titel; die vergelijken we apart.
   const before = text(blocks.filter((b) => b.kind !== 'page').map((b) => b.html).join(''))
@@ -52,16 +52,18 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
   const [{ n }] = await conn.execute("SELECT COUNT(*) AS n FROM search_index WHERE plain LIKE '%⟦12⟧%'")
   assert.equal(Number(n), 1)
   // Het hadithregister is gevuld uit de opmaak, met paginanummers, en de personen staan klaar als concept.
-  const hadith = await conn.execute('SELECT page, text FROM hadith_index')
+  const hadith = await conn.execute("SELECT h.page, h.text FROM hadith_index h JOIN chapters c ON h.entity_type = 'chapter' AND c.id = h.entity_id WHERE c.book_id = 1")
   assert.equal(hadith.length, blocks.reduce((sum, b) => sum + (b.html.match(/<span class="hadith">/g) || []).length, 0))
   assert.ok(hadith.length > 0 && hadith.every((h) => h.page > 0 && h.text))
   const [{ p, pub }] = await conn.execute(`SELECT COUNT(*) AS p, (SELECT COUNT(*) FROM content_translations t JOIN articles a ON a.id = t.entity_id
-    WHERE t.entity_type = 'article' AND a.kind = 'person' AND t.published_version_id IS NOT NULL) AS pub FROM persons`)
+    JOIN content_versions v ON v.id = t.published_version_id
+    WHERE t.entity_type = 'article' AND a.kind = 'person' AND v.reason NOT LIKE 'Uit ZAD-import%') AS pub FROM persons`)
   assert.ok(Number(p) > 50)
   assert.equal(Number(pub), 0)
 })
 
 test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
+  assert.equal(await rollback(conn), 'publiceer-zad-aqeedah-1')
   assert.equal(await rollback(conn), 'personen-per-boek')
   assert.equal(await rollback(conn), 'zad-aqeedah-1')
   assert.equal(await rollback(conn), 'zad')
@@ -96,7 +98,15 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   checkQueries(conn.queries - before5 + 6, 'volledige ZAD-import')
   assert.equal(r.lessons, 24)
   assert.ok(r.persons > 20)
-  assert.deepEqual([...await migrate(conn)], ['personen-per-boek'])
+  assert.deepEqual([...await migrate(conn, { max: 1 })], ['personen-per-boek'])
+  const before6 = conn.queries
+  assert.deepEqual([...await migrate(conn, { max: 1 })], ['publiceer-zad-aqeedah-1'])
+  checkQueries(conn.queries - before6 + 6, 'migratie publiceer-zad-aqeedah-1')
+  const [z] = await conn.execute(`SELECT b.status, (SELECT COUNT(*) FROM chapters c JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id
+      AND t.published_version_id IS NOT NULL WHERE c.book_id = b.id) AS pub,
+      (SELECT COUNT(*) FROM content_versions v JOIN content_translations t ON t.id = v.translation_id JOIN chapters c ON t.entity_type = 'chapter' AND c.id = t.entity_id
+      WHERE c.book_id = b.id AND v.status = 'published' AND v.body LIKE '%wacht op controle%') AS marked FROM books b WHERE b.slug = 'zad-n1-aqeedah'`)
+  assert.deepEqual([z.status, Number(z.pub), Number(z.marked)], ['published', 48, 0])
   const [{ pb }] = await conn.execute("SELECT COUNT(*) AS pb FROM person_books pb JOIN books b ON b.id = pb.book_id WHERE b.slug = 'zad-n1-aqeedah'")
   assert.equal(Number(pb), aqeedah1.persons.length)
   assert.deepEqual([...await migrate(conn)], [])

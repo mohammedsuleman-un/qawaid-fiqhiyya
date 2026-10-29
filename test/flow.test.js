@@ -56,13 +56,13 @@ const page = async (mod, path, params, cookie) => {
 
 test('installatie: migraties en het eerste boek', async () => {
   const steps = []
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 14; i++) {
     const r = await call(conn, 'POST', '/api/setup', setup)
     assert.equal(r.status, 200, JSON.stringify(r.data))
     steps.push(r.data.migrations[0] || r.data.seeded)
     if (r.data.done) break
   }
-  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'talkhis-jam-al-jawami', false])
+  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'talkhis-jam-al-jawami', false])
   const list = await call(conn, 'GET', '/api/books', publicBooks)
   assert.equal(list.data[0].slug, 'talkhis-jam-al-jawami')
   assert.equal(list.data[0].category, 'usul-al-fiqh')
@@ -187,7 +187,7 @@ test('zoeken met en zonder tashkeel, met paginanummer', async () => {
   assert.equal(a.data.length, b.data.length)
   assert.ok(a.data.some((r) => r.page > 0))
   const nl = await call(conn, 'GET', '/api/search?lang=nl&q=algemene', search)
-  assert.equal(nl.data.length, 1)
+  assert.equal(nl.data.filter((r) => r.url.includes('talkhis')).length, 1)
   assert.match(nl.data[0].url, /lang=nl/)
   const lib = await page(library, '/bibliotheek?q=algemene&lang=nl', {})
   assert.match(lib.html, /<mark>algemene<\/mark>/)
@@ -230,7 +230,7 @@ test('feedback verwerken: toewijzen, redacteur ziet alleen eigen, concept uit fe
 
 test('dashboard, auditlog en back-up', async () => {
   const d = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.superCookie })
-  assert.equal(d.data.books.published, 1)
+  assert.equal(d.data.books.published, 2) // talkhis en ZAD Geloofsleer (1)
   assert.ok(d.data.users.length >= 3)
   assert.ok(d.data.activity.length > 0)
   const ed = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.editorCookie })
@@ -270,20 +270,22 @@ test('hadith per hoofdstuk en personenregister; biografie pas zichtbaar na publi
   // Bron en beoordeling: alleen medewerkers, en daarna openbaar zichtbaar.
   const list = await call(conn, 'GET', '/api/admin/hadith', adminHadith, { cookie: s.editorCookie })
   assert.equal(list.status, 200)
-  const h = list.data[0]
+  const h = list.data.find((x) => x.book_slug === 'talkhis-jam-al-jawami')
   assert.equal((await call(conn, 'PATCH', '/api/admin/hadith', adminHadith, { body: { hkey: h.hkey, source: 'x' } })).status, 401)
   assert.equal((await call(conn, 'PATCH', '/api/admin/hadith', adminHadith, { cookie: s.editorCookie, body: { hkey: h.hkey, source: 'رواه البخاري', grade: 'صحيح' } })).status, 200)
   assert.match((await page(hadithPage, '/hadith?boek=talkhis-jam-al-jawami', {})).html, /التخريج: رواه البخاري/)
 
   const idx2 = await page(personsPage, '/personen', {})
   assert.match(idx2.html, /personen\?boek=talkhis-jam-al-jawami/)
-  assert.ok(!idx2.html.includes('boek=zad-n1-aqeedah')) // conceptboek niet openbaar
+  assert.match(idx2.html, /personen\?boek=zad-n1-aqeedah/) // gepubliceerd ZAD-boek
+  await conn.execute("UPDATE books SET status = 'draft' WHERE slug = 'zad-n1-aqeedah'")
+  assert.ok(!(await page(personsPage, '/personen', {})).html.includes('boek=zad-n1-aqeedah')) // conceptboek niet openbaar
   assert.equal((await page(personsPage, '/personen?boek=zad-n1-aqeedah', {})).status, 404)
+  await conn.execute("UPDATE books SET status = 'published' WHERE slug = 'zad-n1-aqeedah'")
   const pp = await page(personsPage, '/personen?boek=talkhis-jam-al-jawami', {})
   assert.equal(pp.status, 200)
   assert.ok(!pp.html.includes('ثوبان')) // alleen uit ZAD, niet in dit boek
   assert.match(pp.html, /عبد الله بن عباس/)
-  assert.ok(!pp.html.includes('class="pbio"')) // nog niets gepubliceerd
   const persons = await call(conn, 'GET', '/api/admin/persons', adminPersons, { cookie: s.editorCookie })
   const p = persons.data.find((x) => x.slug === 'ibn-abbas') || persons.data[0]
   assert.equal(p.status_nl, 'draft')
@@ -324,7 +326,10 @@ test('gedeactiveerd account kan niet meer inloggen', async () => {
 test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', async () => {
   const pub = await page(zadPage, '/zad', {})
   assert.equal(pub.status, 200)
-  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 28) // nog niets gepubliceerd
+  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 27) // alleen Geloofsleer (1) gepubliceerd
+  assert.match(pub.html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
+  assert.equal((await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })).status, 200)
+  await conn.execute("UPDATE books SET status = 'draft' WHERE slug = 'zad-n1-aqeedah'")
   const staff = await page(zadPage, '/zad?lang=nl', {}, s.adminCookie)
   assert.match(staff.html, /href="\/boek\/zad-n1-aqeedah\?lang=nl"/)
   assert.equal((await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })).status, 404)
@@ -353,16 +358,16 @@ test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', asy
 
   // Na publicatie van boek en les: zichtbaar met eenheden en begrippen.
   await conn.execute("UPDATE books SET status = 'published' WHERE slug = 'zad-n1-aqeedah'")
-  const [ch] = await conn.execute("SELECT c.id FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = 'zad-n1-aqeedah' AND c.slug = '1'")
+  const [ch] = await conn.execute("SELECT c.id FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = 'zad-n1-aqeedah' AND c.slug = '7'")
   const content1 = await call(conn, 'GET', '/api/admin/content/chapter/x', content, { cookie: s.adminCookie, params: { type: 'chapter', id: String(ch.id) } })
-  const vid = content1.data.langs.nl.versions[0].id
+  const vid = content1.data.langs.nl.versions.find((x) => x.status === 'draft').id // de zojuist geïmporteerde versie
   const act = (a) => call(conn, 'POST', `/api/admin/versions/${vid}/${a}`, action, { cookie: s.adminCookie, params: { id: String(vid), action: a }, body: {} })
   assert.equal((await act('submit')).status, 200)
   assert.equal((await act('approve')).status, 200)
   assert.equal((await act('publish')).status, 200)
-  const lesson = await page(chapterPage, '/boek/zad-n1-aqeedah/1?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '1' })
+  const lesson = await page(chapterPage, '/boek/zad-n1-aqeedah/7?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '7' })
   assert.equal(lesson.status, 200)
-  assert.match(lesson.html, /class="unit">Eenheid 1/)
+  assert.match(lesson.html, /class="unit">Eenheid 2/)
   assert.match(lesson.html, /<h3>Begrippen<\/h3>/)
   assert.match(lesson.html, /studiesamenvatting/)
   assert.ok(!lesson.html.includes('class="legend"'))
