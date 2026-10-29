@@ -34,5 +34,7 @@ import hoofdstukkaartenSeerah1a from './032_hoofdstukkaarten_seerah1a.js'
 import hoofdstukkaartenSeerah1b from './033_hoofdstukkaarten_seerah1b.js'
 import { zadFiqh1a, zadFiqh1b } from './034_zad_fiqh1.js'
 import publiceerFiqh1 from './036_publiceer_zad_fiqh1.js'
+import hoofdstukkaartenFiqh1a from './037_hoofdstukkaarten_fiqh1a.js'
+import hoofdstukkaartenFiqh1b from './038_hoofdstukkaarten_fiqh1b.js'
 
-export default [basis, accounts, inhoud, omzetting, registers, zad, zadAqeedah1, personenPerBoek, publiceerAqeedah1, studiekaart1, hoofdstukkaart1, hoofdstukkaarten2tot4, zadAqeedah2, publiceerAqeedah2, hoofdstukkaartenAqeedah2, zadAqeedah3, publiceerAqeedah3, hoofdstukkaartenAqeedah3a, hoofdstukkaartenAqeedah3b, zadAqeedah4, publiceerAqeedah4, hoofdstukkaartenAqeedah4a, hoofdstukkaartenAqeedah4b, zadTafsir1, publiceerTafsir1, hoofdstukkaartenTafsir1, zadHadith1, publiceerHadith1, hoofdstukkaartenHadith1, zadSira1, publiceerSira1, hoofdstukkaartenSeerah1a, hoofdstukkaartenSeerah1b, zadFiqh1a, zadFiqh1b, publiceerFiqh1]
+export default [basis, accounts, inhoud, omzetting, registers, zad, zadAqeedah1, personenPerBoek, publiceerAqeedah1, studiekaart1, hoofdstukkaart1, hoofdstukkaarten2tot4, zadAqeedah2, publiceerAqeedah2, hoofdstukkaartenAqeedah2, zadAqeedah3, publiceerAqeedah3, hoofdstukkaartenAqeedah3a, hoofdstukkaartenAqeedah3b, zadAqeedah4, publiceerAqeedah4, hoofdstukkaartenAqeedah4a, hoofdstukkaartenAqeedah4b, zadTafsir1, publiceerTafsir1, hoofdstukkaartenTafsir1, zadHadith1, publiceerHadith1, hoofdstukkaartenHadith1, zadSira1, publiceerSira1, hoofdstukkaartenSeerah1a, hoofdstukkaartenSeerah1b, zadFiqh1a, zadFiqh1b, publiceerFiqh1, hoofdstukkaartenFiqh1a, hoofdstukkaartenFiqh1b]
