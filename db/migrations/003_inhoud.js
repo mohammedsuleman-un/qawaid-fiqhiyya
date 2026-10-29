@@ -3,6 +3,7 @@
 // blokken om naar hoofdstukken.
 import { blocksToChapters } from '../../lib/chapters.js'
 import { insertMany, searchText } from '../../lib/content.js'
+import { indexHadithMany } from '../../lib/register.js'
 import { stripTags } from '../../lib/db.js'
 
 export const CATEGORIES = [
@@ -37,6 +38,9 @@ export async function importChapters (conn, bookId, blocks, userId = null) {
     SET t.published_version_id = v.id WHERE t.entity_type = 'chapter' AND c.book_id = ?`, [bookId])
   await insertMany(conn, 'search_index', ['translation_id', 'entity_type', 'entity_id', 'lang', 'book_id', 'plain'],
     chapters.map((c) => [c.translationId, 'chapter', c.id, 'ar', bookId, searchText(c.title, c.body)]), 15)
+  // Het hadith-register bestaat pas vanaf migratie 5; bij een nieuwe database daarna meteen vullen.
+  const [hasHadith] = await conn.execute("SELECT 1 AS x FROM schema_migrations WHERE id = 5")
+  if (hasHadith) await indexHadithMany(conn, chapters.map((c) => ({ translationId: c.translationId, entityId: c.id, lang: 'ar', bookId, body: c.body })))
   return chapters.length
 }
 

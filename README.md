@@ -4,7 +4,8 @@ Interactive reference of major Islamic fiqh maxims (rabic) with Quran/Sunnah evi
 ## Zuivere bron op Cloudflare en TiDB
 
 - `functions/`: Cloudflare Pages Functions.
-  - Openbaar: `/bibliotheek`, `/boek/<slug>`, `/boek/<slug>/<hoofdstuk>`, `/artikel/<slug>` (allemaal met `?lang=ar|nl`), `/api/books`, `/api/search`, `/api/categories`, `POST /api/feedback`.
+  - Openbaar: `/bibliotheek`, `/boek/<slug>`, `/boek/<slug>/<hoofdstuk>`, `/artikel/<slug>`, `/hadith` (alle hadith per hoofdstuk), `/personen`, `/persoon/<slug>` (allemaal met `?lang=ar|nl`), `/api/books`, `/api/search`, `/api/categories`, `POST /api/feedback`.
+  - Registers: hadith worden automatisch verzameld uit de opmaak `<span class="hadith">` bij elke publicatie (tabel `hadith_index`); bron en beoordeling vult een medewerker in onder Beheer > Hadith. Personen staan in `persons` met hun biografie als artikel (soort `person`, beginwaarden in `db/seed/personen.js`, als concept).
   - Beheer: `/api/admin/*`, gebruikt door de beheeromgeving in `beheer/` (`/beheer/`).
   - `POST /api/setup` voert per aanroep één databasemigratie uit (of vult een lege database met één boek uit `db/seed/`); herhaal tot `done: true`.
 - `lib/`: accounts en sessies (`auth.js`), rollen en rechten (`rbac.js`), workflow (`workflow.js`), inhoud (`content.js`, `library.js`), HTML-opschoning (`sanitize.js`), weergave (`render.js`).

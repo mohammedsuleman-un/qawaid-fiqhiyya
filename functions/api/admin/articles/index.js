@@ -8,7 +8,8 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
   const p = new URL(request.url).searchParams
   const where = ['1 = 1']
   const args = []
-  if (p.get('kind')) { where.push('a.kind = ?'); args.push(p.get('kind')) }
+  // Biografieën van personen staan in het personenregister, niet in deze lijst.
+  if (p.get('kind')) { where.push('a.kind = ?'); args.push(p.get('kind')) } else where.push("a.kind <> 'person'")
   if (p.get('q')) {
     where.push("(a.slug LIKE ? OR EXISTS (SELECT 1 FROM content_translations t WHERE t.entity_type = 'article' AND t.entity_id = a.id AND t.title LIKE ?))")
     args.push(`%${p.get('q')}%`, `%${p.get('q')}%`)

@@ -29,7 +29,7 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('eigenaar@example.org', 'owner', 'pbkdf2$1$x$y')")
   await conn.execute("INSERT INTO admins (email, role, password_hash) VALUES ('redacteur@example.org', 'editor', 'pbkdf2$1$x$y')")
 
-  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting'])
+  assert.deepEqual([...await migrate(conn)], ['accounts', 'inhoud', 'omzetting', 'registers'])
 
   const chapters = await conn.execute(`SELECT c.position, t.title, v.body FROM chapters c
     JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
@@ -49,9 +49,18 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
   assert.deepEqual(roles.map((r) => [r.email, r.role_code]), [['eigenaar@example.org', 'superadmin'], ['redacteur@example.org', 'editor']])
   const [{ n }] = await conn.execute("SELECT COUNT(*) AS n FROM search_index WHERE plain LIKE '%⟦12⟧%'")
   assert.equal(Number(n), 1)
+  // Het hadithregister is gevuld uit de opmaak, met paginanummers, en de personen staan klaar als concept.
+  const hadith = await conn.execute('SELECT page, text FROM hadith_index')
+  assert.equal(hadith.length, blocks.reduce((sum, b) => sum + (b.html.match(/<span class="hadith">/g) || []).length, 0))
+  assert.ok(hadith.length > 0 && hadith.every((h) => h.page > 0 && h.text))
+  const [{ p, pub }] = await conn.execute(`SELECT COUNT(*) AS p, (SELECT COUNT(*) FROM content_translations t JOIN articles a ON a.id = t.entity_id
+    WHERE t.entity_type = 'article' AND a.kind = 'person' AND t.published_version_id IS NOT NULL) AS pub FROM persons`)
+  assert.ok(Number(p) > 50)
+  assert.equal(Number(pub), 0)
 })
 
 test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
+  assert.equal(await rollback(conn), 'registers')
   assert.equal(await rollback(conn), 'omzetting')
   assert.equal(await rollback(conn), 'inhoud')
   assert.deepEqual([...await migrate(conn, { max: 1 })], ['inhoud'])
@@ -59,6 +68,9 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   const before = conn.queries
   assert.deepEqual([...await migrate(conn, { max: 1 })], ['omzetting'])
   checkQueries(conn.queries - before + 6, 'migratie omzetting')
+  const before2 = conn.queries
+  assert.deepEqual([...await migrate(conn, { max: 1 })], ['registers'])
+  checkQueries(conn.queries - before2 + 6, 'migratie registers')
   assert.deepEqual([...await migrate(conn)], [])
   const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM chapters')
   assert.equal(Number(n), 60)

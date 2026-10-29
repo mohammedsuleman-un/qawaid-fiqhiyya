@@ -23,3 +23,14 @@ test('opmaak van de boeken blijft ongewijzigd', () => {
   const html = '<div class="pg" id="p12"><span>12</span></div>\n<p class="cont"><span class="ayah">﴿وَأَحَلَّ اللَّهُ الْبَيْعَ﴾</span> <mark class="g">حكمه</mark></p>\n<div class="sharh">\n<p>شرح</p>\n</div>'
   assert.equal(sanitizeHtml(html), html)
 })
+
+test('hadith uit de opmaak halen, met paginanummer en geneste opmaak', async () => {
+  const { extractHadith, lastPage } = await import('../lib/register.js')
+  const body = '<p><span class="hadith">«إنما <b>الأعمال</b> بالنيات»</span></p><div class="pg" id="p7"><span>7</span></div><p>قال: <span class="hadith">«لا <span class="mark">ضرر</span> ولا ضرار»</span> وغيره</p>'
+  assert.deepEqual(extractHadith(body, 6), [
+    { text: '«إنما الأعمال بالنيات»', page: 6, position: 0 },
+    { text: '«لا ضرر ولا ضرار»', page: 7, position: 1 }
+  ])
+  assert.equal(lastPage(body), 7)
+  assert.deepEqual(extractHadith('<p>لا شيء</p>'), [])
+})
