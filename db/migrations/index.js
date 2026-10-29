@@ -3,5 +3,6 @@ import basis from './001_basis.js'
 import accounts from './002_accounts.js'
 import inhoud from './003_inhoud.js'
 import omzetting from './004_omzetting.js'
+import registers from './005_registers.js'
 
-export default [basis, accounts, inhoud, omzetting]
+export default [basis, accounts, inhoud, omzetting, registers]

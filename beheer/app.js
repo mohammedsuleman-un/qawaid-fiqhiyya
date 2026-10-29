@@ -82,6 +82,8 @@ function setNav () {
     ['#/', t.nav.dashboard, true],
     ['#/boeken', t.nav.books, has('content.edit')],
     ['#/artikelen', t.nav.articles, has('content.edit')],
+    ['#/personen', t.nav.persons, has('content.edit')],
+    ['#/hadith', t.nav.hadith, has('content.edit')],
     ['#/categorieen', t.nav.categories, has('categories.manage')],
     ['#/beoordelen', t.nav.review, has('content.edit')],
     ['#/feedback', t.nav.feedback, has('feedback.assigned')],
@@ -327,6 +329,59 @@ async function categoriesView () {
   form($('#nf'), async (d) => { await api('categories', 'POST', d); categoriesView() })
 }
 
+// ---------- registers ----------
+// Personen: gegevens hier, biografie per taal in de gewone editor (concept → beoordelen → publiceren).
+async function personsView () {
+  const rows = await api('persons')
+  const edit = has('content.create')
+  const fields = (p = {}) => `<label>${t.nameAr}<input name="name_ar" dir="rtl" value="${esc(p.name_ar || '')}" required></label>
+      <label>${t.nameNl}<input name="name_nl" value="${esc(p.name_nl || '')}"></label>
+      <label>${t.personKind}<select name="kind">${options(Object.entries(t.personKinds), p.kind)}</select></label>
+      <label>${t.deathHijri}<input name="death_hijri" type="number" min="0" max="1500" dir="ltr" value="${esc(p.death_hijri ?? '')}"></label>
+      <label class="wide">${t.aliases}<textarea name="aliases" dir="rtl" rows="3">${esc(p.aliases || '')}</textarea><small>${t.aliasesHelp}</small></label>`
+  render(html`<div class="head"><h1>${t.nav.persons}</h1>${edit ? `<button id="new" class="primary">${t.newPerson}</button>` : ''}</div>
+    <p class="muted">${t.personsHelp}</p>
+    <form class="card" id="nf" hidden><div class="grid2">
+      <label>${t.slug}<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required dir="ltr"></label><span></span>${fields()}
+    </div><button class="primary">${t.create}</button><p class="msg"></p></form>
+    <table class="tbl"><thead><tr><th>${t.name}</th><th>${t.personKind}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th><th></th></tr></thead><tbody>
+    ${rows.map((p) => `<tr><td><span dir="rtl">${esc(p.name_ar)}</span> <span dir="ltr">${esc(p.name_nl || '')}</span><br><small dir="ltr">${esc(p.slug)}${p.death_hijri ? ' · ' + esc(p.death_hijri) + ' AH' : ''}</small></td>
+      <td>${esc(t.personKinds[p.kind] || p.kind)}</td>
+      <td><a href="#/bewerk/article/${p.article_id}/ar">${p.status_ar ? badge(p.status_ar) : `<small>${t.notYet}</small>`}</a></td>
+      <td><a href="#/bewerk/article/${p.article_id}/nl">${p.status_nl ? badge(p.status_nl) : `<small>${t.notYet}</small>`}</a></td>
+      <td class="nowrap"><a class="icon" href="/persoon/${esc(p.slug)}" target="_blank" rel="noopener">↗</a>
+      ${edit ? `<button class="icon" data-edit="${p.id}" title="${t.edit}">✎</button>` : ''}</td></tr>
+      <tr data-row="${p.id}" hidden><td colspan="5"><form class="card" data-pf="${p.id}"><div class="grid2">${fields(p)}</div><button class="primary">${t.save}</button><p class="msg"></p></form></td></tr>`).join('') || `<tr><td colspan="5">${t.noItems}</td></tr>`}
+    </tbody></table>`)
+  $('#new')?.addEventListener('click', () => { $('#nf').hidden = !$('#nf').hidden })
+  form($('#nf'), async (d) => { await api('persons', 'POST', d); personsView() })
+  $$('[data-edit]').forEach((b) => b.addEventListener('click', () => { const r = $(`[data-row="${b.dataset.edit}"]`); r.hidden = !r.hidden }))
+  $$('[data-pf]').forEach((f) => form(f, async (d) => { await api('persons/' + f.dataset.pf, 'PATCH', d); return t.saved }))
+}
+
+// Hadith: de lijst komt uit de teksten zelf; hier vult een mens bron, beoordeling en notitie in.
+async function hadithView () {
+  const rows = (await api('hadith')).filter((h) => h.lang === 'ar')
+  const seen = new Set()
+  let lastBook = null
+  let lastChapter = null
+  const out = []
+  for (const h of rows) {
+    if (h.book_id !== lastBook) { out.push(`<h2>${esc(h.book_title_ar || h.book_slug)}</h2>`); lastBook = h.book_id; lastChapter = null }
+    if (h.chapter_slug !== lastChapter) { out.push(`<h3>${esc(stripTags(h.chapter_title))}</h3>`); lastChapter = h.chapter_slug }
+    const again = seen.has(h.hkey)
+    seen.add(h.hkey)
+    out.push(`<form class="card hadith-note" data-hk="${esc(h.hkey)}"><p class="htext" dir="rtl">${esc(h.text)}</p>
+      <p><small><a href="/boek/${esc(h.book_slug)}/${esc(h.chapter_slug)}?lang=ar" target="_blank" rel="noopener">${t.page} ${esc(h.page ?? '')} ↗</a>${again ? ' · ' + t.sameHadith : ''}</small></p>
+      <div class="grid2"><label>${t.hSource}<input name="source" dir="auto" value="${esc(h.source || '')}"></label>
+      <label>${t.hGrade}<input name="grade" dir="auto" value="${esc(h.grade || '')}"></label>
+      <label class="wide">${t.hNote}<textarea name="note" dir="auto" rows="2">${esc(h.note || '')}</textarea></label></div>
+      <button class="primary">${t.save}</button><p class="msg"></p></form>`)
+  }
+  render(html`<h1>${t.nav.hadith}</h1><p class="muted">${fmt(t.hadithHelp, { n: rows.length })}</p>${out.join('') || `<p>${t.noItems}</p>`}`)
+  $$('[data-hk]').forEach((f) => form(f, async (d) => { await api('hadith', 'PATCH', { hkey: f.dataset.hk, ...d }); return t.saved }))
+}
+
 // ---------- editor ----------
 async function editView (type, id, l) {
   const data = await api(`content/${type}/${id}`)
@@ -338,7 +393,7 @@ async function editView (type, id, l) {
   const other = l === 'ar' ? 'nl' : 'ar'
   const ref = data.langs[other]?.published
   const info = data.info
-  const back = type === 'chapter' ? `#/boek/${info.book_id}` : '#/artikelen'
+  const back = type === 'chapter' ? `#/boek/${info.book_id}` : info.kind === 'person' ? '#/personen' : '#/artikelen'
   const dir = l === 'ar' ? 'rtl' : 'ltr'
   render(html`<p><a href="${back}">← ${t.back}</a></p>
     <div class="head"><h1>${t.editor}: <span dir="rtl">${esc(stripTags(info.title_ar || ''))}</span> ${info.title_nl ? `<span dir="ltr">${esc(info.title_nl)}</span>` : ''}</h1>
@@ -587,6 +642,8 @@ const ROUTES = [
   [/^boek\/(\d+)$/, bookView, 'content.edit'],
   [/^artikelen$/, articlesView, 'content.edit'],
   [/^categorieen$/, categoriesView, 'categories.manage'],
+  [/^personen$/, personsView, 'content.edit'],
+  [/^hadith$/, hadithView, 'content.edit'],
   [/^bewerk\/(chapter|article)\/(\d+)\/(ar|nl)$/, (type, id, l) => editView(type, Number(id), l), 'content.edit'],
   [/^versie\/(\d+)$/, versionView, 'content.edit'],
   [/^beoordelen$/, reviewView, 'content.edit'],

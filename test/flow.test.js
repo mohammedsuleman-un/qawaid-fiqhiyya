@@ -31,6 +31,13 @@ import * as publicBooks from '../functions/api/books/index.js'
 import * as chapterPage from '../functions/boek/[slug]/[chapter].js'
 import * as bookPage from '../functions/boek/[slug]/index.js'
 import * as library from '../functions/bibliotheek/index.js'
+import * as hadithPage from '../functions/hadith/index.js'
+import * as personsPage from '../functions/personen/index.js'
+import * as personPage from '../functions/persoon/[slug].js'
+import * as adminHadith from '../functions/api/admin/hadith/index.js'
+import * as adminPersons from '../functions/api/admin/persons/index.js'
+import * as adminPerson from '../functions/api/admin/persons/[id].js'
+import * as adminArticles from '../functions/api/admin/articles/index.js'
 
 const conn = await freshDb()
 after(() => conn.close())
@@ -53,7 +60,7 @@ test('installatie: migraties en het eerste boek', async () => {
     steps.push(r.data.migrations[0] || r.data.seeded)
     if (r.data.done) break
   }
-  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'talkhis-jam-al-jawami', false])
+  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'talkhis-jam-al-jawami', false])
   const list = await call(conn, 'GET', '/api/books', publicBooks)
   assert.equal(list.data[0].slug, 'talkhis-jam-al-jawami')
   assert.equal(list.data[0].category, 'usul-al-fiqh')
@@ -245,6 +252,55 @@ test('conceptboeken zijn alleen voor medewerkers zichtbaar', async () => {
   assert.equal((await page(bookPage, '/boek/nieuw-boek', { slug: 'nieuw-boek' }, s.editorCookie)).status, 200)
   const lib = await page(library, '/bibliotheek', {})
   assert.ok(!lib.html.includes('nieuw-boek'))
+})
+
+test('hadith per hoofdstuk en personenregister; biografie pas zichtbaar na publicatie', async () => {
+  const hp = await page(hadithPage, '/hadith', {})
+  assert.equal(hp.status, 200)
+  const titles = [...hp.html.matchAll(/<h3>(.*?)<\/h3>/g)].map((m) => m[1])
+  assert.ok(titles.length > 3)
+  assert.equal(new Set(titles).size, titles.length) // elk hoofdstuk één keer, in boekvolgorde
+  assert.match(hp.html, /<a href="\/boek\/talkhis-jam-al-jawami\/[^"]+\?lang=ar">صفحة \d+<\/a>/)
+
+  // Bron en beoordeling: alleen medewerkers, en daarna openbaar zichtbaar.
+  const list = await call(conn, 'GET', '/api/admin/hadith', adminHadith, { cookie: s.editorCookie })
+  assert.equal(list.status, 200)
+  const h = list.data[0]
+  assert.equal((await call(conn, 'PATCH', '/api/admin/hadith', adminHadith, { body: { hkey: h.hkey, source: 'x' } })).status, 401)
+  assert.equal((await call(conn, 'PATCH', '/api/admin/hadith', adminHadith, { cookie: s.editorCookie, body: { hkey: h.hkey, source: 'رواه البخاري', grade: 'صحيح' } })).status, 200)
+  assert.match((await page(hadithPage, '/hadith', {})).html, /التخريج: رواه البخاري/)
+
+  const pp = await page(personsPage, '/personen', {})
+  assert.equal(pp.status, 200)
+  assert.match(pp.html, /عبد الله بن عباس/)
+  assert.ok(!pp.html.includes('class="pbio"')) // nog niets gepubliceerd
+  const persons = await call(conn, 'GET', '/api/admin/persons', adminPersons, { cookie: s.editorCookie })
+  const p = persons.data.find((x) => x.slug === 'ibn-abbas') || persons.data[0]
+  assert.equal(p.status_nl, 'draft')
+  const one = await page(personPage, '/persoon/' + p.slug + '?lang=nl', { slug: p.slug })
+  assert.match(one.html, /biografie wordt nog opgesteld/)
+  assert.match(one.html, /Vindplaatsen/)
+  assert.equal((await page(personPage, '/persoon/bestaat-niet', { slug: 'bestaat-niet' })).status, 404)
+
+  const draft = await call(conn, 'POST', '/api/admin/versions', versions, { cookie: s.editorCookie,
+    body: { entity_type: 'article', entity_id: p.article_id, lang: 'nl', title: p.name_nl, body: '<p>Gecontroleerde biografie.</p>', reason: 'Gecontroleerd' } })
+  assert.equal(draft.status, 200)
+  const act = (cookie, a) => call(conn, 'POST', `/api/admin/versions/${draft.data.id}/${a}`, action, { cookie, params: { id: String(draft.data.id), action: a }, body: {} })
+  assert.equal((await act(s.editorCookie, 'submit')).status, 200)
+  assert.equal((await act(s.adminCookie, 'approve')).status, 200)
+  assert.equal((await act(s.adminCookie, 'publish')).status, 200)
+  assert.match((await page(personPage, '/persoon/' + p.slug + '?lang=nl', { slug: p.slug })).html, /Gecontroleerde biografie/)
+  assert.match((await page(personsPage, '/personen?lang=nl', {})).html, /Gecontroleerde biografie/)
+  assert.ok(!(await page(personsPage, '/personen', {})).html.includes('Gecontroleerde')) // Arabisch nog niet
+
+  // Gegevens wijzigen en een nieuwe persoon; biografieën staan niet bij de artikelen.
+  assert.equal((await call(conn, 'PATCH', '/api/admin/persons/x', adminPerson, { cookie: s.adminCookie, params: { id: String(p.id) }, body: { ...p, death_hijri: 'abc' } })).status, 400)
+  assert.equal((await call(conn, 'PATCH', '/api/admin/persons/x', adminPerson, { cookie: s.adminCookie, params: { id: String(p.id) }, body: { ...p, aliases: p.aliases + '\nحبر الأمة' } })).status, 200)
+  const np = await call(conn, 'POST', '/api/admin/persons', adminPersons, { cookie: s.adminCookie, body: { slug: 'nieuwe-persoon', name_ar: 'فلان', kind: 'alim' } })
+  assert.equal(np.status, 200)
+  assert.equal((await call(conn, 'POST', '/api/admin/persons', adminPersons, { cookie: s.adminCookie, body: { slug: 'nieuwe-persoon', name_ar: 'فلان' } })).status, 400)
+  const arts = await call(conn, 'GET', '/api/admin/articles', adminArticles, { cookie: s.editorCookie })
+  assert.ok(!arts.data.some((a) => a.kind === 'person'))
 })
 
 test('gedeactiveerd account kan niet meer inloggen', async () => {
