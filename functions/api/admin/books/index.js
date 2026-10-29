@@ -15,7 +15,7 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
     where.push('(b.slug LIKE ? OR b.author LIKE ? OR EXISTS (SELECT 1 FROM book_translations t WHERE t.book_id = b.id AND t.title LIKE ?))')
     args.push(`%${p.get('q')}%`, `%${p.get('q')}%`, `%${p.get('q')}%`)
   }
-  return json(await conn.execute(`SELECT b.id, b.slug, b.status, b.author, b.access_level, b.category_id, b.updated_at,
+  return json(await conn.execute(`SELECT b.id, b.slug, b.status, b.zad_level, b.zad_subject, b.author, b.access_level, b.category_id, b.updated_at,
       c.name_nl AS category_nl, c.name_ar AS category_ar,
       (SELECT title FROM book_translations t WHERE t.book_id = b.id AND t.lang = 'ar') AS title_ar,
       (SELECT title FROM book_translations t WHERE t.book_id = b.id AND t.lang = 'nl') AS title_nl,
@@ -25,7 +25,7 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
       (SELECT COUNT(*) FROM chapters ch JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = ch.id
         WHERE ch.book_id = b.id AND ch.archived_at IS NULL AND t.lang = 'nl' AND t.status = 'published') AS published_nl
     FROM books b LEFT JOIN categories c ON c.id = b.category_id
-    WHERE ${where.join(' AND ')} ORDER BY b.updated_at DESC`, args))
+    WHERE ${where.join(' AND ')} ORDER BY b.zad_level IS NOT NULL, b.zad_level, b.id, b.updated_at DESC`, args))
 }
 
 export async function onRequestPost ({ request, data: { conn, user } }) {
