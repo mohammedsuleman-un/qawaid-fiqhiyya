@@ -5,6 +5,7 @@ import assert from 'node:assert/strict'
 import { freshDb, call, checkQueries } from './helpers.js'
 import { codeAt } from '../lib/totp.js'
 import * as setup from '../functions/api/setup.js'
+import migrations from '../db/migrations/index.js'
 import * as bootstrap from '../functions/api/admin/bootstrap.js'
 import * as acceptInvite from '../functions/api/admin/accept-invite.js'
 import * as login from '../functions/api/admin/login.js'
@@ -63,7 +64,7 @@ test('installatie: migraties en het eerste boek', async () => {
     steps.push(r.data.migrations[0] || r.data.seeded)
     if (r.data.done) break
   }
-  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'personen-per-boek', 'publiceer-zad-aqeedah-1', 'studiekaart-aqeedah-1-les-1', 'hoofdstukkaart-aqeedah-1-eenheid-1', 'hoofdstukkaarten-aqeedah-1-eenheid-2-4', 'zad-aqeedah-2', 'publiceer-zad-aqeedah-2', 'talkhis-jam-al-jawami', false])
+  assert.deepEqual(steps, [...migrations.map((m) => m.name), 'talkhis-jam-al-jawami', false])
   const list = await call(conn, 'GET', '/api/books', publicBooks)
   assert.equal(list.data[0].slug, 'talkhis-jam-al-jawami')
   assert.equal(list.data[0].category, 'usul-al-fiqh')
@@ -231,7 +232,7 @@ test('feedback verwerken: toewijzen, redacteur ziet alleen eigen, concept uit fe
 
 test('dashboard, auditlog en back-up', async () => {
   const d = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.superCookie })
-  assert.equal(d.data.books.published, 3) // talkhis en ZAD Geloofsleer (1) en (2)
+  assert.equal(d.data.books.published, 4) // talkhis en ZAD Geloofsleer (1), (2) en (3)
   assert.ok(d.data.users.length >= 3)
   assert.ok(d.data.activity.length > 0)
   const ed = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.editorCookie })
@@ -327,7 +328,7 @@ test('gedeactiveerd account kan niet meer inloggen', async () => {
 test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', async () => {
   const pub = await page(zadPage, '/zad', {})
   assert.equal(pub.status, 200)
-  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 26) // Geloofsleer (1) en (2) gepubliceerd
+  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 25) // Geloofsleer (1), (2) en (3) gepubliceerd
   assert.match(pub.html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
   const ov = await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })
   assert.equal(ov.status, 200)
@@ -432,6 +433,16 @@ test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow
     assert.match((await page(unitPage, `/boek/zad-n1-aqeedah/eenheid/${n}`, { slug: 'zad-n1-aqeedah', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
   }
   assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/5', { slug: 'zad-n1-aqeedah', n: '5' })).status, 404)
+  // Geloofsleer (2): vijf eenheden met elk een hoofdstukkaart.
+  for (const [n, lessen, hd, les] of [[1, 4, 9, 2], [2, 2, 0, 6], [3, 4, 4, 10], [4, 8, 20, 14], [5, 6, 4, 24]]) {
+    before = conn.queries
+    const u = await page(unitPage, `/boek/zad-n2-aqeedah/eenheid/${n}?lang=nl`, { slug: 'zad-n2-aqeedah', n: String(n) })
+    checkQueries(conn.queries - before, `hoofdstukpagina n2-${n}`)
+    assert.equal(u.status, 200, n)
+    assert.match(u.html, new RegExp(`class="kicker">Eenheid ${n} · ${lessen} lessen`))
+    assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
+    assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n2-aqeedah/${les}\\?lang=nl">Les ${les}<`))
+  }
   assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/x', { slug: 'zad-n1-aqeedah', n: 'x' })).status, 404)
   assert.equal((await page(unitPage, '/boek/talkhis-jam-al-jawami/eenheid/1', { slug: 'talkhis-jam-al-jawami', n: '1' })).status, 404)
 
