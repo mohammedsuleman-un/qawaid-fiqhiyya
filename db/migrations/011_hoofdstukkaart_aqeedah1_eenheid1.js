@@ -11,6 +11,26 @@ export const UNIT_REASON = 'Hoofdstukkaart eenheid 1 – gepubliceerd op verzoek
 const BT = 'zb_backup_20261029_study_translations'
 const BV = 'zb_backup_20261029_study_versions'
 
+// Zet een hoofdstukkaart (seed met book, chapter, ar, nl) als gepubliceerde studieversie op de
+// eerste les van de eenheid; de vorige gepubliceerde versie wordt 'superseded'.
+export async function publishUnitCard (conn, card, reason) {
+  const [c] = await conn.execute('SELECT c.id FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = ? AND c.slug = ?', [card.book, card.chapter])
+  if (!c) return
+  const langs = { ar: parseStudy(card.ar), nl: parseStudy(card.nl) }
+  await conn.execute("INSERT IGNORE INTO content_translations (entity_type, entity_id, lang, title) VALUES ('study', ?, 'ar', ?), ('study', ?, 'nl', ?)",
+    [c.id, langs.ar.title, c.id, langs.nl.title])
+  const tids = await conn.execute(`SELECT t.id, t.lang FROM content_translations t WHERE t.entity_type = 'study' AND t.entity_id = ?
+    AND NOT EXISTS (SELECT 1 FROM content_versions v WHERE v.translation_id = t.id AND v.reason = ?)`, [c.id, reason])
+  if (!tids.length) return
+  const ids = tids.map((t) => t.id)
+  const m = ids.map(() => '?').join(', ')
+  await conn.execute(`UPDATE content_versions SET status = 'superseded' WHERE translation_id IN (${m}) AND status = 'published'`, ids)
+  await conn.execute(`INSERT INTO content_versions (translation_id, title, body, reason, status, published_at) VALUES ${tids.map(() => "(?, ?, ?, ?, 'published', NOW())").join(', ')}`,
+    tids.flatMap((t) => [t.id, langs[t.lang].title, JSON.stringify(langs[t.lang]), reason]))
+  await conn.execute(`UPDATE content_translations t JOIN content_versions v ON v.translation_id = t.id AND v.reason = ?
+    SET t.published_version_id = v.id, t.status = 'published', t.title = v.title WHERE t.id IN (${m})`, [reason, ...ids])
+}
+
 export default {
   id: 11,
   name: 'hoofdstukkaart-aqeedah-1-eenheid-1',
@@ -22,23 +42,7 @@ export default {
       await conn.execute(`INSERT IGNORE INTO ${BT} SELECT * FROM content_translations WHERE entity_type = 'study'`)
       await conn.execute(`INSERT IGNORE INTO ${BV} SELECT v.* FROM content_versions v JOIN content_translations t ON t.id = v.translation_id WHERE t.entity_type = 'study'`)
     },
-    async (conn) => {
-      const [c] = await conn.execute('SELECT c.id FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = ? AND c.slug = ?', [card.book, card.chapter])
-      if (!c) return
-      const langs = { ar: parseStudy(card.ar), nl: parseStudy(card.nl) }
-      await conn.execute("INSERT IGNORE INTO content_translations (entity_type, entity_id, lang, title) VALUES ('study', ?, 'ar', ?), ('study', ?, 'nl', ?)",
-        [c.id, langs.ar.title, c.id, langs.nl.title])
-      const tids = await conn.execute(`SELECT t.id, t.lang FROM content_translations t WHERE t.entity_type = 'study' AND t.entity_id = ?
-        AND NOT EXISTS (SELECT 1 FROM content_versions v WHERE v.translation_id = t.id AND v.reason = ?)`, [c.id, UNIT_REASON])
-      if (!tids.length) return
-      const ids = tids.map((t) => t.id)
-      const m = ids.map(() => '?').join(', ')
-      await conn.execute(`UPDATE content_versions SET status = 'superseded' WHERE translation_id IN (${m}) AND status = 'published'`, ids)
-      await conn.execute(`INSERT INTO content_versions (translation_id, title, body, reason, status, published_at) VALUES ${tids.map(() => "(?, ?, ?, ?, 'published', NOW())").join(', ')}`,
-        tids.flatMap((t) => [t.id, langs[t.lang].title, JSON.stringify(langs[t.lang]), UNIT_REASON]))
-      await conn.execute(`UPDATE content_translations t JOIN content_versions v ON v.translation_id = t.id AND v.reason = ?
-        SET t.published_version_id = v.id, t.status = 'published', t.title = v.title WHERE t.id IN (${m})`, [UNIT_REASON, ...ids])
-    }
+    (conn) => publishUnitCard(conn, card, UNIT_REASON)
   ],
   down: [async (conn) => {
     await conn.execute("DELETE v FROM content_versions v JOIN content_translations t ON t.id = v.translation_id WHERE t.entity_type = 'study' AND v.reason = ?", [UNIT_REASON])
