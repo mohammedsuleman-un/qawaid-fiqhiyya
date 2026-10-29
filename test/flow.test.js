@@ -509,6 +509,17 @@ test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow
     assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n1-fiqh/${les}\\?lang=nl">Les ${les}<`))
     assert.match((await page(unitPage, `/boek/zad-n1-fiqh/eenheid/${n}`, { slug: 'zad-n1-fiqh', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
   }
+  // Islamitische opvoeding (1): zes thema-eenheden van vier lessen.
+  for (const [n, hd, les] of [[1, 18, 4], [2, 12, 8], [3, 25, 12], [4, 21, 16], [5, 34, 20], [6, 31, 24]]) {
+    before = conn.queries
+    const u = await page(unitPage, `/boek/zad-n1-tarbiyah/eenheid/${n}?lang=nl`, { slug: 'zad-n1-tarbiyah', n: String(n) })
+    checkQueries(conn.queries - before, `hoofdstukpagina tarbiyah1-${n}`)
+    assert.equal(u.status, 200, n)
+    assert.match(u.html, new RegExp(`class="kicker">Eenheid ${n} · 4 lessen<`))
+    assert.equal((u.html.match(/class="card hd"/g) || []).length, hd, n)
+    assert.match(u.html, new RegExp(`class="lref" href="/boek/zad-n1-tarbiyah/${les}\\?lang=nl">Les ${les}<`))
+    assert.match((await page(unitPage, `/boek/zad-n1-tarbiyah/eenheid/${n}`, { slug: 'zad-n1-tarbiyah', n: String(n) })).html, /<html lang="ar" dir="rtl">/)
+  }
   assert.equal((await page(unitPage, '/boek/zad-n1-aqeedah/eenheid/x', { slug: 'zad-n1-aqeedah', n: 'x' })).status, 404)
   assert.equal((await page(unitPage, '/boek/talkhis-jam-al-jawami/eenheid/1', { slug: 'talkhis-jam-al-jawami', n: '1' })).status, 404)
 
