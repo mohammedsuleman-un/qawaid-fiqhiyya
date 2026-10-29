@@ -62,7 +62,7 @@ test('installatie: migraties en het eerste boek', async () => {
     steps.push(r.data.migrations[0] || r.data.seeded)
     if (r.data.done) break
   }
-  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'talkhis-jam-al-jawami', false])
+  assert.deepEqual(steps, ['basis', 'accounts', 'inhoud', 'omzetting', 'registers', 'zad', 'zad-aqeedah-1', 'talkhis-jam-al-jawami', false])
   const list = await call(conn, 'GET', '/api/books', publicBooks)
   assert.equal(list.data[0].slug, 'talkhis-jam-al-jawami')
   assert.equal(list.data[0].category, 'usul-al-fiqh')

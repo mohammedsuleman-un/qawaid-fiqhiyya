@@ -62,7 +62,8 @@ export default {
         ]
       }), 30)
     },
-    async (conn) => { await importZad(conn, aqeedah1) }
+    // Personen komen er in migratie 7 bij (binnen de limiet van 50 queries per verzoek).
+    async (conn) => { await importZad(conn, { ...aqeedah1, persons: [] }) }
   ],
   down: [
     'DELETE FROM questions', 'DELETE FROM glossary_terms',

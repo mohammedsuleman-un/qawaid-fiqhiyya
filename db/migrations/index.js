@@ -5,5 +5,6 @@ import inhoud from './003_inhoud.js'
 import omzetting from './004_omzetting.js'
 import registers from './005_registers.js'
 import zad from './006_zad.js'
+import zadAqeedah1 from './007_zad_aqeedah1.js'
 
-export default [basis, accounts, inhoud, omzetting, registers, zad]
+export default [basis, accounts, inhoud, omzetting, registers, zad, zadAqeedah1]
