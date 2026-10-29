@@ -386,6 +386,10 @@ test('bibliotheek: ZAD-boeken samen onder één kop', async () => {
 test('studiekaart: concept alleen als voorbeeld voor medewerkers, eigen workflow, geen HTML', async () => {
   await conn.execute("UPDATE books SET status = 'published' WHERE slug = 'zad-n1-aqeedah'")
   const path = '/boek/zad-n1-aqeedah/1?lang=nl'
+  // Migratie 10 publiceert de kaart van les 1; hier eerst de hele route vanaf een concept.
+  assert.match((await page(chapterPage, path, { slug: 'zad-n1-aqeedah', chapter: '1' })).html, /class="study"/)
+  await conn.execute("UPDATE content_translations SET published_version_id = NULL, status = 'draft' WHERE entity_type = 'study'")
+  await conn.execute("UPDATE content_versions v JOIN content_translations t ON t.id = v.translation_id SET v.status = 'draft' WHERE t.entity_type = 'study'")
   const params = { slug: 'zad-n1-aqeedah', chapter: '1' }
   assert.ok(!(await page(chapterPage, path, params)).html.includes('class="study"')) // concept: openbaar de gewone les
   assert.ok(!(await page(chapterPage, path + '&voorbeeld', params)).html.includes('class="study"')) // voorbeeld alleen voor medewerkers

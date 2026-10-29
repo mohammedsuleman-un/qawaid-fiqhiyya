@@ -114,7 +114,7 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   assert.deepEqual([...await migrate(conn, { max: 1 })], ['studiekaart-aqeedah-1-les-1'])
   checkQueries(conn.queries - before7 + 6, 'migratie studiekaart')
   const study = await conn.execute("SELECT t.lang, v.status FROM content_translations t JOIN content_versions v ON v.translation_id = t.id WHERE t.entity_type = 'study' ORDER BY t.lang")
-  assert.deepEqual(study.map((r) => [r.lang, r.status]), [['ar', 'draft'], ['nl', 'draft']]) // alleen concept, niets gepubliceerd
+  assert.deepEqual(study.map((r) => [r.lang, r.status]), [['ar', 'published'], ['nl', 'published']])
   assert.deepEqual([...await migrate(conn)], [])
   const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.zad_level IS NULL')
   assert.equal(Number(n), 60)
