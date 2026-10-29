@@ -232,7 +232,7 @@ test('feedback verwerken: toewijzen, redacteur ziet alleen eigen, concept uit fe
 
 test('dashboard, auditlog en back-up', async () => {
   const d = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.superCookie })
-  assert.equal(d.data.books.published, 16) // talkhis, ZAD Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1), Arabisch (1), Koranexegese (2), Hadith (2), Profetische biografie (2), Fiqh (2) en Opvoeding (2)
+  assert.equal(d.data.books.published, 17) // talkhis, ZAD Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1), Arabisch (1), Koranexegese (2), Hadith (2), Profetische biografie (2), Fiqh (2), Opvoeding (2) en Arabisch (2)
   assert.ok(d.data.users.length >= 3)
   assert.ok(d.data.activity.length > 0)
   const ed = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.editorCookie })
@@ -328,7 +328,7 @@ test('gedeactiveerd account kan niet meer inloggen', async () => {
 test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', async () => {
   const pub = await page(zadPage, '/zad', {})
   assert.equal(pub.status, 200)
-  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 13) // Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1), Arabisch (1), Koranexegese (2), Hadith (2), Profetische biografie (2), Fiqh (2) en Opvoeding (2) gepubliceerd
+  assert.equal((pub.html.match(/class="zcell off"/g) || []).length, 12) // Geloofsleer (1) t/m (4), Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1), Arabisch (1), Koranexegese (2), Hadith (2), Profetische biografie (2), Fiqh (2), Opvoeding (2) en Arabisch (2) gepubliceerd
   assert.match(pub.html, /href="\/boek\/zad-n1-aqeedah\?lang=ar"/)
   const ov = await page(bookPage, '/boek/zad-n1-aqeedah', { slug: 'zad-n1-aqeedah' })
   assert.equal(ov.status, 200)
