@@ -4,8 +4,9 @@ import { hashPassword, passwordProblem, startSession, ipHash } from '../../../li
 import { allow } from '../../../lib/ratelimit.js'
 import { insert } from '../../../lib/content.js'
 import { audit } from '../../../lib/audit.js'
+import { sendMail, welcomeMail } from '../../../lib/mail.js'
 
-export async function onRequestPost ({ request, data: { conn } }) {
+export async function onRequestPost ({ request, env, waitUntil, data: { conn } }) {
   const input = await body(request)
   if (input.website) fail(400, 'Ongeldig verzoek') // honeypot
   const email = str(input.email, 255).toLowerCase()
@@ -22,5 +23,8 @@ export async function onRequestPost ({ request, data: { conn } }) {
     [email, name, await hashPassword(String(input.password)), lang])
   await conn.execute("INSERT INTO user_roles (user_id, role_code) VALUES (?, 'student')", [id])
   await audit(conn, { id }, 'student.register', 'user', id)
+  // Bevestigingsmail op de achtergrond: de aanmelding wacht er niet op en faalt er niet door.
+  const mail = sendMail(env, welcomeMail({ name, email, lang, origin: new URL(request.url).origin }))
+  if (waitUntil) waitUntil(mail); else await mail
   return json({ ok: true }, 200, { 'set-cookie': await startSession(conn, id, true) })
 }
