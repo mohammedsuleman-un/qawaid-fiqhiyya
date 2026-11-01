@@ -5,6 +5,7 @@ import { json, body, fail } from '../../../lib/http.js'
 import { newSecret, verifyCode, otpauthUri } from '../../../lib/totp.js'
 import { verifyPassword } from '../../../lib/auth.js'
 import { audit } from '../../../lib/audit.js'
+import { trustCookie, clearTrustCookie } from '../../../lib/trust.js'
 
 export async function onRequestGet ({ data: { conn, user } }) {
   if (user.totp_enabled) return json({ enabled: true })
@@ -19,7 +20,7 @@ export async function onRequestPost ({ request, data: { conn, user } }) {
   await conn.execute('UPDATE users SET totp_enabled = 1 WHERE id = ?', [user.id])
   await conn.execute('UPDATE sessions SET mfa_ok = 1 WHERE token_hash = ?', [user.token_hash])
   await audit(conn, user, '2fa.enable', 'user', user.id)
-  return json({ ok: true })
+  return json({ ok: true }, 200, { 'set-cookie': await trustCookie(user.id, row.totp_secret) })
 }
 
 export async function onRequestDelete ({ request, data: { conn, user } }) {
@@ -27,5 +28,5 @@ export async function onRequestDelete ({ request, data: { conn, user } }) {
   if (!(await verifyPassword(String((await body(request)).password || ''), row.password_hash))) fail(400, 'Wachtwoord klopt niet')
   await conn.execute('UPDATE users SET totp_enabled = 0, totp_secret = NULL WHERE id = ?', [user.id])
   await audit(conn, user, '2fa.disable', 'user', user.id)
-  return json({ ok: true })
+  return json({ ok: true }, 200, { 'set-cookie': clearTrustCookie() })
 }

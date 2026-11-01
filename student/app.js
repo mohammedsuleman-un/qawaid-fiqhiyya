@@ -139,8 +139,9 @@ function loginView (mode = 'login') {
 function twoStepView () {
   render(`<form class="card authcard narrow" id="f"><h1>${t.twoStep}</h1><p>${t.twoStepHelp}</p>
     <label>${t.code}<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" required autofocus></label>
+    <label class="inline"><input type="checkbox" name="remember" checked> ${t.rememberDevice || ''}</label>
     <button class="primary" type="submit">${t.next}</button><p class="msg"></p></form>`)
-  form($('#f'), async (d) => { await api('login-2fa', 'POST', d, '/api/admin/'); await start() })
+  form($('#f'), async (d) => { await api('login-2fa', 'POST', { code: d.code, remember: !!d.remember }, '/api/admin/'); await start() })
 }
 
 // ---------- planning ----------

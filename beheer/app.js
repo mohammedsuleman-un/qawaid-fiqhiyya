@@ -134,8 +134,9 @@ async function loginView () {
 function twoStepView () {
   render(html`<form class="card narrow" id="f"><h1>${t.twoStepTitle}</h1><p>${t.twoStepHelp}</p>
     <label>${t.code}<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" required autofocus></label>
+    <label class="inline"><input type="checkbox" name="remember" checked> ${t.rememberDevice || ''}</label>
     <button class="primary">${t.next}</button><p class="msg"></p></form>`)
-  form($('#f'), async (d) => { await api('login-2fa', 'POST', d); await start() })
+  form($('#f'), async (d) => { await api('login-2fa', 'POST', { code: d.code, remember: !!d.remember }); await start() })
 }
 
 async function acceptView (token) {

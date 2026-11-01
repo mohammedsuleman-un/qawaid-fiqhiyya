@@ -10,6 +10,7 @@ import * as bootstrap from '../functions/api/admin/bootstrap.js'
 import * as acceptInvite from '../functions/api/admin/accept-invite.js'
 import * as login from '../functions/api/admin/login.js'
 import * as login2fa from '../functions/api/admin/login-2fa.js'
+import * as invitationInfo from '../functions/api/admin/invitation.js'
 import * as twofa from '../functions/api/admin/2fa.js'
 import * as me from '../functions/api/admin/me.js'
 import * as invitations from '../functions/api/admin/invitations/index.js'
@@ -81,7 +82,8 @@ test('eerste superbeheerder via bootstrap, daarna kan dat niet meer', async () =
   assert.equal(ok.status, 200)
   s.superCookie = ok.cookie
   const reuse = await call(conn, 'POST', '/api/admin/accept-invite', acceptInvite, { body: { token, password: 'een-lang-wachtwoord' } })
-  assert.equal(reuse.status, 404)
+  assert.equal(reuse.status, 410)
+  assert.match(reuse.data.error, /al gebruikt/)
   const second = await call(conn, 'POST', '/api/admin/bootstrap', bootstrap, { body: { email: 'indringer@example.org' } })
   assert.equal(second.status, 403)
   // Setup doet nu niets meer: geen migraties open en de database heeft gebruikers.
@@ -111,6 +113,20 @@ test('inloggen met 2FA in twee stappen', async () => {
   const who = await call(conn, 'GET', '/api/admin/me', me, { cookie: step1.cookie })
   assert.deepEqual(who.data.roles, ['superadmin'])
   s.superCookie = step1.cookie
+  // Na de code onthoudt dit apparaat 90 dagen dat de code klopte.
+  const trust = step2.headers.get('set-cookie')
+  assert.match(trust, /^zb_trust=[^;]+; Path=\/api\/admin\/login;.*Max-Age=7776000/)
+  s.trust = trust.split(';')[0]
+  const again = await call(conn, 'POST', '/api/admin/login', login, { cookie: s.trust, body: { email: 'baas@example.org', password: 'een-lang-wachtwoord' } })
+  assert.equal(again.data.needs2fa, false)
+  assert.equal((await call(conn, 'GET', '/api/admin/me', me, { cookie: again.cookie })).status, 200)
+  // Een vervalste cookie of geen vinkje: wel weer een code nodig.
+  const fake = s.trust.slice(0, -4) + '0000'
+  assert.equal((await call(conn, 'POST', '/api/admin/login', login, { cookie: fake, body: { email: 'baas@example.org', password: 'een-lang-wachtwoord' } })).data.needs2fa, true)
+  const step1b = await call(conn, 'POST', '/api/admin/login', login, { body: { email: 'baas@example.org', password: 'een-lang-wachtwoord' } })
+  const noRemember = await call(conn, 'POST', '/api/admin/login-2fa', login2fa, { cookie: step1b.cookie, body: { code: await totp(s.superSecret), remember: false } })
+  assert.equal(noRemember.status, 200)
+  assert.equal(noRemember.headers.get('set-cookie'), null)
 })
 
 async function invite (email, role, cookie = s.superCookie) {
@@ -130,6 +146,23 @@ test('beheerder en redacteur uitnodigen', async () => {
   // De beheerder zet ook 2FA aan.
   const g = await call(conn, 'GET', '/api/admin/2fa', twofa, { cookie: s.adminCookie })
   await call(conn, 'POST', '/api/admin/2fa', twofa, { cookie: s.adminCookie, body: { code: await totp(g.data.secret) } })
+})
+
+test('opnieuw versturen laat de eerste link geldig; na gebruik vervalt de rest', async () => {
+  const first = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.superCookie, body: { email: 'docent2@example.org', role: 'teacher' } })
+  const second = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.superCookie, body: { email: 'docent2@example.org', role: 'teacher' } })
+  assert.equal(first.data.mailed, false) // geen RESEND_API_KEY in tests
+  const t1 = new URL(first.data.link).searchParams.get('uitnodiging')
+  const t2 = new URL(second.data.link).searchParams.get('uitnodiging')
+  const info = await call(conn, 'GET', '/api/admin/invitation?token=' + t1, invitationInfo)
+  assert.equal(info.status, 200, JSON.stringify(info.data))
+  assert.equal(info.data.email, 'docent2@example.org')
+  const acc = await call(conn, 'POST', '/api/admin/accept-invite', acceptInvite, { body: { token: t1, name: 'Docent', password: 'nog-een-lang-wachtwoord' } })
+  assert.equal(acc.status, 200)
+  const late = await call(conn, 'GET', '/api/admin/invitation?token=' + t2, invitationInfo)
+  assert.equal(late.status, 410)
+  assert.match(late.data.error, /ingetrokken of vervangen/)
+  assert.equal((await call(conn, 'GET', '/api/admin/invitation?token=onzin', invitationInfo)).status, 404)
 })
 
 test('de laatste superbeheerder is beschermd', async () => {
