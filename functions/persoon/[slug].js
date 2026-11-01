@@ -7,7 +7,7 @@ import { page, notFound } from '../../lib/pages.js'
 
 export async function onRequestGet ({ request, env, params }) {
   const conn = db(env)
-  const lang = pickLang(request.url)
+  const lang = pickLang(request)
   const person = (await listPersons(conn, params.slug))[0]
   if (!person) return notFound(lang)
   return page(renderPerson({ lang, person, mentions: await personMentions(conn, person) }))

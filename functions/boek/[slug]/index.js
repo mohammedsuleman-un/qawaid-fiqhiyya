@@ -8,7 +8,7 @@ import { studyUnits } from '../../../lib/study.js'
 
 export async function onRequestGet ({ request, env, params }) {
   const conn = db(env)
-  const lang = pickLang(request.url)
+  const lang = pickLang(request)
   const staff = isStaff(await viewer(conn, request))
   const full = new URL(request.url).searchParams.has('tekst')
   const data = await loadBook(conn, params.slug, lang, { staff })

@@ -13,7 +13,10 @@ const store = {
   set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v) } catch {} }
 }
 const urlLang = new URLSearchParams(location.search).get('lang')
-let lang = ['nl', 'ar'].includes(urlLang) ? urlLang : ['nl', 'ar'].includes(store.get('zb-student-lang')) ? store.get('zb-student-lang') : (navigator.language || '').startsWith('ar') ? 'ar' : 'nl'
+// Gedeelde taalkeuze voor de hele site (openbare pagina's, Studenten en Beheer).
+const cookieLang = () => { const m = document.cookie.match(/(?:^|;\s*)zb_lang=(nl|ar)(?:;|$)/); return m ? m[1] : null }
+const saveLang = (l) => { try { document.cookie = 'zb_lang=' + l + ';path=/;max-age=31536000;samesite=lax' } catch {} }
+let lang = ['nl', 'ar'].includes(urlLang) ? urlLang : cookieLang() || (['nl', 'ar'].includes(store.get('zb-student-lang')) ? store.get('zb-student-lang') : (navigator.language || '').startsWith('ar') ? 'ar' : 'nl')
 let t = STRINGS[lang]
 let me = null
 let timer = null
@@ -74,6 +77,7 @@ const stateBadge = (s) => `<span class="state st-${s}">${t.state[s]}</span>`
 function applyLang () {
   t = STRINGS[lang]
   document.documentElement.lang = lang
+  saveLang(lang)
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
   document.body.dataset.lang = lang
   document.title = `${t.title} · ${t.site}`
@@ -674,7 +678,7 @@ async function route () {
 async function start () {
   applyLang()
   try { me = await api('me') } catch { me = null }
-  if (me && !urlLang && me.user.lang && me.user.lang !== lang && !store.get('zb-student-lang')) { lang = me.user.lang; applyLang() }
+  if (me && !urlLang && me.user.lang && me.user.lang !== lang && !cookieLang() && !store.get('zb-student-lang')) { lang = me.user.lang; applyLang() }
   setNav()
   route()
 }
