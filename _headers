@@ -1,0 +1,6 @@
+# Beheer en studentendeel altijd opnieuw laten controleren, zodat niemand een oude
+# app.js met nieuwe vertalingen (of andersom) krijgt.
+/beheer/*
+  Cache-Control: no-cache
+/student/*
+  Cache-Control: no-cache
