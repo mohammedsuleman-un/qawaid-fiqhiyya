@@ -17,5 +17,7 @@ export async function onRequestGet ({ request, env, params }) {
     const units = await studyUnits(conn, data.book.id, lang)
     return page(renderBook({ ...data, lang, staff, overview: { units } }), staff)
   }
-  return page(renderBook({ ...data, lang, staff }), staff)
+  // Boek zonder lessen: hoofdstukkaarten (als die er zijn) bovenaan de hele tekst.
+  const units = data.chapters.some((c) => c.unit != null) ? await studyUnits(conn, data.book.id, lang) : null
+  return page(renderBook({ ...data, lang, staff, studyUnits: units }), staff)
 }
