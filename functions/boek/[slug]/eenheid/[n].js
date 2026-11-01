@@ -1,5 +1,5 @@
-// GET /boek/<slug>/eenheid/<n>?lang=ar|nl: hoofdstukpagina van een ZAD-eenheid, met de
-// tabbladen voor alle lessen van die eenheid samen. Medewerkers zien met ?voorbeeld een concept.
+// GET /boek/<slug>/eenheid/<n>?lang=ar|nl: hoofdstukpagina van een eenheid (ZAD, of een boek
+// zoals تلخيص جمع الجوامع), met de tabbladen voor alle lessen of onderdelen van die eenheid samen. Medewerkers zien met ?voorbeeld een concept.
 import { db } from '../../../../lib/db.js'
 import { loadBook, viewer, isStaff, pickLang } from '../../../../lib/library.js'
 import { renderBook } from '../../../../lib/render.js'
@@ -13,7 +13,7 @@ export async function onRequestGet ({ request, env, params }) {
   if (!n) return notFound(lang)
   const staff = isStaff(await viewer(conn, request))
   const data = await loadBook(conn, params.slug, lang, { staff, bodies: false })
-  if (!data?.book.zad_level) return notFound(lang)
+  if (!data || !data.chapters.some((c) => c.unit === n)) return notFound(lang)
   const preview = staff && new URL(request.url).searchParams.has('voorbeeld')
   const study = await loadUnitStudy(conn, data.chapters, n, lang, { preview })
   if (!study) return notFound(lang)

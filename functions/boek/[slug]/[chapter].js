@@ -21,6 +21,6 @@ export async function onRequestGet ({ request, env, params }) {
   const preview = staff && new URL(request.url).searchParams.has('voorbeeld')
   const own = data.book.zad_level ? await loadStudy(conn, chapter.id, lang, { preview }) : null
   const study = own?.scope === 'lesson' ? own : null
-  const unitLink = !!(data.book.zad_level && chapter.unit != null && (own?.scope === 'unit' || await loadUnitStudy(conn, data.chapters, chapter.unit, lang)))
+  const unitLink = !!(chapter.unit != null && (own?.scope === 'unit' || await loadUnitStudy(conn, data.chapters, chapter.unit, lang)))
   return page(renderBook({ ...data, chapter, lang, staff, terms, study, unitLink }), staff || preview)
 }
