@@ -311,3 +311,13 @@ details.login>summary::after,details.login>summary::before{content:none!importan
 /* Donker: groene tekst in studiekaarten leesbaar houden */
 :root[data-theme="dark"] .mm-b>.nd b,:root[data-theme="dark"] .cmp tbody th,:root[data-theme="dark"] .rl .rl-r,:root[data-theme="dark"] .rl-ar,:root[data-theme="dark"] .dp-p b,:root[data-theme="dark"] .ay .htext,:root[data-theme="dark"] .tile .ic{color:var(--accent)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mm-b>.nd b,:root:not([data-theme="light"]) .cmp tbody th,:root:not([data-theme="light"]) .rl .rl-r,:root:not([data-theme="light"]) .rl-ar,:root:not([data-theme="light"]) .dp-p b,:root:not([data-theme="light"]) .ay .htext,:root:not([data-theme="light"]) .tile .ic{color:var(--accent)}}
+
+/* Taalkeuze NL | AR */
+.langseg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;flex:none;direction:ltr}
+.langseg a,.langseg button{font:inherit;font-size:13px;font-weight:700;letter-spacing:.03em;padding:0 11px;min-height:34px;min-width:40px;display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--surface);color:var(--muted);text-decoration:none;cursor:pointer}
+.langseg>*+*{border-inline-start:1px solid var(--line)!important}
+.langseg a:hover,.langseg button:hover{color:var(--ink);background:var(--surface2)}
+.langseg [aria-current="true"],.langseg [aria-pressed="true"]{background:var(--green);color:#fff}
+:root[data-theme="dark"] .langseg [aria-current="true"],:root[data-theme="dark"] .langseg [aria-pressed="true"]{background:#1e5b4f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .langseg [aria-current="true"],:root:not([data-theme="light"]) .langseg [aria-pressed="true"]{background:#1e5b4f}}
+@media print{.langseg{display:none!important}}
