@@ -73,6 +73,12 @@ function applyLang () {
   document.title = `${t.admin} · ${t.appName}`
   $('#brandName', document).textContent = t.appName
   $('#brandSub', document).textContent = t.admin
+  // Knop terug naar de openbare site, in de taal van Beheer.
+  for (const el of document.querySelectorAll('.tosite')) {
+    el.href = '/bibliotheek?lang=' + lang
+    el.querySelector('.tosite-l').textContent = lang === 'ar' ? 'العودة إلى الموقع' : 'Naar de website'
+    el.querySelector('[aria-hidden]').textContent = lang === 'ar' ? '→' : '←'
+  }
 }
 
 function setNav () {

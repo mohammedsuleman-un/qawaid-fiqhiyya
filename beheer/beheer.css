@@ -136,3 +136,14 @@ details summary{cursor:pointer;color:var(--accent);font-size:13px;margin-top:6px
 .side-tools a{color:#e9f1ee;font-size:13.5px;text-decoration:none}
 .side-tools .themesw{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font-size:17px;cursor:pointer}
 .pwhint.ok{color:#1d7a46}
+
+/* Terug naar de openbare website: in de zijbalk, en bovenaan het inlogscherm. */
+.tosite{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px;text-decoration:none;border-radius:99px;padding:9px 16px;min-height:42px}
+.tosite.in-side{display:flex;margin:0 12px 12px;background:#fbf8f1;color:var(--green);justify-content:center}
+.tosite.in-side:hover{background:#fff}
+.anon-top{display:none;padding:14px 16px 0}
+body.anon .anon-top{display:block}
+.anon-top .tosite{background:var(--green);color:#fff}
+:root[data-theme="dark"] .anon-top .tosite{background:#1e5b4f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .anon-top .tosite{background:#1e5b4f}}
+@media (max-width:900px){.tosite.in-side{margin:0 12px 10px;align-self:flex-start}.side-nav{display:flex;flex-direction:column}}
