@@ -11,6 +11,7 @@ export async function onRequestPost ({ params, data: { conn, user } }) {
   const [f] = await conn.execute('SELECT * FROM feedback WHERE id = ?', [fid])
   if (!f) fail(404, 'Feedback niet gevonden')
   if (!can(user, 'feedback.manage') && Number(f.assigned_to) !== user.id) fail(403, 'Deze feedback is niet aan jou toegewezen')
+  if (f.entity_type === 'page') fail(400, 'Deze melding hoort niet bij een hoofdstuk of artikel')
   const t = await ensureTranslation(conn, f.entity_type, f.entity_id, f.lang)
   const [pub] = t.published_version_id
     ? await conn.execute('SELECT title, body FROM content_versions WHERE id = ?', [t.published_version_id]) : []

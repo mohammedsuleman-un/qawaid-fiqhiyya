@@ -232,6 +232,32 @@ test('feedback verwerken: toewijzen, redacteur ziet alleen eigen, concept uit fe
   assert.ok(v.body.length > 100) // begint met de gepubliceerde Arabische tekst
 })
 
+test('feedback vanaf elke pagina: pagina en alinea onthouden, ingelogde afzender herkend, geen concept', async () => {
+  const base = { lang: 'nl', category: 'technical', page_url: '/personen?lang=nl&zbfb=x', page_title: 'Personen', anchor: 'main|3', quote: 'Een alinea', elapsed: 9000 }
+  const anon = await call(conn, 'POST', '/api/feedback', feedback, { body: { ...base, message: 'Knop werkt niet op mobiel' }, ip: '8.8.8.8' })
+  assert.equal(anon.status, 200)
+  const dup = await call(conn, 'POST', '/api/feedback', feedback, { body: { ...base, message: 'Knop werkt niet op mobiel' }, ip: '8.8.8.8' })
+  assert.equal(dup.status, 200)
+  const ext = await call(conn, 'POST', '/api/feedback', feedback, { body: { ...base, page_url: 'https://evil.example/x', message: 'Andere site' }, ip: '8.8.8.9' })
+  assert.equal(ext.status, 400)
+  const links = await call(conn, 'POST', '/api/feedback', feedback, { body: { ...base, message: 'http://a http://b www.c.nl http://d' }, ip: '8.8.8.10' })
+  assert.equal(links.status, 400)
+  const mine = await call(conn, 'POST', '/api/feedback', feedback, { body: { ...base, message: 'Melding van een beheerder', elapsed: 1500 }, cookie: s.adminCookie, ip: '8.8.8.11' })
+  assert.equal(mine.status, 200)
+  const rows = await conn.execute("SELECT * FROM feedback WHERE entity_type = 'page' ORDER BY id")
+  assert.equal(rows.length, 2)
+  assert.equal(rows[0].page_url, '/personen?lang=nl')
+  assert.equal(rows[0].anchor, 'main|3')
+  assert.equal(rows[0].user_id, null)
+  assert.ok(rows[1].user_id)
+  const all = await call(conn, 'GET', '/api/admin/feedback', adminFeedback, { cookie: s.adminCookie })
+  const item = all.data.find((f) => f.id === rows[1].id || Number(f.id) === Number(rows[1].id))
+  assert.equal(item.page_title, 'Personen')
+  assert.match(item.user_roles, /admin/)
+  const d = await call(conn, 'POST', '/api/admin/feedback/x/draft', feedbackDraft, { cookie: s.adminCookie, params: { id: String(rows[0].id) }, body: {} })
+  assert.equal(d.status, 400)
+})
+
 test('dashboard, auditlog en back-up', async () => {
   const d = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.superCookie })
   assert.equal(d.data.books.published, 29) // talkhis, ZAD Geloofsleer (1) t/m (4), niveau 3 en 4, Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1), Arabisch (1), Koranexegese (2), Hadith (2), Profetische biografie (2), Fiqh (2), Opvoeding (2) en Arabisch (2)

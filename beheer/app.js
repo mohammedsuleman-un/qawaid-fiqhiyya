@@ -550,6 +550,12 @@ async function reviewView () {
 }
 
 // ---------- feedback ----------
+// Link naar de pagina waar de melding vandaan kwam; ?zbfb= laat assets/feedback.js de alinea oplichten.
+function fbLink (f) {
+  const u = new URL(f.page_url, location.origin)
+  if (f.anchor) u.searchParams.set('zbfb', f.anchor)
+  return u.pathname + u.search + u.hash
+}
 async function feedbackView () {
   const p = new URLSearchParams(location.hash.split('?')[1] || '')
   const qs = new URLSearchParams()
@@ -562,7 +568,9 @@ async function feedbackView () {
       ${has('feedback.manage') ? `<label class="inline"><input type="checkbox" data-filter="mine" ${p.get('mine') ? 'checked' : ''}> ${t.mine}</label>` : ''}</p>
     ${rows.map((f) => `<form class="card fb" data-id="${f.id}">
       <div class="head"><b>${esc(t.fbCats[f.category] || f.category)}</b> ${badge(f.status)} <span class="pill">${esc(t.langs[f.lang])}</span>
-        <a href="${esc(f.info?.url || '#')}?lang=${f.lang}" target="_blank" rel="noopener" dir="auto">${esc(stripTags(f.info?.book_title || ''))} · ${esc(stripTags(f.info?.title_ar || f.info?.title_nl || ''))} ↗</a><small class="muted">${date(f.created_at)}</small></div>
+        ${f.info ? `<a href="${esc(f.info.url)}?lang=${f.lang}" target="_blank" rel="noopener" dir="auto">${esc(stripTags(f.info.book_title || ''))} · ${esc(stripTags(f.info.title_ar || f.info.title_nl || ''))} ↗</a>` : ''}
+        ${f.page_url ? `<a href="${esc(fbLink(f))}" target="_blank" rel="noopener" dir="auto">${f.info ? t.fbPara : esc(f.page_title || f.page_url)} ↗</a>` : ''}<small class="muted">${date(f.created_at)}</small></div>
+      <p class="muted"><small>${t.fbFrom}: ${f.user_id ? `${esc(f.user_name || f.user_email || '#' + f.user_id)}${f.user_roles ? ' (' + esc(String(f.user_roles).split(',').map((r) => t.fbRoles[r] || r).join(', ')) + ')' : ''}` : t.fbAnon}${f.page_url ? ` · ${t.fbPage}: <span dir="ltr">${esc(f.page_url)}</span>` : ''}</small></p>
       ${f.quote ? `<blockquote dir="auto">${esc(f.quote)}</blockquote>` : ''}
       <p dir="auto"><b>${t.message}:</b> ${esc(f.message)}</p>
       ${f.suggestion ? `<p dir="auto"><b>${t.suggestion}:</b> ${esc(f.suggestion)}</p>` : ''}
@@ -573,7 +581,7 @@ async function feedbackView () {
         <label>${t.note}<input name="internal_note" value="${esc(f.internal_note)}"></label>
       </div>
       <p class="actions"><button class="primary">${t.save}</button>
-        ${f.draft_version_id ? `<a class="btn" href="#/versie/${f.draft_version_id}">${t.version} ${f.draft_version_id}</a>` : has('content.edit') ? `<button type="button" data-draft>${t.makeDraft}</button>` : ''}</p>
+        ${f.draft_version_id ? `<a class="btn" href="#/versie/${f.draft_version_id}">${t.version} ${f.draft_version_id}</a>` : has('content.edit') && f.info ? `<button type="button" data-draft>${t.makeDraft}</button>` : ''}</p>
       <p class="msg"></p></form>`).join('') || `<p class="muted">${t.noItems}</p>`}`)
   $$('[data-filter]').forEach((s) => s.addEventListener('change', () => {
     const n = new URLSearchParams(p)
