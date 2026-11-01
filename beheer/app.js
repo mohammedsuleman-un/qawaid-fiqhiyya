@@ -87,6 +87,7 @@ function setNav () {
     ['#/categorieen', t.nav.categories, has('categories.manage')],
     ['#/beoordelen', t.nav.review, has('content.edit')],
     ['#/feedback', t.nav.feedback, has('feedback.assigned')],
+    ['/student/#/vragen', t.nav.tests, has('content.edit') || has('tests.manage')],
     ['#/gebruikers', t.nav.users, has('users.manage')],
     ['#/audit', t.nav.audit, has('audit.view')],
     ['#/instellingen', t.nav.settings, has('settings.manage')],
@@ -188,7 +189,7 @@ async function dashboardView () {
       ${tile('👥', t.tiles.users, '#/gebruikers', has('users.manage'))}
       ${tile('💬', t.tiles.feedback, '#/feedback', has('feedback.assigned'))}
       ${tile('🎓', t.tiles.zad, '', false)}
-      ${tile('✅', t.tiles.quizzes, '', false)}
+      ${tile('✅', t.tiles.quizzes, '/student/#/' + (has('tests.manage') ? 'docent' : 'vragen'), has('tests.manage') || has('content.edit'))}
       ${tile('🌐', t.tiles.translations, '#/beoordelen', has('content.edit'))}
       ${tile('📊', t.tiles.stats, '', false)}
       ${tile('⚙️', t.tiles.settings, '#/instellingen', has('settings.manage'))}

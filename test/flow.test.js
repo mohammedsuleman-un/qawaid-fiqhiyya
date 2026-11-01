@@ -60,7 +60,7 @@ const page = async (mod, path, params, cookie) => {
 
 test('installatie: migraties en het eerste boek', async () => {
   const steps = []
-  for (let i = 0; i < 150; i++) {
+  for (let i = 0; i < 200; i++) {
     const r = await call(conn, 'POST', '/api/setup', setup)
     assert.equal(r.status, 200, JSON.stringify(r.data))
     steps.push(r.data.migrations[0] || r.data.seeded)
