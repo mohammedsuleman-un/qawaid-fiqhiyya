@@ -10,7 +10,7 @@ const H = 'zb_backup_20261101d_hadith_notes'
 const N = 'zb_backup_20261101d_hadith_new'
 
 export default {
-  id: 158,
+  id: 159,
   name: 'info-hadith-aanvulling',
   up: [
     `CREATE TABLE IF NOT EXISTS ${H} LIKE hadith_notes`,

@@ -6,7 +6,8 @@ const user = (role, totp = true) => ({ id: 1, roles: [role], totp_enabled: totp,
 
 test('rollen hebben de juiste rechten', () => {
   assert.ok(can(user('superadmin'), 'users.manage'))
-  assert.ok(!can(user('admin'), 'users.manage'))
+  assert.ok(can(user('admin'), 'users.manage'))
+  assert.ok(!can(user('editor'), 'users.manage'))
   assert.ok(can(user('admin'), 'content.publish'))
   assert.ok(!can(user('editor'), 'content.publish'))
   assert.ok(!can(user('editor'), 'content.review'))
