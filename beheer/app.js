@@ -1,9 +1,9 @@
 // Beheeromgeving van De Zuivere Bron. Praat alleen met /api/admin; de sessie staat in
 // een HttpOnly-cookie. Knoppen worden verborgen als je een recht mist, maar de server
 // controleert elk recht zelf opnieuw.
-import { STRINGS, ROLE_NAMES } from './i18n.js'
-import { diffHtml } from './diff.js'
-import { mountEditor } from './editor.js'
+import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261101u'
+import { diffHtml } from './diff.js?v=20261101u'
+import { mountEditor } from './editor.js?v=20261101u'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -604,9 +604,20 @@ async function feedbackView () {
 }
 
 // ---------- gebruikers ----------
+const USER_GROUPS = {
+  staff: (u) => u.roles.some((r) => ['superadmin', 'admin', 'editor'].includes(r)),
+  teachers: (u) => u.roles.includes('teacher'),
+  students: (u) => u.roles.includes('student') || !u.roles.length,
+  all: () => true
+}
+
 async function usersView () {
-  const [users, invites, roles] = await Promise.all([api('users'), api('invitations'), api('roles')])
+  const [allUsers, invites, roles] = await Promise.all([api('users'), api('invitations'), api('roles')])
   const isSuper = me.roles.includes('superadmin')
+  const q = new URLSearchParams(location.hash.split('?')[1] || '')
+  const group = USER_GROUPS[q.get('groep')] ? q.get('groep') : 'staff'
+  const users = allUsers.filter(USER_GROUPS[group])
+  const tabs = `<nav class="tabs">${Object.keys(USER_GROUPS).map((g) => `<a href="#/gebruikers?groep=${g}"${g === group ? ' class="on" aria-current="page"' : ''}>${esc(t.userGroups[g])} <span class="pill">${allUsers.filter(USER_GROUPS[g]).length}</span></a>`).join('')}</nav>`
   const roleOpts = roles.roles.filter((r) => isSuper || r.code !== 'superadmin').map((r) => [r.code, roleName(r.code)])
   const permName = (p) => lang === 'ar' ? p.name_ar : p.name_nl
   render(html`<h1>${t.nav.users}</h1>
@@ -616,6 +627,8 @@ async function usersView () {
       <span class="end"><button class="primary">${t.invite}</button></span></div><p class="msg"></p></form>
     ${invites.length ? `<section class="card"><h2>${t.invitations}</h2><table class="tbl"><tbody>${invites.map((i) => `<tr><td dir="ltr">${esc(i.email)}</td><td>${esc(roleName(i.role_code))}</td><td><small>${date(i.expires_at)}</small></td>
       <td class="nowrap"><button data-resend="${i.id}">${t.resend}</button> <button class="danger" data-revoke="${i.id}">${t.revoke}</button></td></tr>`).join('')}</tbody></table><div id="invlink" class="msg"></div></section>` : ''}
+    ${tabs}
+    ${users.length ? '' : `<p class="muted">${t.noItems}</p>`}
     <table class="tbl users"><thead><tr><th>${t.name}</th><th>${t.roles}</th><th>${t.twofa}</th><th>${t.lastLogin}</th><th></th></tr></thead><tbody>
     ${users.map((u) => `<tr class="${u.status !== 'active' ? 'archived' : ''}" data-user="${u.id}"><td><b>${esc(u.name || '')}</b><br><small dir="ltr">${esc(u.email)}</small> ${u.status !== 'active' ? badge(u.status) : ''}</td>
       <td><div class="roles">${roleOpts.map(([c, n]) => `<label class="inline"><input type="checkbox" value="${c}" ${u.roles.includes(c) ? 'checked' : ''}> ${esc(n)}</label>`).join('')}
