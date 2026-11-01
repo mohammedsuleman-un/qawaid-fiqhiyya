@@ -165,3 +165,8 @@ ol.opts-rv,ul.opts-rv{margin:2px 0;padding-inline-start:22px;font-size:14px;line
 .pick small{font-size:12px;color:var(--muted)}
 .pick.on{border-color:var(--green);background:var(--surface2)}
 .pick.on small{color:var(--ok)}
+
+/* Donkere modus ook als de bezoeker hem zelf kiest (knop in de kopbalk). */
+:root[data-theme="dark"] .tile b{color:var(--accent)}
+:root[data-theme="dark"] .bt{color:var(--accent)}
+.topright .themesw{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:17px;cursor:pointer;padding:0}

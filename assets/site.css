@@ -272,5 +272,42 @@ nav.crumbs a:hover{background:none}
   .study .st-grp{flex-basis:100%;border:0!important;margin:4px 0 0!important;padding:0 4px!important}
   .totop{width:48px;height:48px}
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lnav .ln-prev,:root:not([data-theme="light"]) .lnav .ln-next{background:#1e5b4f}}
+@media (max-width:640px) and (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lnav a.ln-prev,:root:not([data-theme="light"]) .lnav a.ln-next{background:#1e5b4f}}
 .book h2.st-chap{text-align:start}
+
+/* Donkere modus ook als de bezoeker hem zelf kiest (knop in de kopbalk). */
+:root[data-theme="dark"] .logo img,:root[data-theme="dark"] .brand img{background:#f3efe6}
+  :root[data-theme="dark"] .logo b{color:var(--accent)}
+:root[data-theme="dark"] .lib h1,:root[data-theme="dark"] .card h2{color:var(--accent)}
+:root[data-theme="dark"] .topnav a[aria-current]{color:var(--accent)}
+:root[data-theme="dark"] a.how b,:root[data-theme="dark"] .resume b{color:var(--accent)}
+@media (max-width:640px){:root[data-theme="dark"] .lnav a.ln-prev,:root[data-theme="dark"] .lnav a.ln-next{background:#1e5b4f}}
+
+/* Kopbalk: taal, licht/donker en inloggen */
+.topact{display:flex;align-items:center;gap:8px;margin-inline-start:auto}
+.themesw{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--ink);font-size:18px;cursor:pointer;line-height:1;padding:0}
+.themesw:hover{border-color:var(--accent);background:var(--surface2)}
+details.login{position:relative}
+details.login summary{list-style:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:var(--green);color:#fff;border-radius:99px;padding:7px 14px;font-size:14px;font-weight:600;white-space:nowrap;min-height:38px}
+details.login summary::-webkit-details-marker{display:none}
+details.login summary svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+details.login.in summary{background:var(--surface2);color:var(--green);border:1px solid var(--line)}
+details.login .login-l{max-width:12em;overflow:hidden;text-overflow:ellipsis}
+.login-menu{position:absolute;inset-inline-end:0;top:calc(100% + 8px);z-index:60;min-width:250px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column}
+.login-menu a{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--ink)}
+.login-menu a:hover,.login-menu a:focus-visible{background:var(--surface2)}
+.login-menu b{color:var(--green);font-size:15px}
+.login-menu small{color:var(--muted);font-size:13px}
+:root[data-theme="dark"] details.login summary{background:#1e5b4f}
+:root[data-theme="dark"] .login-menu b{color:var(--accent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) details.login summary{background:#1e5b4f}:root:not([data-theme="light"]) .login-menu b{color:var(--accent)}}
+@media (max-width:640px){
+  .topact{gap:6px}
+  details.login .login-l{display:none}
+  details.login summary{padding:0;width:38px;justify-content:center}
+  .langsw{padding:5px 10px}
+}
+details.login>summary::after,details.login>summary::before{content:none!important;display:none!important}
+/* Donker: groene tekst in studiekaarten leesbaar houden */
+:root[data-theme="dark"] .mm-b>.nd b,:root[data-theme="dark"] .cmp tbody th,:root[data-theme="dark"] .rl .rl-r,:root[data-theme="dark"] .rl-ar,:root[data-theme="dark"] .dp-p b,:root[data-theme="dark"] .ay .htext,:root[data-theme="dark"] .tile .ic{color:var(--accent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mm-b>.nd b,:root:not([data-theme="light"]) .cmp tbody th,:root:not([data-theme="light"]) .rl .rl-r,:root:not([data-theme="light"]) .rl-ar,:root:not([data-theme="light"]) .dp-p b,:root:not([data-theme="light"]) .ay .htext,:root:not([data-theme="light"]) .tile .ic{color:var(--accent)}}

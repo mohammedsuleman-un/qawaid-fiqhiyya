@@ -92,6 +92,8 @@ langBtn.onclick = () => {
 }
 
 function setNav () {
+  // Naam voor het inlogmenu in de kopbalk van de site (alleen een weergavehint).
+  try { if (me) localStorage.setItem('zb:who', me.user.name || me.user.email); else localStorage.removeItem('zb:who') } catch (e) {}
   if (!me) { navEl.innerHTML = ''; whoEl.innerHTML = ''; document.body.classList.add('anon'); return }
   document.body.classList.remove('anon')
   const items = [['#/', t.nav.home], ['#/boeken', t.nav.books], ['#/toetsen', t.nav.tests], ['#/resultaten', t.nav.results]]

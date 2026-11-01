@@ -333,3 +333,6 @@ html[dir="rtl"] .st-grp{text-transform:none;font-size:12px}
 .su-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .su-grid .unit-card{margin:0}
 .su-grid .unit-card b{font-size:20px}
+
+/* Donkere modus ook als de bezoeker hem zelf kiest (knop in de kopbalk). */
+:root[data-theme="dark"] .unit-banner b{color:#9fd4c9}
