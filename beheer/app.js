@@ -645,8 +645,9 @@ async function usersView () {
     </tbody></table>
     <details class="card"><summary>${t.permMatrix}</summary><table class="tbl matrix"><thead><tr><th></th>${roles.roles.map((r) => `<th>${esc(roleName(r.code))}</th>`).join('')}</tr></thead>
       <tbody>${roles.permissions.map((p) => `<tr><td>${esc(permName(p))}</td>${roles.roles.map((r) => `<td>${r.permissions.includes(p.code) ? '✓' : ''}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`)
-  form($('#inv'), async (d) => linkBox(t.inviteLink, (await api('invitations', 'POST', d)).link))
-  $$('[data-resend]').forEach((b) => b.addEventListener('click', async () => { const r = await api('invitations/' + b.dataset.resend, 'POST'); $('#invlink').innerHTML = linkBox(t.inviteLink, r.link) }))
+  const inviteHelp = (r) => linkBox(r.mailed ? (t.inviteMailed || t.inviteLink) : t.inviteLink, r.link)
+  form($('#inv'), async (d) => inviteHelp(await api('invitations', 'POST', d)))
+  $$('[data-resend]').forEach((b) => b.addEventListener('click', async () => { const r = await api('invitations/' + b.dataset.resend, 'POST'); $('#invlink').innerHTML = inviteHelp(r) }))
   $$('[data-revoke]').forEach((b) => b.addEventListener('click', async () => { await api('invitations/' + b.dataset.revoke, 'DELETE'); usersView() }))
   $$('tr[data-user]').forEach((row) => {
     const uid = row.dataset.user
