@@ -51,13 +51,14 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
   assert.deepEqual(roles.map((r) => [r.email, r.role_code]), [['eigenaar@example.org', 'superadmin'], ['redacteur@example.org', 'editor']])
   const [{ n }] = await conn.execute("SELECT COUNT(*) AS n FROM search_index WHERE plain LIKE '%⟦12⟧%'")
   assert.equal(Number(n), 1)
-  // Het hadithregister is gevuld uit de opmaak, met paginanummers, en de personen staan klaar als concept.
+  // Het hadithregister is gevuld uit de opmaak, met paginanummers; alleen de goedgekeurde biografieën (ZAD-import, al-Aʿlām) zijn gepubliceerd.
   const hadith = await conn.execute("SELECT h.page, h.text FROM hadith_index h JOIN chapters c ON h.entity_type = 'chapter' AND c.id = h.entity_id WHERE c.book_id = 1")
   assert.equal(hadith.length, blocks.reduce((sum, b) => sum + (b.html.match(/<span class="hadith">/g) || []).length, 0))
   assert.ok(hadith.length > 0 && hadith.every((h) => h.page > 0 && h.text))
   const [{ p, pub }] = await conn.execute(`SELECT COUNT(*) AS p, (SELECT COUNT(*) FROM content_translations t JOIN articles a ON a.id = t.entity_id
     JOIN content_versions v ON v.id = t.published_version_id
-    WHERE t.entity_type = 'article' AND a.kind = 'person' AND v.reason NOT LIKE 'Uit ZAD-import%') AS pub FROM persons`)
+    WHERE t.entity_type = 'article' AND a.kind = 'person' AND v.reason NOT LIKE 'Uit ZAD-import%'
+      AND v.reason NOT LIKE 'Concept uit al-A%') AS pub FROM persons`)
   assert.ok(Number(p) > 50)
   assert.equal(Number(pub), 0)
 })

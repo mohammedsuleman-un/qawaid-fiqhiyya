@@ -301,7 +301,9 @@ test('hadith per hoofdstuk en personenregister; biografie pas zichtbaar na publi
   assert.ok(!pp.html.includes('ثوبان')) // alleen uit ZAD, niet in dit boek
   assert.match(pp.html, /عبد الله بن عباس/)
   const persons = await call(conn, 'GET', '/api/admin/persons', adminPersons, { cookie: s.editorCookie })
-  const p = persons.data.find((x) => x.slug === 'ibn-abbas') || persons.data[0]
+  // Ibn ʿAbbās heeft sinds migratie 156 een gepubliceerde biografie; neem een persoon zonder.
+  assert.equal(persons.data.find((x) => x.slug === 'ibn-abbas').status_nl, 'published')
+  const p = persons.data.find((x) => x.slug === 'al-qushayri') || persons.data.find((x) => x.status_nl === 'draft')
   assert.equal(p.status_nl, 'draft')
   const one = await page(personPage, '/persoon/' + p.slug + '?lang=nl', { slug: p.slug })
   assert.match(one.html, /biografie wordt nog opgesteld/)
