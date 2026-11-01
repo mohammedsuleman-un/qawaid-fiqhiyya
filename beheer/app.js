@@ -389,6 +389,7 @@ async function hadithView () {
     seen.add(h.hkey)
     out.push(`<form class="card hadith-note" data-hk="${esc(h.hkey)}"><p class="htext" dir="rtl">${esc(h.text)}</p>
       <p><small><a href="/boek/${esc(h.book_slug)}/${esc(h.chapter_slug)}?lang=ar" target="_blank" rel="noopener">${t.page} ${esc(h.page ?? '')} ↗</a>${again ? ' · ' + t.sameHadith : ''}</small></p>
+      ${h.draft_source && !again ? `<p class="hdraft"><b>${t.hDraft}</b> <span dir="rtl">${esc(h.draft_source)}</span>${h.draft_url ? ` · <a href="${esc(h.draft_url)}" target="_blank" rel="noopener">${t.hCheck} ↗</a>` : ''}${h.source ? '' : ` <button type="button" class="link" data-take>${t.hTake}</button>`}</p>` : ''}
       <div class="grid2"><label>${t.hSource}<input name="source" dir="auto" value="${esc(h.source || '')}"></label>
       <label>${t.hGrade}<input name="grade" dir="auto" value="${esc(h.grade || '')}"></label>
       <label class="wide">${t.hNote}<textarea name="note" dir="auto" rows="2">${esc(h.note || '')}</textarea></label></div>
@@ -396,6 +397,8 @@ async function hadithView () {
   }
   render(html`<h1>${t.nav.hadith}</h1><p class="muted">${fmt(t.hadithHelp, { n: rows.length })}</p>${out.join('') || `<p>${t.noItems}</p>`}`)
   $$('[data-hk]').forEach((f) => form(f, async (d) => { await api('hadith', 'PATCH', { hkey: f.dataset.hk, ...d }); return t.saved }))
+  // Concept overnemen: zet de gevonden vindplaats in het veld Bron; opslaan blijft een eigen keuze.
+  $$('[data-take]').forEach((b) => b.addEventListener('click', () => { const f = b.closest('form'); f.elements.source.value = rows.find((h) => h.hkey === f.dataset.hk).draft_source; f.elements.source.focus() }))
 }
 
 // ---------- editor ----------
