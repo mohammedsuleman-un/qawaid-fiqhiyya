@@ -1,7 +1,9 @@
 // PATCH {roles, status, permissions}: rollen, status (active/deactivated) en losse rechten
 // van een gebruiker wijzigen. permissions = [{code, granted}] vervangt de losse rechten.
+// GET: wat er verdwijnt bij definitief verwijderen. DELETE {confirm_email}: definitief
+// verwijderen (zie deleteUser in lib/users.js).
 import { json, body, need, fail, id } from '../../../../../lib/http.js'
-import { ROLE_CODES, guardLastSuperadmin } from '../../../../../lib/users.js'
+import { ROLE_CODES, guardLastSuperadmin, deletionSummary, deleteUser } from '../../../../../lib/users.js'
 import { PERMISSIONS } from '../../../../../lib/rbac.js'
 import { audit } from '../../../../../lib/audit.js'
 
@@ -44,4 +46,34 @@ export async function onRequestPatch ({ request, params, data: { conn, user } })
     await audit(conn, user, 'user.permissions', 'user', targetId, { email: target.email, permissions: input.permissions })
   }
   return json({ ok: true })
+}
+
+async function loadTarget (conn, user, targetId) {
+  const [target] = await conn.execute('SELECT id, email, name, status FROM users WHERE id = ?', [targetId])
+  if (!target) fail(404, 'Gebruiker niet gevonden')
+  const [targetSuper] = await conn.execute("SELECT 1 AS x FROM user_roles WHERE user_id = ? AND role_code = 'superadmin'", [targetId])
+  if (targetSuper && !user.roles.includes('superadmin')) fail(403, 'Alleen een superbeheerder kan een superbeheerder verwijderen')
+  return target
+}
+
+export async function onRequestGet ({ params, data: { conn, user } }) {
+  need(user, 'users.manage')
+  const targetId = id(params.id)
+  const target = await loadTarget(conn, user, targetId)
+  return json({ id: Number(target.id), email: target.email, name: target.name, status: target.status, ...await deletionSummary(conn, targetId) })
+}
+
+export async function onRequestDelete ({ request, params, data: { conn, user } }) {
+  need(user, 'users.manage')
+  const targetId = id(params.id)
+  if (targetId === user.id) fail(400, 'Je kunt je eigen account niet verwijderen')
+  const target = await loadTarget(conn, user, targetId)
+  const input = await body(request)
+  if (String(input.confirm_email || '').trim().toLowerCase() !== target.email.toLowerCase()) {
+    fail(400, 'Typ ter bevestiging precies het e-mailadres van deze gebruiker')
+  }
+  await guardLastSuperadmin(conn, targetId, { newStatus: 'deleted' })
+  const removed = await deleteUser(conn, targetId, target.email)
+  await audit(conn, user, 'user.delete', 'user', targetId, { email: target.email, name: target.name, removed })
+  return json({ ok: true, removed })
 }
