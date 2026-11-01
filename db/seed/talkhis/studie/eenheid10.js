@@ -26,7 +26,7 @@ export default kaart({
   points: [
     [114, 'المطلق الدال على الماهية بلا قيد الوحدة ولا الكثرة.', 'Het onbepaalde woord duidt de soort aan zonder beperking tot één of tot velen.'],
     [114, 'المطلق يشبه العام، لكن عموم العام شمولي استغراقي وعموم المطلق بدلي يكفي فيه الواحد.', 'Het lijkt op het algemene woord, maar het algemene omvat alles, terwijl het onbepaalde één willekeurig geval vraagt.'],
-    [115, 'جعل الآمدي وابن الحاجب المطلق هو النكرة، وقال المصنف: وليس بشيء.', 'Al-Āmidī en Ibn al-Ḥājib stelden het onbepaalde woord gelijk aan het onbepaalde naamwoord; de auteur: dat klopt niet.'],
+    [115, 'جعل الآمدي وابن الحاجب المطلق هو النكرة، فقالا: الأمر بمطلق الماهية أمر بجزئي؛ وقال المصنف: وليس بشيء.', 'Al-Āmidī en Ibn al-Ḥājib stelden het onbepaalde woord gelijk aan het onbepaalde naamwoord en zeiden daarom: een gebod tot de soort is een gebod tot één geval; de auteur: dat klopt niet.'],
     [115, 'عند الجمهور الأمر بمطلق الماهية أمر بالماهية، ولا ينصرف إلى جزئي إلا بقرينة.', 'Volgens de meerderheid is een gebod tot de soort een gebod tot de soort zelf; het gaat pas naar één geval met een aanwijzing.'],
     [116, 'المطلق والمقيد كالعام والخاص في الأحكام اتفاقاً واختلافاً.', 'Onbepaald en beperkt volgen dezelfde regels als algemeen en specifiek, met dezelfde overeenstemming en verschillen.'],
     [116, 'إن اتحد الحكم والسبب وكانا مثبتين حمل المطلق على المقيد، إلا إذا تأخر المقيد عن العمل فهو ناسخ.', 'Bij zelfde oordeel en oorzaak, beide bevestigend, vat men het onbepaalde naar het beperkte op; komt het beperkte na de toepassing, dan heft het op.'],
@@ -35,14 +35,14 @@ export default kaart({
   ],
   terms: [
     ['المطلق', 'al-muṭlaq', 114, 'اللفظ الدال على الماهية بلا قيد الوحدة ولا الكثرة.', 'Een woord dat de soort aanduidt zonder beperking tot één of velen.', 'كقلم: ماهيته آلة تستعمل للكتابة.', 'Zoals "pen": de soort is een werktuig om mee te schrijven.'],
-    ['المقيد', 'al-muqayyad', 116, 'ما دل على الماهية مع قيد، كالدم المسفوح.', 'Wat de soort aanduidt met een beperking, zoals "vergoten bloed".'],
+    ['المقيد', 'al-muqayyad', 116, 'مثاله في المذكرات: الدم المسفوح، مقيد بالمسفوح.', 'Voorbeeld in de notities: "vergoten bloed", beperkt tot vergoten.'],
     ['الماهية', 'al-māhiyya', 114, 'حقيقة الشيء الذي وضع له اللفظ.', 'Het wezen van wat het woord aanduidt.'],
     ['العموم البدلي', 'al-ʿumūm al-badalī', 114, 'عموم المطلق: يكفي فيه الواحد.', 'De "algemeenheid" van het onbepaalde: één geval is genoeg.', 'بخلاف عموم العام فهو شمولي استغراقي.', 'Anders dan het algemene woord, dat alles omvat.'],
     ['النكرة', 'an-nakira', 114, 'الدالة على الماهية بقيد الوحدة المبهمة، كجاء رجل.', 'Duidt de soort aan met de beperking "één onbepaald", zoals "er kwam een man".'],
     ['المعرفة', 'al-maʿrifa', 114, 'الدالة على الماهية بقيد الوحدة المعينة، كجاء زيد.', 'Duidt de soort aan met de beperking "één bepaald", zoals "Zayd kwam".'],
     ['العدد', 'al-ʿadad', 114, 'الدال على الماهية بقيد الكثرة، كجاء عشرة.', 'Duidt de soort aan met de beperking "veel", zoals "tien kwamen".'],
-    ['الحمل', 'al-ḥaml', 116, 'حمل المطلق على المقيد: تقييد المطلق بقيد المقيد.', 'Het onbepaalde naar het beperkte opvatten: de beperking erop toepassen.'],
-    ['الموجب', 'al-mūjib', 116, 'السبب الذي من أجله ثبت الحكم.', 'De oorzaak waardoor het oordeel geldt.', 'كالإيذاء في تحريم الدم، والحدث في الوضوء والتيمم.', 'Zoals schade bij het verbod op bloed, en onreinheid bij wuḍūʾ en tayammum.'],
+    ['الحمل', 'al-ḥaml', 116, 'حمل المطلق على المقيد، وفيه الأحوال المذكورة في ص 116–119.', 'Het onbepaalde naar het beperkte opvatten; de gevallen staan op p. 116–119.'],
+    ['الموجب', 'al-mūjib', 116, 'هو السبب: "اتحد حكمهما وموجبهما" أي الحكم والسبب.', 'De oorzaak: "zelfde oordeel en mūjib" betekent zelfde oordeel en oorzaak.', 'كالإيذاء في تحريم الدم، والحدث في الوضوء والتيمم.', 'Zoals schade bij het verbod op bloed, en onreinheid bij wuḍūʾ en tayammum.'],
     ['المقيد بمتنافيين', 'al-muqayyad bi-mutanāfiyayn', 117, 'مطلق يتنازعه قيدان متنافيان، فلا يحمل على أحدهما إلا إن كان أولى به قياساً.', 'Een onbepaald woord met twee tegenstrijdige beperkingen; men kiest er geen, tenzij analogie er één sterker maakt.', '«إحداهن بالتراب» مع «أولاهن» و«أخراهن أو السابعة».', '"Een ervan met aarde", met "de eerste" en "de laatste of de zevende".']
   ],
   diagrams: [
@@ -121,12 +121,12 @@ export default kaart({
     ['al-amidi', 'text', [114, 115, 116], 'عرف المطلق بأنه النكرة في سياق الإثبات، وقال: الأمر بمطلق الماهية أمر بجزئي.', 'Definieerde het onbepaalde als onbepaald naamwoord in een bevestigende zin; een gebod tot de soort is een gebod tot één geval.'],
     ['ibn-al-hajib', 'text', [114, 115, 116], 'عرف المطلق بأنه الدال على شائع في جنسه، فجعله والنكرة مترادفين.', 'Definieerde het als wat één willekeurige uit de soort aanduidt; daarmee gelijk aan het onbepaalde naamwoord.'],
     ['al-hasan-al-bukhari', 'text', [117], 'الشيخ الحسن البخاري: الراجح في المنفيين عدم الحمل.', 'Ash-Shaykh al-Ḥasan al-Bukhārī: bij twee ontkennende teksten is niet opvatten het sterkst.'],
-    ['abu-hanifa', 'text', [116, 117], 'لا يحمل المطلق على المقيد عند اختلاف السبب؛ والحنفية: المقيد المتأخر ناسخ.', 'Vat bij een andere oorzaak niet op; de Ḥanafieten: een later beperkt woord heft op.'],
+    ['abu-hanifa', 'text', [117], 'لا يحمل المطلق على المقيد عند اختلاف السبب.', 'Vat bij een andere oorzaak niet op.'],
     ['ash-shafii', 'text', [117], 'يحمل المطلق على المقيد عند اختلاف السبب قياساً.', 'Vat bij een andere oorzaak op via analogie.']
   ],
   subtleties: [
     [115, '"زعم" إشارة إلى المخالفة', '"Beweerde" laat afstand zien', 'عبر المصنف عن قول الآمدي وابن الحاجب بـ"زعم" إشارة إلى عدم موافقته لهما.', 'De auteur gebruikt "beweerde" voor al-Āmidī en Ibn al-Ḥājib om te laten zien dat hij het niet met hen eens is.'],
-    [115, 'المطلق ليس النكرة في سياق النفي', 'Niet het onbepaalde naamwoord na ontkenning', 'المطلق من قبيل الخاص، والنكرة في سياق النفي تفيد العموم فليست مطلقاً؛ ولهذا قيد الآمدي بالإثبات.', 'Het onbepaalde hoort bij het specifieke; een onbepaald naamwoord na ontkenning is algemeen en dus niet onbepaald; daarom zei al-Āmidī "in een bevestigende zin".'],
+    [115, 'المطلق ليس النكرة في سياق النفي', 'Niet het onbepaalde naamwoord na ontkenning', 'المطلق من قبيل الخاص، والنكرة في سياق النفي تفيد العموم فليست مطلقاً.', 'Het onbepaalde hoort bij het specifieke; een onbepaald naamwoord na ontkenning is algemeen en dus niet onbepaald.'],
     [115, 'العبارة مختلفة والمعنى واحد', 'Andere woorden, dezelfde inhoud', 'تعريفا الآمدي وابن الحاجب مختلفان في العبارة متحدان في المعنى عندهما.', 'De definities van al-Āmidī en Ibn al-Ḥājib verschillen in woorden, maar betekenen voor hen hetzelfde.'],
     [117, 'المنفيان من باب العام والخاص', 'Twee ontkenningen zijn algemeen en specifiek', '"لا تعتق مكاتباً" نكرة في سياق النهي، فهي من باب الخاص والعام لا المطلق والمقيد.', '"Bevrijd geen slaaf met vrijkoopcontract" is een onbepaald naamwoord na een verbod; het hoort dus bij algemeen en specifiek, niet bij onbepaald en beperkt.'],
     [118, 'البيع والنكاح', 'Verkoop en huwelijk', 'في حاشية: البيع مبني على المكايسة والمشاحة، والنكاح مبني على المكارمة والمسامحة.', 'Een kanttekening: verkoop rust op afdingen en zuinigheid, het huwelijk op vrijgevigheid en toegeeflijkheid.'],
@@ -146,7 +146,7 @@ export default kaart({
     { page: 118, q: ['هل يحمل إن كان الإطلاق والتقييد في السبب؟', 'Vat men op als onbepaald en beperkt over de oorzaak gaan?'], views: [['الجمهور: يحمل', 'Meerderheid: ja'], ['الحنفية: لا، ويعمل بكل منهما', 'Ḥanafieten: nee, elk apart']], fruit: ['زكاة الفطر عن العبد الكافر.', 'Zakāt al-fiṭr voor een ongelovige slaaf.'] }
   ],
   pitfalls: [
-    [114, 'جعل المطلق من قبيل العام', 'Het onbepaalde bij het algemene rekenen', 'المطلق من قبيل الخاص، وعمومه بدلي لا شمولي.', 'Het hoort bij het specifieke; het vraagt één geval, het omvat niet alles.'],
+    [115, 'جعل المطلق من قبيل العام', 'Het onbepaalde bij het algemene rekenen', 'المطلق من قبيل الخاص، وعمومه بدلي لا شمولي.', 'Het hoort bij het specifieke; het vraagt één geval, het omvat niet alles.'],
     [115, 'الظن أن الأمر بمطلق الماهية يجزئ فيه كل جزئي بلا نظر', 'Denken dat bij een gebod tot de soort elk geval zonder meer volstaat', 'عند الجمهور القرينة تصرفه، كالعادة في ذبح الكبش.', 'Volgens de meerderheid stuurt een aanwijzing het, zoals de gewoonte een ram te slachten.'],
     [116, 'حمل المطلق على المقيد إذا تأخر المقيد عن العمل', 'Opvatten als het beperkte na de toepassing komt', 'إذا تأخر عن وقت العمل بالمطلق فهو ناسخ لا مقيد.', 'Dan is het opheffing, geen beperking.'],
     [118, 'الحمل في آيتي الوضوء والسرقة', 'Opvatten bij de handen in wuḍūʾ en diefstal', 'اختلفا في الحكم والسبب فلا حمل اتفاقاً.', 'Oordeel en oorzaak verschillen, dus volgens iedereen niet opvatten.']

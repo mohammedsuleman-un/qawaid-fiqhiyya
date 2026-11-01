@@ -28,7 +28,7 @@ export async function setUnits (conn) {
 }
 
 const m = unitCardsMigration({
-  id: 146,
+  id: 149,
   name: 'studie-talkhis-a',
   reason: 'Hoofdstukkaart تلخيص جمع الجوامع, eenheid 1–5 – op verzoek van Mohammed (1 nov 2026)',
   backup: '20261101a',

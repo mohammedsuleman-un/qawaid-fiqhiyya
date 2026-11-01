@@ -1,4 +1,4 @@
-// Studieomgeving voor تلخيص جمع الجوامع, deel b (zie migratie 146): de hoofdstukkaarten van
+// Studieomgeving voor تلخيص جمع الجوامع, deel b (zie migratie 149): de hoofdstukkaarten van
 // eenheid 6–10 worden gepubliceerd. Eerst een back-up van alle studiekaarten; down zet ze terug.
 import { unitCardsMigration } from './unit-cards.js'
 import u6 from '../seed/talkhis/studie/eenheid6.js'
@@ -8,7 +8,7 @@ import u9 from '../seed/talkhis/studie/eenheid9.js'
 import u10 from '../seed/talkhis/studie/eenheid10.js'
 
 export default unitCardsMigration({
-  id: 147,
+  id: 150,
   name: 'studie-talkhis-b',
   reason: 'Hoofdstukkaart تلخيص جمع الجوامع, eenheid 6–10 – op verzoek van Mohammed (1 nov 2026)',
   backup: '20261101b',
