@@ -165,6 +165,13 @@ test('opnieuw versturen laat de eerste link geldig; na gebruik vervalt de rest',
   assert.equal((await call(conn, 'GET', '/api/admin/invitation?token=onzin', invitationInfo)).status, 404)
 })
 
+test('beheerder nodigt uit, maar maakt geen superbeheerder', async () => {
+  const ok = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.adminCookie, body: { email: 'docent3@example.org', role: 'teacher' } })
+  assert.equal(ok.status, 200, JSON.stringify(ok.data))
+  const no = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.adminCookie, body: { email: 'baas2@example.org', role: 'superadmin' } })
+  assert.equal(no.status, 403)
+})
+
 test('beheerder maakt een studentenaccount aan', async () => {
   const r = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.superCookie, body: { email: 'leerling@example.org', role: 'student' } })
   assert.equal(r.status, 200, JSON.stringify(r.data))

@@ -667,7 +667,7 @@ async function usersView () {
         }).join('')}<button data-perms>${t.save}</button></details>` : ''}</td>
       <td>${Number(u.totp_enabled) ? '✓' : '—'}</td><td><small>${date(u.last_login_at)}</small></td>
       <td class="nowrap">${u.id === me.id ? '' : `<button data-status="${u.status === 'active' ? 'deactivated' : 'active'}">${u.status === 'active' ? t.deactivate : t.activate}</button>`}
-        ${isSuper ? `<button data-reset>${t.resetLink}</button>` : ''}
+        ${isSuper || !u.roles.includes('superadmin') ? `<button data-reset>${t.resetLink}</button>` : ''}
         ${u.id !== me.id && (isSuper || !u.roles.includes('superadmin')) ? `<button class="danger" data-delete>${t.delUser}</button>` : ''}<div class="msg"></div><div class="del-box"></div></td></tr>`).join('')}
     </tbody></table>
     <details class="card"><summary>${t.permMatrix}</summary><table class="tbl matrix"><thead><tr><th></th>${roles.roles.map((r) => `<th>${esc(roleName(r.code))}</th>`).join('')}</tr></thead>

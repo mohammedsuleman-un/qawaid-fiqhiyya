@@ -8,6 +8,8 @@ export async function onRequestPost ({ request, params, data: { conn, user } }) 
   need(user, 'users.manage')
   const [target] = await conn.execute('SELECT id, email FROM users WHERE id = ?', [id(params.id)])
   if (!target) fail(404, 'Gebruiker niet gevonden')
+  const [targetSuper] = await conn.execute("SELECT 1 AS x FROM user_roles WHERE user_id = ? AND role_code = 'superadmin'", [target.id])
+  if (targetSuper && !user.roles.includes('superadmin')) fail(403, 'Alleen een superbeheerder kan een herstellink voor een superbeheerder maken')
   const token = randomToken()
   await conn.execute('INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, NOW() + INTERVAL 1 DAY)',
     [await sha256(token), target.id])
