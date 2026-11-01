@@ -138,3 +138,9 @@ a.zcell:hover { border-color: currentColor; }
   .lnav small{font-size:14px}
   .ln-none{display:block}
 }
+/* Uitgebreide biografie: tijdlijn, werken, bijdrage */
+.pbio h3 { font-size: 1.05rem; margin: 1.2em 0 .4em; }
+.pbio ul { margin: .3em 0; padding-inline-start: 1.3em; }
+.pbio li { margin: .25em 0; }
+.pbio li strong { display: inline-block; min-width: 4.5em; font-variant-numeric: tabular-nums; }
+.pbio cite { font-style: normal; color: var(--muted, #666); font-size: .9em; }
