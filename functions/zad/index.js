@@ -7,7 +7,7 @@ import { page } from '../../lib/pages.js'
 
 export async function onRequestGet ({ request, env }) {
   const conn = db(env)
-  const lang = pickLang(request.url)
+  const lang = pickLang(request)
   const staff = isStaff(await viewer(conn, request))
   const books = await zadBooks(conn, { staff })
   return page(renderZad({ lang, books, subjects: SUBJECTS, levels: LEVELS, levelNames: LEVEL_NAMES, staff }), staff)

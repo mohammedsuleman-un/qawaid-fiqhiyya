@@ -9,9 +9,9 @@ import { page } from '../../lib/pages.js'
 export async function onRequestGet ({ request, env }) {
   const url = new URL(request.url)
   const book = url.searchParams.get('boek')
-  if (book) return Response.redirect(new URL(`/boek/${encodeURIComponent(book)}/hadith?lang=${pickLang(request.url)}`, url), 301)
+  if (book) return Response.redirect(new URL(`/boek/${encodeURIComponent(book)}/hadith?lang=${pickLang(request)}`, url), 301)
   const conn = db(env)
-  const lang = pickLang(request.url)
+  const lang = pickLang(request)
   const staff = isStaff(await viewer(conn, request))
   return page(renderHadith({ lang, rows: await hadithList(conn, { staff }) }), staff)
 }

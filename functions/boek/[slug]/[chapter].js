@@ -8,7 +8,7 @@ import { loadStudy, loadUnitStudy } from '../../../lib/study.js'
 
 export async function onRequestGet ({ request, env, params }) {
   const conn = db(env)
-  const lang = pickLang(request.url)
+  const lang = pickLang(request)
   const staff = isStaff(await viewer(conn, request))
   const data = await loadBook(conn, params.slug, lang, { staff })
   const chapter = data?.chapters.find((c) => c.slug === params.chapter)

@@ -7,7 +7,7 @@ import { page } from '../../lib/pages.js'
 export async function onRequestGet ({ request, env }) {
   const conn = db(env)
   const url = new URL(request.url)
-  const lang = pickLang(request.url)
+  const lang = pickLang(request)
   const category = url.searchParams.get('categorie') || null
   const q = (url.searchParams.get('q') || '').trim().slice(0, 200)
   const staff = isStaff(await viewer(conn, request))

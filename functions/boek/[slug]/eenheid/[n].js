@@ -8,7 +8,7 @@ import { loadUnitStudy, studyPersons } from '../../../../lib/study.js'
 
 export async function onRequestGet ({ request, env, params }) {
   const conn = db(env)
-  const lang = pickLang(request.url)
+  const lang = pickLang(request)
   const n = /^\d{1,3}$/.test(params.n) ? Number(params.n) : null
   if (!n) return notFound(lang)
   const staff = isStaff(await viewer(conn, request))

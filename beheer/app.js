@@ -10,7 +10,10 @@ const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
 const meBox = document.getElementById('meBox')
 let me = null
-let lang = localStorage.getItem('zb-admin-lang') === 'ar' ? 'ar' : 'nl'
+// Gedeelde taalkeuze voor de hele site (openbare pagina's, Studenten en Beheer).
+const cookieLang = () => { const m = document.cookie.match(/(?:^|;\s*)zb_lang=(nl|ar)(?:;|$)/); return m ? m[1] : null }
+const saveLang = (l) => { try { document.cookie = 'zb_lang=' + l + ';path=/;max-age=31536000;samesite=lax' } catch {} }
+let lang = cookieLang() || (localStorage.getItem('zb-admin-lang') === 'ar' ? 'ar' : 'nl')
 let t = STRINGS[lang]
 
 // ---------- hulpfuncties ----------
@@ -71,6 +74,7 @@ view.addEventListener('click', (e) => {
 function applyLang () {
   t = STRINGS[lang]
   document.documentElement.lang = lang
+  saveLang(lang)
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
   document.title = `${t.admin} · ${t.appName}`
   $('#brandName', document).textContent = t.appName
@@ -800,7 +804,7 @@ async function route () {
 
 async function start () {
   try { me = await api('me') } catch { me = null }
-  if (me && me.lang && !localStorage.getItem('zb-admin-lang')) { lang = me.lang; applyLang() }
+  if (me && me.lang && me.lang !== lang && !cookieLang() && !localStorage.getItem('zb-admin-lang')) { lang = me.lang; applyLang() }
   route()
 }
 

@@ -6,7 +6,7 @@ import { page, notFound } from '../../lib/pages.js'
 
 export async function onRequestGet ({ request, env, params }) {
   const conn = db(env)
-  const lang = pickLang(request.url)
+  const lang = pickLang(request)
   const staff = isStaff(await viewer(conn, request))
   const article = await loadArticle(conn, params.slug, lang, { staff })
   if (!article) return notFound(lang)
