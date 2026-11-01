@@ -3,7 +3,7 @@ export const STRINGS = {
   nl: {
     appName: 'De Zuivere Bron', admin: 'Beheer', logout: 'Uitloggen', switchLang: 'العربية',
     login: 'Inloggen', email: 'E-mailadres', password: 'Wachtwoord', code: 'Code uit je app', next: 'Verder',
-    twoStepTitle: 'Tweestapsverificatie', twoStepHelp: 'Open je authenticator-app en vul de zescijferige code in.',
+    twoStepTitle: 'Tweestapsverificatie', rememberDevice: 'Dit apparaat 90 dagen onthouden (geen code nodig)', twoStepHelp: 'Open je authenticator-app en vul de zescijferige code in.',
     acceptTitle: 'Account aanmaken', acceptHelp: 'Je bent uitgenodigd als {role} voor {email}. Kies je naam en een wachtwoord van minstens 10 tekens.',
     zadSeries: 'ZAD-reeks (4 niveaus × 7 vakken)', zadImport: 'ZAD-boek importeren', zadImported: '{lessons} lessen geïmporteerd: {versions} conceptversies, {terms} begrippen, {questions} vragen, {persons} nieuwe personen.', open: 'Openen',
     newPerson: 'Nieuwe persoon', personKind: 'Soort', personKinds: { sahabi: 'Metgezel', alim: 'Geleerde' }, deathHijri: 'Sterfjaar (AH)',
@@ -57,7 +57,7 @@ export const STRINGS = {
   ar: {
     appName: 'النبع الصافي', admin: 'لوحة الإدارة', logout: 'تسجيل الخروج', switchLang: 'Nederlands',
     login: 'تسجيل الدخول', email: 'البريد الإلكتروني', password: 'كلمة المرور', code: 'الرمز من التطبيق', next: 'متابعة',
-    twoStepTitle: 'التحقق بخطوتين', twoStepHelp: 'افتح تطبيق المصادقة وأدخل الرمز المكوّن من ستة أرقام.',
+    twoStepTitle: 'التحقق بخطوتين', rememberDevice: 'تذكّر هذا الجهاز 90 يومًا (دون رمز)', twoStepHelp: 'افتح تطبيق المصادقة وأدخل الرمز المكوّن من ستة أرقام.',
     acceptTitle: 'إنشاء حساب', acceptHelp: 'تمت دعوتك بصفة {role} للبريد {email}. اختر اسمك وكلمة مرور لا تقل عن 10 أحرف.',
     zadSeries: 'أربعة مستويات في كل منها سبع مواد', zadImport: 'استيراد كتاب من زاد', zadImported: 'تم استيراد {lessons} درسًا: {versions} مسودة، {terms} مصطلحًا، {questions} سؤالًا، {persons} علمًا جديدًا.', open: 'فتح',
     newPerson: 'علم جديد', personKind: 'النوع', personKinds: { sahabi: 'صحابي', alim: 'عالم' }, deathHijri: 'سنة الوفاة (هـ)',
