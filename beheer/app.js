@@ -627,7 +627,8 @@ async function usersView () {
         }).join('')}<button data-perms>${t.save}</button></details>` : ''}</td>
       <td>${Number(u.totp_enabled) ? '✓' : '—'}</td><td><small>${date(u.last_login_at)}</small></td>
       <td class="nowrap">${u.id === me.id ? '' : `<button data-status="${u.status === 'active' ? 'deactivated' : 'active'}">${u.status === 'active' ? t.deactivate : t.activate}</button>`}
-        ${isSuper ? `<button data-reset>${t.resetLink}</button>` : ''}<div class="msg"></div></td></tr>`).join('')}
+        ${isSuper ? `<button data-reset>${t.resetLink}</button>` : ''}
+        ${u.id !== me.id && (isSuper || !u.roles.includes('superadmin')) ? `<button class="danger" data-delete>${t.delUser}</button>` : ''}<div class="msg"></div><div class="del-box"></div></td></tr>`).join('')}
     </tbody></table>
     <details class="card"><summary>${t.permMatrix}</summary><table class="tbl matrix"><thead><tr><th></th>${roles.roles.map((r) => `<th>${esc(roleName(r.code))}</th>`).join('')}</tr></thead>
       <tbody>${roles.permissions.map((p) => `<tr><td>${esc(permName(p))}</td>${roles.roles.map((r) => `<td>${r.permissions.includes(p.code) ? '✓' : ''}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`)
@@ -649,6 +650,22 @@ async function usersView () {
     }))
     $('[data-status]', row)?.addEventListener('click', (e) => run(async () => { await api('users/' + uid, 'PATCH', { status: e.target.dataset.status }); setTimeout(usersView, 800) }))
     $('[data-reset]', row)?.addEventListener('click', () => run(async () => linkBox(t.resetLinkHelp, (await api(`users/${uid}/reset-link`, 'POST')).link)))
+    $('[data-delete]', row)?.addEventListener('click', async () => {
+      const box = $('.del-box', row)
+      let info
+      try { info = await api('users/' + uid) } catch (e) { msg.className = 'msg err'; msg.textContent = e.message; return }
+      box.innerHTML = `<form class="card del-confirm"><h3>${t.delTitle}</h3><p><b>${esc(info.name || '')}</b> <span dir="ltr">${esc(info.email)}</span></p>
+        <p class="msg err">${esc(t.delWarn)}</p><p>${fmt(t.delCounts, info)}</p><p><small>${fmt(t.delKeep, info)}</small></p><p><small>${esc(t.delTip)}</small></p>
+        <label>${t.delType}<input name="confirm_email" dir="ltr" autocomplete="off" required></label>
+        <p><button type="submit" class="danger" disabled>${t.delUser}</button> <button type="button" data-cancel>${t.cancel}</button></p><p class="msg"></p></form>`
+      const f = $('form', box)
+      const input = $('input', f)
+      const submit = $('button[type=submit]', f)
+      input.addEventListener('input', () => { submit.disabled = input.value.trim().toLowerCase() !== info.email.toLowerCase() })
+      $('[data-cancel]', f).addEventListener('click', () => { box.innerHTML = '' })
+      form(f, async (d) => { await api('users/' + uid, 'DELETE', d); setTimeout(usersView, 1200); return esc(t.delDone) })
+      input.focus()
+    })
   })
 }
 
