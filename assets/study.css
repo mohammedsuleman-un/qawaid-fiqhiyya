@@ -2,8 +2,8 @@
    (inline-start/end) zodat dezelfde opmaak in het Arabisch van rechts naar links werkt. */
 .wrap.wide{max-width:1040px}
 .study{--st-gold:#b5873f;--st-green:#04403a;--st-red:#9b2c2c;--st-blue:#1d5a8a;--st-violet:#5b3f8c;--st-radius:14px;
-  font-family:var(--body);font-size:16px;line-height:1.7;text-align:start}
-html[dir="rtl"] .study{font-size:17px}
+  font-family:var(--body);font-size:calc(16px * var(--fsr,1));line-height:1.7;text-align:start}
+html[dir="rtl"] .study{font-size:calc(17px * var(--fsr,1))}
 .study h2,.study h3{font-family:var(--body);background:none;border:0;padding:0;color:var(--ink);line-height:1.4}
 .study .ayah{font-family:var(--display);font-size:1.12em}
 .study .hadith{font-family:var(--display)}

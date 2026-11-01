@@ -387,7 +387,7 @@ test('ZAD: overzicht, concepten alleen voor medewerkers, import via beheer', asy
   assert.equal((await act('publish')).status, 200)
   const lesson = await page(chapterPage, '/boek/zad-n1-aqeedah/7?lang=nl', { slug: 'zad-n1-aqeedah', chapter: '7' })
   assert.equal(lesson.status, 200)
-  assert.match(lesson.html, /class="unit">Eenheid 2/)
+  assert.match(lesson.html, /class="unit"[^>]*>Eenheid 2/)
   assert.match(lesson.html, /<h3>Begrippen<\/h3>/)
   assert.match(lesson.html, /studiesamenvatting/)
   assert.ok(!lesson.html.includes('class="legend"'))
