@@ -8,6 +8,7 @@ import { serverError } from '/assets/server-errors.js?v=20261101f'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
+const meBox = document.getElementById('meBox')
 let me = null
 let lang = localStorage.getItem('zb-admin-lang') === 'ar' ? 'ar' : 'nl'
 let t = STRINGS[lang]
@@ -85,7 +86,7 @@ function applyLang () {
 
 function setNav () {
   try { if (me) localStorage.setItem('zb:who', me.name || me.email || ''); else localStorage.removeItem('zb:who') } catch (e) {}
-  if (!me) { navEl.innerHTML = ''; document.body.classList.add('anon'); return }
+  if (!me) { navEl.innerHTML = ''; meBox.innerHTML = ''; document.body.classList.add('anon'); return }
   document.body.classList.remove('anon')
   const items = [
     ['#/', t.nav.dashboard, true],
@@ -102,10 +103,11 @@ function setNav () {
     ['#/instellingen', t.nav.settings, has('settings.manage')],
     ['#/profiel', t.nav.profile, true]
   ]
-  navEl.innerHTML = items.filter((i) => i[2]).map(([href, label]) => `<a href="${href}">${esc(label)}</a>`).join('') +
-    `<div class="me"><span>${esc(me.name || me.email)}</span><small>${me.roles.map(roleName).map(esc).join(', ')}</small>
-    <button type="button" id="logoutBtn" class="link">${t.logout}</button></div>`
-  $('#logoutBtn', navEl).onclick = async () => { await api('logout', 'POST'); me = null; location.hash = '#/'; route() }
+  navEl.innerHTML = items.filter((i) => i[2]).map(([href, label]) => `<a href="${href}">${esc(label)}</a>`).join('')
+  const who = me.name || me.email || ''
+  meBox.innerHTML = `<div class="me"><span class="av" aria-hidden="true">${esc(who.trim().charAt(0).toUpperCase())}</span><span class="who"><b dir="auto">${esc(who)}</b><small>${me.roles.map(roleName).map(esc).join(', ')}</small></span></div>
+    <button type="button" id="logoutBtn" class="logout"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M15 7l5 5-5 5"/><path d="M20 12H9"/></svg><span>${esc(t.logout)}</span></button>`
+  $('#logoutBtn', meBox).onclick = async () => { await api('logout', 'POST'); me = null; location.hash = '#/'; route() }
   const current = '#/' + (location.hash.slice(2).split('/')[0] || '')
   for (const a of navEl.querySelectorAll('a')) a.classList.toggle('on', a.getAttribute('href') === current)
 }
