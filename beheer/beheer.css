@@ -147,3 +147,19 @@ body.anon .anon-top{display:block}
 :root[data-theme="dark"] .anon-top .tosite{background:#1e5b4f}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .anon-top .tosite{background:#1e5b4f}}
 @media (max-width:900px){.tosite.in-side{margin:0 12px 10px;align-self:flex-start}.side-nav{display:flex;flex-direction:column}}
+
+.anon-top{display:none;justify-content:space-between;align-items:center;gap:10px}
+body.anon .anon-top{display:flex}
+.side-tools .langseg{border-color:rgba(255,255,255,.35)}
+.side-tools .langseg button{background:transparent;color:#e9f1ee}
+.side-tools .langseg [aria-pressed="true"]{background:#fbf8f1;color:var(--green)}
+
+
+.langseg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;flex:none;direction:ltr}
+.langseg a,.langseg button{font:inherit;font-size:13px;font-weight:700;letter-spacing:.03em;padding:0 11px;min-height:34px;min-width:40px;display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--surface);color:var(--muted);text-decoration:none;cursor:pointer}
+.langseg>*+*{border-inline-start:1px solid var(--line)!important}
+.langseg a:hover,.langseg button:hover{color:var(--ink);background:var(--surface2)}
+.langseg [aria-current="true"],.langseg [aria-pressed="true"]{background:var(--green);color:#fff}
+:root[data-theme="dark"] .langseg [aria-current="true"],:root[data-theme="dark"] .langseg [aria-pressed="true"]{background:#1e5b4f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .langseg [aria-current="true"],:root:not([data-theme="light"]) .langseg [aria-pressed="true"]{background:#1e5b4f}}
+@media print{.langseg{display:none!important}}

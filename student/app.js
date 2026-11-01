@@ -2,11 +2,11 @@
 // via /api/admin/login (zelfde account en sessie als de beheeromgeving). De server
 // controleert elk recht zelf; knoppen voor docenten worden alleen getoond als het mag.
 import { STRINGS } from './i18n.js?v=20261101u'
+import { serverError } from '/assets/server-errors.js?v=20261101f'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
 const whoEl = document.getElementById('who')
-const langBtn = document.getElementById('langBtn')
 
 const store = {
   get: (k) => { try { return localStorage.getItem(k) } catch { return null } },
@@ -38,8 +38,8 @@ const hdr = () => ({ 'content-type': 'application/json' })
 async function api (path, method = 'GET', data, base = '/api/student/') {
   const res = await fetch(base + path, { method, headers: method === 'GET' ? {} : hdr(), body: method === 'GET' ? undefined : JSON.stringify(data || {}) })
   const out = await res.json().catch(() => ({}))
-  if (res.status === 401 && base === '/api/student/' && path !== 'me') { me = null; route(); throw new Error(out.error || t.error) }
-  if (!res.ok) throw new Error(out.error || t.error)
+  if (res.status === 401 && base === '/api/student/' && path !== 'me') { me = null; route(); throw new Error(serverError(out.error, lang) || t.error) }
+  if (!res.ok) throw new Error(serverError(out.error, lang) || t.error)
   return out
 }
 
@@ -80,11 +80,12 @@ function applyLang () {
   $('#brandName', document).textContent = t.site
   $('#brandSub', document).textContent = t.title
   $('#logo', document).href = '/bibliotheek?lang=' + lang
-  langBtn.textContent = lang === 'ar' ? 'Nederlands' : 'العربية'
+  for (const b of document.querySelectorAll('.langseg [data-l]')) b.setAttribute('aria-pressed', String(b.dataset.l === lang))
 }
 
-langBtn.onclick = () => {
-  lang = lang === 'ar' ? 'nl' : 'ar'
+for (const b of document.querySelectorAll('.langseg [data-l]')) b.onclick = () => {
+  if (b.dataset.l === lang) return
+  lang = b.dataset.l
   store.set('zb-student-lang', lang)
   const u = new URL(location.href); u.searchParams.set('lang', lang); history.replaceState(null, '', u)
   if (me) api('me', 'PATCH', { lang }).catch(() => {})

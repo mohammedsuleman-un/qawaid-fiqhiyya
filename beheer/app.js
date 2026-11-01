@@ -4,6 +4,7 @@
 import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261101u'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
+import { serverError } from '/assets/server-errors.js?v=20261101f'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -28,8 +29,8 @@ async function api (path, method = 'GET', data) {
     body: method === 'GET' ? undefined : JSON.stringify(data || {})
   })
   const out = await res.json().catch(() => ({}))
-  if (res.status === 401 && !['login', 'login-2fa', 'me'].includes(path)) { me = null; route(); throw new Error(out.error || t.error) }
-  if (!res.ok) throw new Error(out.error || t.error)
+  if (res.status === 401 && !['login', 'login-2fa', 'me'].includes(path)) { me = null; route(); throw new Error(serverError(out.error, lang) || t.error) }
+  if (!res.ok) throw new Error(serverError(out.error, lang) || t.error)
   return out
 }
 
@@ -73,6 +74,7 @@ function applyLang () {
   document.title = `${t.admin} · ${t.appName}`
   $('#brandName', document).textContent = t.appName
   $('#brandSub', document).textContent = t.admin
+  for (const b of document.querySelectorAll('.langseg [data-l]')) b.setAttribute('aria-pressed', String(b.dataset.l === lang))
   // Knop terug naar de openbare site, in de taal van Beheer.
   for (const el of document.querySelectorAll('.tosite')) {
     el.href = '/bibliotheek?lang=' + lang
@@ -102,14 +104,8 @@ function setNav () {
   ]
   navEl.innerHTML = items.filter((i) => i[2]).map(([href, label]) => `<a href="${href}">${esc(label)}</a>`).join('') +
     `<div class="me"><span>${esc(me.name || me.email)}</span><small>${me.roles.map(roleName).map(esc).join(', ')}</small>
-    <button type="button" id="langBtn" class="link">${t.switchLang}</button><button type="button" id="logoutBtn" class="link">${t.logout}</button></div>`
+    <button type="button" id="logoutBtn" class="link">${t.logout}</button></div>`
   $('#logoutBtn', navEl).onclick = async () => { await api('logout', 'POST'); me = null; location.hash = '#/'; route() }
-  $('#langBtn', navEl).onclick = async () => {
-    lang = lang === 'ar' ? 'nl' : 'ar'
-    localStorage.setItem('zb-admin-lang', lang)
-    api('me', 'PATCH', { lang }).catch(() => {})
-    applyLang(); setNav(); route()
-  }
   const current = '#/' + (location.hash.slice(2).split('/')[0] || '')
   for (const a of navEl.querySelectorAll('a')) a.classList.toggle('on', a.getAttribute('href') === current)
 }
@@ -806,6 +802,16 @@ async function start () {
   route()
 }
 
+// Taalkeuze NL | AR (zijbalk en inlogscherm).
+for (const b of document.querySelectorAll('.langseg [data-l]')) {
+  b.onclick = () => {
+    if (b.dataset.l === lang) return
+    lang = b.dataset.l
+    localStorage.setItem('zb-admin-lang', lang)
+    if (me) api('me', 'PATCH', { lang }).catch(() => {})
+    applyLang(); setNav(); route()
+  }
+}
 window.addEventListener('hashchange', route)
 applyLang()
 start()
