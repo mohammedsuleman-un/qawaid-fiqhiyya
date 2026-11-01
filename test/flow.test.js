@@ -373,13 +373,14 @@ test('gebruiker definitief verwijderen: bevestiging, beveiliging en opruimen', a
   await conn.execute("INSERT INTO test_attempts (user_id, book_id, questions) VALUES (?, 1, '[]')", [weg.id])
   await conn.execute('INSERT INTO lesson_progress (user_id, chapter_id) VALUES (?, 1)', [weg.id])
   await conn.execute("INSERT INTO feedback (entity_type, entity_id, lang, category, message, email) VALUES ('chapter', 1, 'nl', 'other', 'Blijft staan', 'weg@example.org')")
+  await conn.execute("INSERT INTO feedback (entity_type, entity_id, lang, category, message, user_id) VALUES ('chapter', 1, 'nl', 'other', 'Ook ingelogd', ?)", [weg.id])
   const opts = (cookie, body) => ({ cookie, params: { id: String(weg.id) }, body })
   // Overzicht van wat verdwijnt.
   const sum = await call(conn, 'GET', `/api/admin/users/${weg.id}`, userRoute, opts(s.superCookie))
   assert.equal(sum.status, 200)
   assert.equal(sum.data.attempts, 1)
   assert.equal(sum.data.lessons, 1)
-  assert.equal(sum.data.feedback, 1)
+  assert.equal(sum.data.feedback, 2)
   // Zonder of met een verkeerd e-mailadres gebeurt er niets.
   assert.equal((await call(conn, 'DELETE', `/api/admin/users/${weg.id}`, userRoute, opts(s.superCookie, {}))).status, 400)
   assert.equal((await call(conn, 'DELETE', `/api/admin/users/${weg.id}`, userRoute, opts(s.superCookie, { confirm_email: 'iemand@example.org' }))).status, 400)
@@ -396,8 +397,9 @@ test('gebruiker definitief verwijderen: bevestiging, beveiliging en opruimen', a
   for (const t of ['test_attempts', 'lesson_progress', 'user_roles', 'sessions']) {
     assert.equal(Number((await conn.execute(`SELECT COUNT(*) AS n FROM ${t} WHERE user_id = ?`, [weg.id]))[0].n), 0, t)
   }
-  const [fb] = await conn.execute("SELECT email FROM feedback WHERE message = 'Blijft staan'")
-  assert.equal(fb.email, null)
+  const fb = await conn.execute("SELECT email, user_id FROM feedback WHERE message IN ('Blijft staan', 'Ook ingelogd')")
+  assert.equal(fb.length, 2)
+  assert.ok(fb.every((f) => f.email === null && f.user_id === null))
   const l = await call(conn, 'POST', '/api/admin/login', login, { body: { email: 'weg@example.org', password: 'nog-een-lang-wachtwoord' }, ip: '9.9.9.8' })
   assert.equal(l.status, 401)
   const log = await call(conn, 'GET', '/api/admin/audit?action=user.delete', audit, { cookie: s.superCookie })
