@@ -1,19 +1,20 @@
-// GET /personen?lang=: kies een boek; ?boek=<slug>: de personen uit dat boek; ?alle=1: iedereen.
+// GET /personen?lang=: alle personen uit alle boeken samen, met per persoon de boeken.
+// De personen van één boek staan bij dat boek (/boek/<slug>/personen); /personen?boek=<slug> verwijst daarheen.
 import { db } from '../../lib/db.js'
 import { viewer, isStaff, pickLang } from '../../lib/library.js'
-import { listPersons, personBooks } from '../../lib/register.js'
+import { listPersons, personBookLinks } from '../../lib/register.js'
 import { renderPersons } from '../../lib/render.js'
-import { page, notFound } from '../../lib/pages.js'
+import { page } from '../../lib/pages.js'
 
 export async function onRequestGet ({ request, env }) {
+  const url = new URL(request.url)
+  const book = url.searchParams.get('boek')
+  if (book) return Response.redirect(new URL(`/boek/${encodeURIComponent(book)}/personen?lang=${pickLang(request.url)}`, url), 301)
   const conn = db(env)
   const lang = pickLang(request.url)
-  const p = new URL(request.url).searchParams
   const staff = isStaff(await viewer(conn, request))
-  const books = await personBooks(conn, { staff })
-  const slug = p.get('boek')
-  const book = slug ? books.find((b) => b.slug === slug) : null
-  if (slug && !book) return notFound(lang)
-  const persons = book ? await listPersons(conn, null, { book: slug }) : p.get('alle') ? await listPersons(conn) : null
-  return page(renderPersons({ lang, persons, books, book, all: !!p.get('alle') }), staff)
+  const links = await personBookLinks(conn, { staff })
+  // Iedereen die in een zichtbaar boek genoemd wordt; personen zonder boek alleen voor medewerkers.
+  const persons = (await listPersons(conn)).filter((p) => staff || links.has(Number(p.id)))
+  return page(renderPersons({ lang, persons, links }), staff)
 }
