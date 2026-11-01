@@ -12,8 +12,10 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
   if (p.get('status')) { where.push('f.status = ?'); args.push(p.get('status')) }
   if (p.get('category')) { where.push('f.category = ?'); args.push(p.get('category')) }
   const rows = await conn.execute(`SELECT f.id, f.entity_type, f.entity_id, f.lang, f.quote, f.category, f.message, f.suggestion,
-      f.email, f.status, f.assigned_to, f.internal_note, f.draft_version_id, f.created_at, f.updated_at, u.email AS assigned_email
-    FROM feedback f LEFT JOIN users u ON u.id = f.assigned_to WHERE ${where.join(' AND ')}
+      f.email, f.status, f.assigned_to, f.internal_note, f.draft_version_id, f.created_at, f.updated_at, u.email AS assigned_email,
+      f.page_url, f.page_title, f.anchor, f.user_id, su.name AS user_name, su.email AS user_email,
+      (SELECT GROUP_CONCAT(r.role_code) FROM user_roles r WHERE r.user_id = f.user_id) AS user_roles
+    FROM feedback f LEFT JOIN users u ON u.id = f.assigned_to LEFT JOIN users su ON su.id = f.user_id WHERE ${where.join(' AND ')}
     ORDER BY FIELD(f.status, 'new', 'in_progress', 'accepted', 'resolved', 'rejected'), f.created_at DESC LIMIT 300`, args)
   return json(await describeMany(conn, rows))
 }
