@@ -22,7 +22,9 @@ export default {
   id: 148,
   name: 'info-hadith-personen-talkhis',
   up: [
-    'CREATE TABLE IF NOT EXISTS zb_backup_20261101_hadith_notes AS SELECT * FROM hadith_notes',
+    // TiDB kent geen CREATE TABLE ... AS SELECT: eerst de structuur, dan de rijen.
+    'CREATE TABLE IF NOT EXISTS zb_backup_20261101_hadith_notes LIKE hadith_notes',
+    'INSERT INTO zb_backup_20261101_hadith_notes SELECT * FROM hadith_notes',
     "ALTER TABLE hadith_notes ADD COLUMN draft_source VARCHAR(1000) NOT NULL DEFAULT '', ADD COLUMN draft_url VARCHAR(500) NOT NULL DEFAULT ''",
     (conn) => hadithDrafts(conn, talkhis),
     // Voorbeeld van vijf biografieën uit al-Aʿlām, ter beoordeling.
