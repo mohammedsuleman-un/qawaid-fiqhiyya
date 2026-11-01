@@ -125,3 +125,11 @@ details summary{cursor:pointer;color:var(--accent);font-size:13px;margin-top:6px
 .hadith-note{margin-bottom:12px}
 .tbl tr.group th{background:var(--surface);color:var(--ink);font-size:15px;font-weight:600;padding-top:16px}
 .hdraft{background:#fff8e1;border:1px dashed #d9b44a;border-radius:6px;padding:6px 10px;font-size:14px}
+
+/* Donkere modus ook als de bezoeker hem zelf kiest (knop in de kopbalk). */
+:root[data-theme="dark"]{--warnbg:#3a3218;--danger:#e07a7a;--ok:#8fd6a0}
+:root[data-theme="dark"] h1{color:var(--accent)}
+:root[data-theme="dark"] .stat b{color:var(--accent)}
+.side-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px 16px;margin:0}
+.side-tools a{color:#e9f1ee;font-size:13.5px;text-decoration:none}
+.side-tools .themesw{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font-size:17px;cursor:pointer}

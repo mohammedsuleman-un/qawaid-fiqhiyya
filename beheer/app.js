@@ -76,6 +76,7 @@ function applyLang () {
 }
 
 function setNav () {
+  try { if (me) localStorage.setItem('zb:who', me.name || me.email || ''); else localStorage.removeItem('zb:who') } catch (e) {}
   if (!me) { navEl.innerHTML = ''; document.body.classList.add('anon'); return }
   document.body.classList.remove('anon')
   const items = [
