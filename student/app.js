@@ -2,7 +2,7 @@
 // via /api/admin/login (zelfde account en sessie als de beheeromgeving). De server
 // controleert elk recht zelf; knoppen voor docenten worden alleen getoond als het mag.
 import { STRINGS } from './i18n.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261101f'
+import { serverError } from '/assets/server-errors.js?v=20261101g'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -287,7 +287,7 @@ async function booksView () {
   const other = cat.books.filter((b) => !b.zad_level)
   const levels = [1, 2, 3, 4].filter((l) => zad.some((b) => b.zad_level === l))
   const chip = (b) => `<button type="button" class="pick${b.mine ? ' on' : ''}" data-slug="${esc(b.slug)}" aria-pressed="${b.mine}">
-      <span dir="auto">${esc(bookTitle(b))}</span><small>${b.mine ? '✓ ' + t.onProfile : '+ ' + t.add}</small></button>`
+      <span dir="auto">${esc(bookTitle(b))}</span>${lang === 'nl' && b.title_ar && b.title_ar !== bookTitle(b) ? `<span class="ar-sub" lang="ar" dir="rtl">${esc(b.title_ar)}</span>` : ''}<small>${b.mine ? '✓ ' + t.onProfile : '+ ' + t.add}</small></button>`
   const allMine = (list) => list.length && list.every((b) => b.mine)
   render(`<div class="head"><h1>${t.chooseBooks}</h1></div><p class="muted">${t.chooseHelp}</p>
     ${zad.length ? `<section class="card">

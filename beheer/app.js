@@ -4,7 +4,7 @@
 import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261101u'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261101f'
+import { serverError } from '/assets/server-errors.js?v=20261101g'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')

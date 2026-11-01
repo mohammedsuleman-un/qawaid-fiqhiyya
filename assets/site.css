@@ -321,3 +321,6 @@ details.login>summary::after,details.login>summary::before{content:none!importan
 :root[data-theme="dark"] .langseg [aria-current="true"],:root[data-theme="dark"] .langseg [aria-pressed="true"]{background:#1e5b4f}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .langseg [aria-current="true"],:root:not([data-theme="light"]) .langseg [aria-pressed="true"]{background:#1e5b4f}}
 @media print{.langseg{display:none!important}}
+
+/* ZAD-vakken: Arabische naam klein onder de Nederlandse kop. */
+.zcell .zar { display: block; font-family: var(--display, 'Amiri', serif); font-size: 15px; line-height: 1.4; color: var(--muted); text-align: left; margin-top: 1px; }
