@@ -108,6 +108,19 @@ function setNav () {
   for (const a of navEl.querySelectorAll('a')) a.classList.toggle('on', a.getAttribute('href') === current)
 }
 
+// Wachtwoordeisen vooraf tonen en tijdens het typen bijwerken.
+const PW_MIN = 10
+const pwHint = () => `<small class="pwhint muted" aria-live="polite">${t.pwRule || ''}</small>`
+document.addEventListener('input', (e) => {
+  const input = e.target
+  if (!input.matches || !input.matches('input[type=password][autocomplete=new-password]')) return
+  const hint = input.parentElement.querySelector('.pwhint')
+  if (!hint) return
+  const left = PW_MIN - input.value.length
+  hint.textContent = (t.pwRule || '') + ' ' + (left > 0 ? (t.pwLeft || '').replace('{n}', left) : (t.pwOk || ''))
+  hint.classList.toggle('ok', left <= 0)
+})
+
 // ---------- inloggen, uitnodiging, herstel ----------
 async function loginView () {
   const params = new URLSearchParams(location.search)
@@ -147,10 +160,12 @@ async function acceptView (token) {
   render(html`<form class="card narrow" id="f"><h1>${t.acceptTitle}</h1>
     <p>${fmt(t.acceptHelp, { role: roleName(inv.role_code), email: inv.email })}</p>
     <label>${t.name}<input name="name" autocomplete="name" required></label>
-    <label>${t.newPassword}<input name="password" type="password" minlength="10" autocomplete="new-password" required></label>
+    <label>${t.newPassword}<input name="password" type="password" minlength="10" autocomplete="new-password" required>${pwHint()}</label>
     <button class="primary">${t.createAccount}</button><p class="msg"></p></form>`)
   form($('#f'), async (d) => {
     await api('accept-invite', 'POST', { ...d, token })
+    // Een student gaat meteen naar de studieomgeving.
+    if (inv.role_code === 'student') { location.href = '/student/' + (lang === 'ar' ? '?lang=ar' : ''); return }
     history.replaceState(null, '', '/beheer/#/profiel')
     await start()
   })
@@ -158,7 +173,7 @@ async function acceptView (token) {
 
 function resetView (token) {
   render(html`<form class="card narrow" id="f"><h1>${t.resetTitle}</h1>
-    <label>${t.newPassword}<input name="password" type="password" minlength="10" autocomplete="new-password" required></label>
+    <label>${t.newPassword}<input name="password" type="password" minlength="10" autocomplete="new-password" required>${pwHint()}</label>
     <button class="primary">${t.save}</button><p class="msg"></p></form>`)
   form($('#f'), async (d) => {
     await api('reset-password', 'POST', { ...d, token })
@@ -622,6 +637,9 @@ async function usersView () {
   const roleOpts = roles.roles.filter((r) => isSuper || r.code !== 'superadmin').map((r) => [r.code, roleName(r.code)])
   const permName = (p) => lang === 'ar' ? p.name_ar : p.name_nl
   render(html`<h1>${t.nav.users}</h1>
+    <form class="card" id="addStudent"><h2>${t.addStudent || ''}</h2><p class="muted">${t.addStudentHelp || ''}</p><div class="grid3">
+      <label>${t.email}<input name="email" type="email" required dir="ltr"></label>
+      <span class="end"><button class="primary">${t.addStudentBtn || ''}</button></span></div><p class="msg"></p></form>
     <form class="card" id="inv"><h2>${t.invite}</h2><div class="grid3">
       <label>${t.email}<input name="email" type="email" required dir="ltr"></label>
       <label>${t.role}<select name="role">${options(roleOpts, 'editor')}</select></label>
@@ -648,6 +666,7 @@ async function usersView () {
       <tbody>${roles.permissions.map((p) => `<tr><td>${esc(permName(p))}</td>${roles.roles.map((r) => `<td>${r.permissions.includes(p.code) ? '✓' : ''}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`)
   const inviteHelp = (r) => linkBox(r.mailed ? (t.inviteMailed || t.inviteLink) : t.inviteLink, r.link)
   form($('#inv'), async (d) => inviteHelp(await api('invitations', 'POST', d)))
+  form($('#addStudent'), async (d) => inviteHelp(await api('invitations', 'POST', { email: d.email, role: 'student' })))
   $$('[data-resend]').forEach((b) => b.addEventListener('click', async () => { const r = await api('invitations/' + b.dataset.resend, 'POST'); $('#invlink').innerHTML = inviteHelp(r) }))
   $$('[data-revoke]').forEach((b) => b.addEventListener('click', async () => { await api('invitations/' + b.dataset.revoke, 'DELETE'); usersView() }))
   $$('tr[data-user]').forEach((row) => {
@@ -706,7 +725,7 @@ async function profileView () {
     <section class="card" id="tfa"><h2>${t.twoStepTitle}</h2><div id="tfaBody"></div></section>
     <form class="card" id="pw"><h2>${t.changePassword}</h2><div class="grid2">
       <label>${t.currentPassword}<input name="current" type="password" autocomplete="current-password" required></label>
-      <label>${t.newPassword}<input name="password" type="password" minlength="10" autocomplete="new-password" required></label></div>
+      <label>${t.newPassword}<input name="password" type="password" minlength="10" autocomplete="new-password" required>${pwHint()}</label></div>
       <button class="primary">${t.save}</button><p class="msg"></p></form>`)
   form($('#pf'), async (d) => { await api('me', 'PATCH', d); me.name = d.name; setNav(); return t.saved })
   form($('#pw'), async (d) => { await api('password', 'POST', d); $('#pw').reset(); return t.saved })

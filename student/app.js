@@ -106,6 +106,19 @@ function setNav () {
   for (const a of navEl.querySelectorAll('a')) a.classList.toggle('on', a.getAttribute('href') === current || (current === '#/boek' && a.getAttribute('href') === '#/boeken') || (current === '#/poging' && a.getAttribute('href') === '#/resultaten'))
 }
 
+// Wachtwoordeisen vooraf tonen en tijdens het typen bijwerken.
+const PW_MIN = 10
+const pwHint = () => `<small class="pwhint muted" aria-live="polite">${t.pwRule || ''}</small>`
+document.addEventListener('input', (e) => {
+  const input = e.target
+  if (!input.matches || !input.matches('input[type=password][autocomplete=new-password]')) return
+  const hint = input.parentElement.querySelector('.pwhint')
+  if (!hint) return
+  const left = PW_MIN - input.value.length
+  hint.textContent = (t.pwRule || '') + ' ' + (left > 0 ? (t.pwLeft || '').replace('{n}', left) : (t.pwOk || ''))
+  hint.classList.toggle('ok', left <= 0)
+})
+
 // ---------- inloggen en aanmelden ----------
 function loginView (mode = 'login') {
   render(`<div class="auth">
@@ -119,7 +132,7 @@ function loginView (mode = 'login') {
           <button class="primary" type="submit">${t.login}</button><p class="msg"></p></form>`
         : `<form id="f"><label>${t.name}<input name="name" autocomplete="name" required maxlength="255"></label>
           <label>${t.email}<input name="email" type="email" autocomplete="email" required></label>
-          <label>${t.password}<input name="password" type="password" autocomplete="new-password" minlength="10" required><small class="muted">${t.passwordHelp}</small></label>
+          <label>${t.password}<input name="password" type="password" autocomplete="new-password" minlength="10" required>${pwHint()}</label>
           <p class="muted small">${t.registerHelp || ''}</p>
           <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
           <button class="primary" type="submit">${t.createAccount}</button><p class="msg"></p></form>`}

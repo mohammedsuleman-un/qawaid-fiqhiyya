@@ -165,6 +165,17 @@ test('opnieuw versturen laat de eerste link geldig; na gebruik vervalt de rest',
   assert.equal((await call(conn, 'GET', '/api/admin/invitation?token=onzin', invitationInfo)).status, 404)
 })
 
+test('beheerder maakt een studentenaccount aan', async () => {
+  const r = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.superCookie, body: { email: 'leerling@example.org', role: 'student' } })
+  assert.equal(r.status, 200, JSON.stringify(r.data))
+  const token = new URL(r.data.link).searchParams.get('uitnodiging')
+  assert.equal((await call(conn, 'GET', '/api/admin/invitation?token=' + token, invitationInfo)).data.role_code, 'student')
+  const acc = await call(conn, 'POST', '/api/admin/accept-invite', acceptInvite, { body: { token, name: 'Leerling', password: 'een-lang-wachtwoord' } })
+  assert.equal(acc.status, 200)
+  const who = await call(conn, 'GET', '/api/admin/me', me, { cookie: acc.cookie })
+  assert.deepEqual(who.data.roles, ['student'])
+})
+
 test('de laatste superbeheerder is beschermd', async () => {
   const list = await call(conn, 'GET', '/api/admin/users', users, { cookie: s.superCookie })
   const baas = list.data.find((u) => u.email === 'baas@example.org')

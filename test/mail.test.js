@@ -1,21 +1,32 @@
 // Bevestigingsmail na aanmelden: inhoud per taal en het verzoek aan Resend.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { sendMail, welcomeMail, inviteMail } from '../lib/mail.js'
+import { sendMail, welcomeMail, inviteMail, studentInviteMail } from '../lib/mail.js'
 
-test('bevestigingsmail in het Nederlands en het Arabisch', () => {
-  const nl = welcomeMail({ name: 'Amina <b>', email: 'amina@example.org', lang: 'nl', origin: 'https://zuiverebron.nl' })
-  assert.equal(nl.to, 'amina@example.org')
-  assert.match(nl.subject, /account is aangemaakt/)
-  assert.match(nl.html, /dir="ltr"/)
-  assert.match(nl.html, /Amina &lt;b&gt;/)
-  assert.ok(!nl.html.includes('<b>,'))
-  assert.match(nl.html, /href="https:\/\/zuiverebron\.nl\/student\/"/)
-  assert.match(nl.text, /https:\/\/zuiverebron\.nl\/student\//)
-  const ar = welcomeMail({ name: 'أمينة', email: 'a@example.org', lang: 'ar', origin: 'https://zuiverebron.nl' })
-  assert.match(ar.html, /dir="rtl"/)
-  assert.match(ar.subject, /النبع الصافي/)
-  assert.match(ar.html, /\/student\/\?lang=ar/)
+test('alle mails: eerst Arabisch, daaronder Nederlands, met melding bovenaan', () => {
+  const origin = 'https://zuiverebron.nl'
+  const link = 'https://zuiverebron.nl/beheer/?uitnodiging=abc'
+  const mails = [
+    welcomeMail({ name: 'Amina <b>', email: 'amina@example.org', origin }),
+    inviteMail({ email: 'b@example.org', role: 'admin', link, inviter: 'Mohammed', origin }),
+    studentInviteMail({ email: 's@example.org', link, inviter: 'Mohammed', origin })
+  ]
+  for (const m of mails) {
+    const ar = m.html.indexOf('dir="rtl" lang="ar"')
+    const nl = m.html.indexOf('dir="ltr" lang="nl" style')
+    assert.ok(ar > 0 && nl > ar, m.subject)
+    assert.ok(m.html.indexOf('De Nederlandse tekst staat hieronder') < ar)
+    assert.match(m.text, /^النص الهولندي في الأسفل\. De Nederlandse tekst staat hieronder\./)
+    assert.ok(/^[\u0600-\u06FF]/.test(m.subject), m.subject)
+  }
+  const [w, , st] = mails
+  assert.match(w.html, /Amina &lt;b&gt;/)
+  assert.ok(!w.html.includes('<b>,'))
+  assert.match(w.html, /href="https:\/\/zuiverebron\.nl\/student\/\?lang=ar"/)
+  assert.match(w.html, /href="https:\/\/zuiverebron\.nl\/student\/"/)
+  assert.match(st.html, /Mohammed heeft een studentenaccount voor je aangemaakt/)
+  assert.match(st.html, /أنشأ لك Mohammed حسابًا طلابيًا/)
+  assert.equal(st.html.split(link).length - 1, 2)
 })
 
 test('sendMail stuurt naar Resend en slaat over zonder sleutel', async () => {
