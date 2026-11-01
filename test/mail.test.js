@@ -1,7 +1,7 @@
 // Bevestigingsmail na aanmelden: inhoud per taal en het verzoek aan Resend.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { sendMail, welcomeMail } from '../lib/mail.js'
+import { sendMail, welcomeMail, inviteMail } from '../lib/mail.js'
 
 test('bevestigingsmail in het Nederlands en het Arabisch', () => {
   const nl = welcomeMail({ name: 'Amina <b>', email: 'amina@example.org', lang: 'nl', origin: 'https://zuiverebron.nl' })
@@ -34,4 +34,20 @@ test('sendMail stuurt naar Resend en slaat over zonder sleutel', async () => {
   assert.equal((await sendMail({ RESEND_API_KEY: 'k' }, msg, bad)).ok, false)
   const boom = async () => { throw new Error('netwerk') }
   assert.equal((await sendMail({ RESEND_API_KEY: 'k' }, msg, boom)).ok, false)
+})
+
+test('uitnodigingsmail is tweetalig en noemt 2FA per rol', () => {
+  const link = 'https://zuiverebron.nl/beheer/?uitnodiging=abc'
+  const a = inviteMail({ email: 'b@example.org', role: 'admin', link, inviter: 'Mohammed', origin: 'https://zuiverebron.nl' })
+  assert.equal(a.to, 'b@example.org')
+  assert.match(a.subject, /Uitnodiging/)
+  assert.match(a.subject, /دعوة/)
+  assert.match(a.html, /Mohammed heeft je uitgenodigd om als beheerder/)
+  assert.match(a.html, /dir="rtl"/)
+  assert.equal(a.html.split(link).length - 1, 2)
+  assert.match(a.html, /tweestapsverificatie nodig/)
+  assert.match(a.text, /Uitnodiging accepteren: https:\/\/zuiverebron\.nl\/beheer\/\?uitnodiging=abc/)
+  const e = inviteMail({ email: 'c@example.org', role: 'editor', link, inviter: '<x>', origin: 'https://zuiverebron.nl' })
+  assert.match(e.html, /niet verplicht/)
+  assert.match(e.html, /&lt;x&gt; heeft je uitgenodigd om als redacteur/)
 })
