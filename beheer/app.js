@@ -315,7 +315,7 @@ async function articlesView () {
       <label>${t.category}<select name="category_id"><option value="">${t.none}</option>${options(cats.map((c) => [c.id, catName(c)]))}</select></label>
       <label>${t.access}<select name="access_level">${options(Object.entries(t.accessLevels))}</select></label>
     </div><button class="primary">${t.create}</button><p class="msg"></p></form>
-    <table class="tbl"><thead><tr><th>${t.title}</th><th>${t.kind}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th>${book.zad_level ? `<th>${t.study}</th>` : ''}<th></th></tr></thead><tbody>
+    <table class="tbl"><thead><tr><th>${t.title}</th><th>${t.kind}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th><th></th></tr></thead><tbody>
     ${rows.map((a) => `<tr class="${a.archived_at ? 'archived' : ''}"><td><span dir="rtl">${esc(a.title_ar || '')}</span> <span dir="ltr">${esc(a.title_nl || '')}</span><br><small dir="ltr">${esc(a.slug)}</small></td>
       <td>${esc(t.kinds[a.kind])}</td>
       <td><a href="#/bewerk/article/${a.id}/ar">${a.status_ar ? badge(a.status_ar) : `<small>${t.notYet}</small>`}</a></td>
@@ -360,7 +360,7 @@ async function personsView () {
     <form class="card" id="nf" hidden><div class="grid2">
       <label>${t.slug}<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required dir="ltr"></label><span></span>${fields()}
     </div><button class="primary">${t.create}</button><p class="msg"></p></form>
-    <table class="tbl"><thead><tr><th>${t.name}</th><th>${t.personKind}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th>${book.zad_level ? `<th>${t.study}</th>` : ''}<th></th></tr></thead><tbody>
+    <table class="tbl"><thead><tr><th>${t.name}</th><th>${t.personKind}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th><th></th></tr></thead><tbody>
     ${rows.map((p) => `<tr><td><span dir="rtl">${esc(p.name_ar)}</span> <span dir="ltr">${esc(p.name_nl || '')}</span><br><small dir="ltr">${esc(p.slug)}${p.death_hijri ? ' · ' + esc(p.death_hijri) + ' AH' : ''}</small></td>
       <td>${esc(t.personKinds[p.kind] || p.kind)}</td>
       <td><a href="#/bewerk/article/${p.article_id}/ar">${p.status_ar ? badge(p.status_ar) : `<small>${t.notYet}</small>`}</a></td>
