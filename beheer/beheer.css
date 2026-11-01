@@ -135,3 +135,4 @@ details summary{cursor:pointer;color:var(--accent);font-size:13px;margin-top:6px
 .side-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px 16px;margin:0}
 .side-tools a{color:#e9f1ee;font-size:13.5px;text-decoration:none}
 .side-tools .themesw{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font-size:17px;cursor:pointer}
+.pwhint.ok{color:#1d7a46}

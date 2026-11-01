@@ -2,7 +2,7 @@
 import { json, need, fail, id } from '../../../../lib/http.js'
 import { createInvitation } from '../../../../lib/users.js'
 import { audit } from '../../../../lib/audit.js'
-import { sendMail, inviteMail } from '../../../../lib/mail.js'
+import { sendMail, inviteMail, studentInviteMail } from '../../../../lib/mail.js'
 
 async function load (conn, invId) {
   const [inv] = await conn.execute('SELECT id, email, role_code FROM invitations WHERE id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [invId])
@@ -25,6 +25,6 @@ export async function onRequestPost ({ request, params, env, data: { conn, user 
   const link = await createInvitation(conn, request, inv.email, inv.role_code, user.id)
   await audit(conn, user, 'invitation.resend', 'invitation', inv.email)
   // Uitnodiging per mail; de link blijft ook zichtbaar zodat je hem zelf kunt doorsturen.
-  const mail = await sendMail(env, inviteMail({ email: inv.email, role: inv.role_code, link, inviter: user.name || user.email, origin: new URL(request.url).origin }))
+  const mail = await sendMail(env, (inv.role_code === 'student' ? studentInviteMail : inviteMail)({ email: inv.email, role: inv.role_code, link, inviter: user.name || user.email, origin: new URL(request.url).origin }))
   return json({ link, mailed: mail.ok === true })
 }

@@ -3,7 +3,7 @@
 import { json, body, need, fail, str } from '../../../../lib/http.js'
 import { createInvitation } from '../../../../lib/users.js'
 import { audit } from '../../../../lib/audit.js'
-import { sendMail, inviteMail } from '../../../../lib/mail.js'
+import { sendMail, inviteMail, studentInviteMail } from '../../../../lib/mail.js'
 
 export async function onRequestGet ({ data: { conn, user } }) {
   need(user, 'users.manage')
@@ -20,6 +20,6 @@ export async function onRequestPost ({ request, env, data: { conn, user } }) {
   const link = await createInvitation(conn, request, email, input.role, user.id)
   await audit(conn, user, 'invitation.create', 'invitation', email, { role: input.role })
   // Uitnodiging per mail; de link blijft ook zichtbaar zodat je hem zelf kunt doorsturen.
-  const mail = await sendMail(env, inviteMail({ email: email, role: input.role, link, inviter: user.name || user.email, origin: new URL(request.url).origin }))
+  const mail = await sendMail(env, (input.role === 'student' ? studentInviteMail : inviteMail)({ email: email, role: input.role, link, inviter: user.name || user.email, origin: new URL(request.url).origin }))
   return json({ link, mailed: mail.ok === true })
 }
