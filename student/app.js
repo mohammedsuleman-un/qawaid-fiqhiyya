@@ -120,6 +120,7 @@ function loginView (mode = 'login') {
         : `<form id="f"><label>${t.name}<input name="name" autocomplete="name" required maxlength="255"></label>
           <label>${t.email}<input name="email" type="email" autocomplete="email" required></label>
           <label>${t.password}<input name="password" type="password" autocomplete="new-password" minlength="10" required><small class="muted">${t.passwordHelp}</small></label>
+          <p class="muted small">${t.registerHelp || ''}</p>
           <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
           <button class="primary" type="submit">${t.createAccount}</button><p class="msg"></p></form>`}
     </div></div>`)
