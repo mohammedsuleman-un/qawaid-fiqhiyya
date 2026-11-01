@@ -6,6 +6,7 @@ import mysql from 'mysql2/promise'
 import { readFileSync } from 'node:fs'
 import { onRequest as apiMiddleware } from '../functions/api/_middleware.js'
 import { onRequest as adminMiddleware } from '../functions/api/admin/_middleware.js'
+import { onRequest as studentMiddleware } from '../functions/api/student/_middleware.js'
 
 const URL_ = process.env.TEST_DATABASE_URL || 'mysql://zb:zb@localhost/zb_test'
 
@@ -56,7 +57,7 @@ export async function call (conn, method, path, mod, { body, cookie, params = {}
   const handler = mod[name] || mod.onRequest
   if (!handler) throw new Error(`Geen ${name} in route ${path}`)
   const context = { request, params, env: { conn, ASSETS }, data: {} }
-  const chain = [apiMiddleware, ...(path.startsWith('/api/admin') ? [adminMiddleware] : []), handler]
+  const chain = [apiMiddleware, ...(path.startsWith('/api/admin') ? [adminMiddleware] : []), ...(path.startsWith('/api/student') ? [studentMiddleware] : []), handler]
   let i = 0
   context.next = () => chain[++i](context)
   const before = conn.queries
