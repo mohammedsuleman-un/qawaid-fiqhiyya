@@ -55,6 +55,7 @@ export const STRINGS = {
     qcounts: 'Tussen haakjes: concept / goedgekeurd.', selectAll: 'Alles selecteren', selected: '{n} geselecteerd',
     approve: 'Goedkeuren', toDraft: 'Terug naar concept', reject: 'Afwijzen', selectFirst: 'Selecteer eerst vragen.',
     ag: {
+      institute: 'Instituut', adminInstHelp: 'Je ziet alleen de instituten waaraan je gekoppeld bent.',
       title: 'Lesagenda', cohort: 'Groep {c}', noSubject: 'nog geen vak', absentN: '{n} afwezig', fillIn: 'aanwezigheid invullen',
       addItem: 'Toets of huiswerk toevoegen', kind: 'Soort', group: 'Groep', date: 'Datum', lesson: 'Les', wholeDay: 'Hele dag (geen bepaalde les)',
       titleNl: 'Omschrijving (Nederlands)', titleAr: 'Omschrijving (Arabisch)', infoNl: 'Toelichting (Nederlands)', infoAr: 'Toelichting (Arabisch)',
@@ -68,7 +69,7 @@ export const STRINGS = {
       attendance: 'Aanwezigheid', alreadySaved: 'Al ingevuld. Je kunt het nog aanpassen.', defaultPresent: 'Nog niet ingevuld. Iedereen staat op aanwezig; pas aan wie er niet was.',
       allPresent: 'Iedereen aanwezig', statusCol: 'Aanwezigheid', note: 'Opmerking', saved: 'Opgeslagen.', noStudents: 'In deze groep zitten nog geen studenten.',
       summaryHelp: 'Dit schooljaar tot vandaag: {n} lessen volgens het rooster, waarvan {r} met ingevulde aanwezigheid.',
-      adminHelp: 'Zet studenten en docenten in een groep, koppel vakken aan de blokken en houd vakanties en examens bij. Een student zit in één groep; toevoegen aan een andere groep verplaatst hem. Een docent kan aan meer groepen lesgeven.',
+      adminHelp: 'Zet studenten en docenten in een groep, koppel vakken aan de blokken en houd vakanties en examens bij. Een student zit per instituut in één groep; toevoegen aan een andere groep verplaatst hem. Een docent kan aan meer groepen lesgeven.',
       groupsTitle: 'Groepen', studentsN: '{n} studenten', teachers: 'Docenten', noneYet: 'nog niemand', chooseAccount: 'Kies een account…',
       asStudent: 'als student', asTeacher: 'als docent', add: 'Toevoegen', confirmRemoveMember: 'Uit deze groep halen? De ingevulde aanwezigheid blijft bewaard.',
       roles: { superadmin: 'superbeheerder', admin: 'beheerder', editor: 'redacteur', teacher: 'docent', student: 'student' },
@@ -134,6 +135,7 @@ export const STRINGS = {
     qcounts: 'بين القوسين: مسودة / مقبول.', selectAll: 'تحديد الكل', selected: 'حُدِّد {n}',
     approve: 'قبول', toDraft: 'إرجاع إلى المسودة', reject: 'رفض', selectFirst: 'حدِّد أسئلة أولًا.',
     ag: {
+      institute: 'المعهد', adminInstHelp: 'لا ترى إلا المعاهد المرتبط بها.',
       title: 'الجدول الدراسي', cohort: 'المجموعة {c}', noSubject: 'لم تُحدَّد المادة بعد', absentN: '{n} غائب', fillIn: 'تسجيل الحضور',
       addItem: 'إضافة اختبار أو واجب', kind: 'النوع', group: 'المجموعة', date: 'التاريخ', lesson: 'الحصة', wholeDay: 'اليوم كله (بلا حصة محددة)',
       titleNl: 'الوصف (بالهولندية)', titleAr: 'الوصف (بالعربية)', infoNl: 'تفاصيل (بالهولندية)', infoAr: 'تفاصيل (بالعربية)',
@@ -147,7 +149,7 @@ export const STRINGS = {
       attendance: 'الحضور', alreadySaved: 'سُجِّل الحضور. يمكنك تعديله.', defaultPresent: 'لم يُسجَّل بعد. الجميع حاضر افتراضيًا؛ عدِّل لمن غاب.',
       allPresent: 'الجميع حاضر', statusCol: 'الحضور', note: 'ملاحظة', saved: 'حُفظ.', noStudents: 'لا طلاب في هذه المجموعة بعد.',
       summaryHelp: 'هذا العام الدراسي حتى اليوم: {n} حصة حسب الجدول، سُجِّل الحضور في {r} منها.',
-      adminHelp: 'أضف الطلاب والمدرّسين إلى المجموعات، واربط المواد بالحصص، وحدِّث العطل والامتحانات. يكون الطالب في مجموعة واحدة؛ إضافته إلى مجموعة أخرى تنقله إليها. ويمكن للمدرّس أن يدرّس أكثر من مجموعة.',
+      adminHelp: 'أضف الطلاب والمدرّسين إلى المجموعات، واربط المواد بالحصص، وحدِّث العطل والامتحانات. يكون الطالب في مجموعة واحدة في كل معهد؛ إضافته إلى مجموعة أخرى تنقله إليها. ويمكن للمدرّس أن يدرّس أكثر من مجموعة.',
       groupsTitle: 'المجموعات', studentsN: '{n} طالب', teachers: 'المدرّسون', noneYet: 'لا أحد بعد', chooseAccount: 'اختر حسابًا…',
       asStudent: 'طالبًا', asTeacher: 'مدرّسًا', add: 'إضافة', confirmRemoveMember: 'إخراجه من هذه المجموعة؟ يبقى الحضور المسجَّل محفوظًا.',
       roles: { superadmin: 'مشرف عام', admin: 'مشرف', editor: 'محرر', teacher: 'مدرّس', student: 'طالب' },

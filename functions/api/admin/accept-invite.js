@@ -4,6 +4,7 @@ import { hashPassword, passwordProblem, startSession } from '../../../lib/auth.j
 import { audit } from '../../../lib/audit.js'
 import { insert } from '../../../lib/content.js'
 import { openInvitation } from '../../../lib/users.js'
+import { linkInvitedUser } from '../../../lib/institutes.js'
 
 export async function onRequestPost ({ request, data: { conn } }) {
   const input = await body(request)
@@ -23,6 +24,7 @@ export async function onRequestPost ({ request, data: { conn } }) {
       [inv.email, str(input.name, 255), pw])
   }
   await conn.execute('INSERT INTO user_roles (user_id, role_code) VALUES (?, ?)', [userId, inv.role_code])
+  await linkInvitedUser(conn, userId, inv.institutes)
   await conn.execute('UPDATE invitations SET accepted_at = NOW() WHERE id = ?', [inv.id])
   await conn.execute('UPDATE invitations SET revoked_at = NOW() WHERE email = ? AND id <> ? AND accepted_at IS NULL AND revoked_at IS NULL', [inv.email, inv.id])
   await audit(conn, { id: userId }, 'invitation.accept', 'user', userId, { role: inv.role_code })

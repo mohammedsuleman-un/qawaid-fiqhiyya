@@ -5,7 +5,7 @@ import { audit } from '../../../../lib/audit.js'
 import { sendMail, inviteMail, studentInviteMail } from '../../../../lib/mail.js'
 
 async function load (conn, invId) {
-  const [inv] = await conn.execute('SELECT id, email, role_code FROM invitations WHERE id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [invId])
+  const [inv] = await conn.execute('SELECT * FROM invitations WHERE id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [invId])
   if (!inv) fail(404, 'Uitnodiging niet gevonden')
   return inv
 }
@@ -22,7 +22,7 @@ export async function onRequestPost ({ request, params, env, data: { conn, user 
   need(user, 'users.manage')
   const inv = await load(conn, id(params.id))
   if (inv.role_code === 'superadmin' && !user.roles.includes('superadmin')) fail(403, 'Alleen een superbeheerder kan een superbeheerder aanwijzen')
-  const link = await createInvitation(conn, request, inv.email, inv.role_code, user.id)
+  const link = await createInvitation(conn, request, inv.email, inv.role_code, user.id, inv.institutes || '')
   await audit(conn, user, 'invitation.resend', 'invitation', inv.email)
   // Uitnodiging per mail; de link blijft ook zichtbaar zodat je hem zelf kunt doorsturen.
   const mail = await sendMail(env, (inv.role_code === 'student' ? studentInviteMail : inviteMail)({ email: inv.email, role: inv.role_code, link, inviter: user.name || user.email, origin: new URL(request.url).origin }))

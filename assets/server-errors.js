@@ -1,6 +1,12 @@
 // Foutmeldingen van de server zijn Nederlands; in de Arabische modus van Beheer en de
 // studentenomgeving vertalen we ze hier. Onbekende meldingen blijven zoals ze zijn.
 const AR = {
+  'Je bent niet aan dit instituut gekoppeld': 'أنت غير مرتبط بهذا المعهد',
+  'Je bent nog aan geen instituut gekoppeld': 'لست مرتبطًا بأي معهد بعد',
+  'Onbekend instituut': 'معهد غير معروف',
+  'Instituut niet gevonden': 'المعهد غير موجود',
+  'Dit boek hoort niet bij jouw instituut': 'هذا الكتاب لا يتبع معهدك',
+  'Deze gebruiker hoort niet bij jouw instituut': 'هذا المستخدم لا يتبع معهدك',
   'Ongeldige begindatum': 'تاريخ البداية غير صالح',
   'Ongeldige einddatum': 'تاريخ النهاية غير صالح',
   'Ongeldige tijd (gebruik uu:mm)': 'وقت غير صالح (استعمل سس:دد)',

@@ -1,14 +1,18 @@
 // GET: boek met gegevens, titels per taal en hoofdstukken met status per taal.
-// PATCH: gegevens (content.create), titels per taal (content.edit), status (content.publish).
+// PATCH: gegevens en instituten (content.create), titels per taal (content.edit), status (content.publish).
+// Alleen voor boeken van je eigen instituten (een superbeheerder: alle boeken).
 import { json, body, need, fail, str, id } from '../../../../../lib/http.js'
 import { ACCESS_LEVELS, BOOK_STATUSES } from '../../../../../lib/content.js'
 import { audit } from '../../../../../lib/audit.js'
+import { needBook, institutesOfBooks, setBookInstitutes } from '../../../../../lib/institutes.js'
 
 export async function onRequestGet ({ params, data: { conn, user } }) {
   need(user, 'content.edit')
   const bookId = id(params.id)
   const [book] = await conn.execute('SELECT * FROM books WHERE id = ?', [bookId])
   if (!book) fail(404, 'Boek niet gevonden')
+  await needBook(conn, user, bookId)
+  book.institutes = (await institutesOfBooks(conn, [bookId])).get(bookId)
   const translations = await conn.execute('SELECT lang, title, subtitle, description FROM book_translations WHERE book_id = ?', [bookId])
   const rows = await conn.execute(`SELECT ch.id, ch.slug, ch.position, ch.archived_at, t.lang, t.title, t.status,
       (SELECT COUNT(*) FROM content_versions v WHERE v.translation_id = t.id AND v.status IN ('draft', 'in_review', 'approved', 'rejected')) AS open_versions
@@ -28,7 +32,12 @@ export async function onRequestPatch ({ request, params, data: { conn, user } })
   const input = await body(request)
   const [book] = await conn.execute('SELECT id, slug, status FROM books WHERE id = ?', [bookId])
   if (!book) fail(404, 'Boek niet gevonden')
+  await needBook(conn, user, bookId)
 
+  if (input.institutes !== undefined) {
+    need(user, 'content.create')
+    await setBookInstitutes(conn, user, bookId, input.institutes)
+  }
   const meta = ['category_id', 'author', 'translator', 'summarizer', 'publisher', 'language', 'access_level', 'pdf', 'cover'].filter((f) => input[f] !== undefined)
   if (meta.length) {
     need(user, 'content.create')

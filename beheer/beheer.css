@@ -185,3 +185,4 @@ html[dir="rtl"] .side-foot .logout svg{transform:scaleX(-1)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .side-tools .langseg [aria-pressed="true"]{background:#fbf8f1;color:#04403a}}
 .side-tools .langseg button:not([aria-pressed="true"]):hover{background:rgba(255,255,255,.1);color:#fff}
 @media (max-width:900px){.side-tools{flex:1 1 100%}}
+.insts label.inline{display:inline-flex;margin-inline-end:12px}td.insts{min-width:160px}
