@@ -1,4 +1,4 @@
-// Controleert de hoofdstukkaarten van تلخيص جمع الجوامع: elke kaart moet door parseStudy komen
+// Controleert de hoofdstukkaarten van تلخيص جمع الجوامع en الأشباه والنظائر: elke kaart moet door parseStudy komen
 // zonder dat er items wegvallen, en alleen personen uit het register gebruiken.
 // Gebruik: node scripts/check-talkhis-study.mjs
 import { readdirSync } from 'node:fs'
@@ -7,9 +7,9 @@ import register from '../db/seed/personen.js'
 
 const LISTS = ['points', 'terms', 'diagrams', 'sections', 'keycards', 'hadith', 'persons', 'review', 'quiz', 'subtleties', 'rules', 'disputes', 'pitfalls', 'ayat']
 const slugs = new Set(register.map((p) => p.slug))
-const dir = new URL('../db/seed/talkhis/studie/', import.meta.url)
 let bad = 0
-for (const f of readdirSync(dir).filter((f) => /^eenheid\d+\.js$/.test(f)).sort((a, b) => parseInt(a.slice(7)) - parseInt(b.slice(7)))) {
+// Ook de kaarten van الأشباه والنظائر (zelfde opzet).
+for (const dir of ['talkhis', 'ashbah'].map((b) => new URL(`../db/seed/${b}/studie/`, import.meta.url))) for (const f of readdirSync(dir).filter((f) => /^eenheid\d+\.js$/.test(f)).sort((a, b) => parseInt(a.slice(7)) - parseInt(b.slice(7)))) {
   const card = (await import(new URL(f, dir))).default
   const counts = []
   for (const lang of ['ar', 'nl']) {
