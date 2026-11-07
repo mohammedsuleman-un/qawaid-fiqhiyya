@@ -78,8 +78,8 @@ export const STRINGS = {
       groupsTitle: 'Groepen', studentsN: '{n} studenten', teachers: 'Docenten', noneYet: 'nog niemand', chooseAccount: 'Kies een account…',
       asStudent: 'als student', asTeacher: 'als docent', add: 'Toevoegen', confirmRemoveMember: 'Uit deze groep halen? De ingevulde aanwezigheid blijft bewaard.',
       roles: { superadmin: 'superbeheerder', admin: 'beheerder', editor: 'redacteur', teacher: 'docent', student: 'student' },
-      scheduleTitle: 'Weekrooster', scheduleHelp: 'Elk blok geldt voor de broeders en de zusters van die groep. Kies een vak of typ zelf; leeg = nog geen vak. Tijden in Nederlandse tijd (uu:mm). De onderste regel is om een blok toe te voegen.',
-      day: 'Dag', from: 'Van', to: 'Tot', subject: 'Vak kiezen', subjectNl: 'Vak (Nederlands)', subjectAr: 'Vak (Arabisch)', pickSubject: '—',
+      scheduleTitle: 'Weekrooster', scheduleHelp: 'Elk blok geldt voor de broeders en de zusters van die groep. Kies een vak of typ zelf; leeg = nog geen vak. Tijden in Nederlandse tijd (uu:mm). De onderste regel is om een blok toe te voegen. Om en om: vul een tweede vak in en de datum van een les met het eerste vak; daarna wisselt het per les (vakanties tellen niet mee).',
+      day: 'Dag', from: 'Van', to: 'Tot', subject: 'Vak kiezen', subjectNl: 'Vak (Nederlands)', subjectAr: 'Vak (Arabisch)', altNl: 'Om en om met (Nederlands)', altAr: 'Om en om met (Arabisch)', altStart: 'Eerste vak op', pickSubject: '—',
       yearTitle: 'Jaarrooster', yearHelp: 'Schooljaar (lessen alleen tussen begin en einde), vakanties (dan geen les), examens en bijzondere dagen. Laat "Tot" leeg voor één dag. De onderste regel is om iets toe te voegen.',
       all: 'Alle groepen', homeTitle: 'Lesagenda', homeText: 'Bekijk je lessen, examens, vakanties, toetsen en huiswerk.', homeTeacher: 'Bekijk je lessen en vul de aanwezigheid in.'
     }
@@ -163,8 +163,8 @@ export const STRINGS = {
       groupsTitle: 'المجموعات', studentsN: '{n} طالب', teachers: 'المدرّسون', noneYet: 'لا أحد بعد', chooseAccount: 'اختر حسابًا…',
       asStudent: 'طالبًا', asTeacher: 'مدرّسًا', add: 'إضافة', confirmRemoveMember: 'إخراجه من هذه المجموعة؟ يبقى الحضور المسجَّل محفوظًا.',
       roles: { superadmin: 'مشرف عام', admin: 'مشرف', editor: 'محرر', teacher: 'مدرّس', student: 'طالب' },
-      scheduleTitle: 'الجدول الأسبوعي', scheduleHelp: 'كل حصة تخص الإخوة والأخوات في تلك المجموعة. اختر مادة أو اكتبها؛ الفراغ = لم تُحدَّد بعد. الأوقات بتوقيت هولندا (سس:دد). السطر الأخير لإضافة حصة.',
-      day: 'اليوم', from: 'من', to: 'إلى', subject: 'اختيار المادة', subjectNl: 'المادة (بالهولندية)', subjectAr: 'المادة (بالعربية)', pickSubject: '—',
+      scheduleTitle: 'الجدول الأسبوعي', scheduleHelp: 'كل حصة تخص الإخوة والأخوات في تلك المجموعة. اختر مادة أو اكتبها؛ الفراغ = لم تُحدَّد بعد. الأوقات بتوقيت هولندا (سس:دد). السطر الأخير لإضافة حصة. بالتناوب: اكتب مادة ثانية وتاريخ درس بالمادة الأولى، ثم تتناوب المادتان في كل درس (العطل لا تُحسب).',
+      day: 'اليوم', from: 'من', to: 'إلى', subject: 'اختيار المادة', subjectNl: 'المادة (بالهولندية)', subjectAr: 'المادة (بالعربية)', altNl: 'بالتناوب مع (بالهولندية)', altAr: 'بالتناوب مع (بالعربية)', altStart: 'المادة الأولى في', pickSubject: '—',
       yearTitle: 'التقويم السنوي', yearHelp: 'العام الدراسي (الدروس بين بدايته ونهايته فقط)، والعطل (لا دروس فيها)، والامتحانات، والأيام الخاصة. اترك "إلى" فارغًا ليوم واحد. السطر الأخير للإضافة.',
       all: 'كل المجموعات', homeTitle: 'الجدول الدراسي', homeText: 'اطّلع على دروسك والامتحانات والعطل والاختبارات والواجبات.', homeTeacher: 'اطّلع على حصصك وسجِّل الحضور.'
     }

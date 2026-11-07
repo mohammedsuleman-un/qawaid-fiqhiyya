@@ -16,8 +16,9 @@ export async function onRequestPost ({ request, data: { conn, user } }) {
   await needInstitute(conn, user, instituteId)
   const b = blockInput(input)
   check(b)
-  const newId = await insert(conn, 'INSERT INTO schedule_blocks (institute_id, cohort, weekday, start_time, end_time, subject_nl, subject_ar, position) VALUES (?, ?, ?, ?, ?, ?, ?, 99)',
-    [instituteId, b.cohort, b.weekday, b.start_time, b.end_time, b.subject_nl, b.subject_ar])
+  const cols = Object.keys(b)
+  const newId = await insert(conn, `INSERT INTO schedule_blocks (institute_id, ${cols.join(', ')}, position) VALUES (?, ${cols.map(() => '?').join(', ')}, 99)`,
+    [instituteId, ...cols.map((c) => b[c])])
   await audit(conn, user, 'schedule.add', 'schedule_block', newId, b)
   return json({ ok: true, id: newId })
 }

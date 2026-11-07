@@ -5,6 +5,7 @@ import assert from 'node:assert/strict'
 import { freshDb, call, checkQueries } from './helpers.js'
 import { migrate } from '../lib/migrate.js'
 import abuIsmail from '../db/migrations/166_instituut_abu_ismail.js'
+import { allBlocks, allDays, calendar, schoolYear } from '../lib/agenda.js'
 import { startSession, hashPassword } from '../lib/auth.js'
 import * as institutes from '../functions/api/admin/institutes/index.js'
 import * as institute from '../functions/api/admin/institutes/[id].js'
@@ -47,6 +48,14 @@ test('bestaande boeken en roosters horen bij Instituut Ibn Al-Qayyim', async () 
   assert.equal(String(yr.date_from).slice(0, 10), '2026-09-13')
   const aiGroups = await conn.execute('SELECT code FROM class_groups WHERE institute_id = ?', [ai.id])
   assert.deepEqual(aiGroups.map((x) => x.code), ['A-m'])
+  // Om en om (migratie 169): 8 nov al-Ashbāh, 15 nov Jamʿ al-jawāmiʿ; vakanties tellen niet mee.
+  const aiDays = await allDays(conn, Number(ai.id))
+  const [blk] = await allBlocks(conn, Number(ai.id))
+  assert.equal(blk.subject_ar, 'الأشباه والنظائر')
+  assert.equal(blk.alt_subject_ar, 'جمع الجوامع')
+  const cal = calendar({ blocks: [blk], days: aiDays, from: '2026-11-01', to: '2027-01-17', cohorts: ['A'], year: schoolYear(aiDays, '2026-11-08') })
+  const alt = cal.filter((x) => x.lessons.length).map((x) => x.date.slice(5) + (x.alt.length ? 'J' : 'A'))
+  assert.deepEqual(alt, ['11-01J', '11-08A', '11-15J', '11-22A', '11-29J', '12-06A', '12-13J', '12-20A', '01-10J', '01-17A'])
   // De rest van deze tests gaat uit van één instituut aan het begin.
   for (const sql of abuIsmail.down) await conn.execute(sql)
   const [inst] = await conn.execute('SELECT id, name_nl, name_ar FROM institutes')
