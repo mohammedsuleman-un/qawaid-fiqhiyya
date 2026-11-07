@@ -7,6 +7,7 @@ import { migrate } from '../lib/migrate.js'
 import { startSession, hashPassword } from '../lib/auth.js'
 import * as institutes from '../functions/api/admin/institutes/index.js'
 import * as institute from '../functions/api/admin/institutes/[id].js'
+import * as instMembers from '../functions/api/admin/institutes/[id]/members.js'
 import * as adminMe from '../functions/api/admin/me.js'
 import * as books from '../functions/api/admin/books/index.js'
 import * as book from '../functions/api/admin/books/[id]/index.js'
@@ -203,4 +204,40 @@ test('groepen, rooster en agenda per instituut', async () => {
   assert.equal(seen1.data.items.length, 0)
   const delOther = await call(conn, 'DELETE', '/api/student/agenda-items?id=' + it.data.id, items, { cookie: s.admin1.cookie })
   assert.equal(delOther.status, 403)
+})
+
+test('uitnodiging met meer rollen tegelijk', async () => {
+  const inv = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.boss.cookie, body: { email: 'twee-rollen@example.org', roles: ['teacher', 'admin'], institutes: [1] } })
+  assert.equal(inv.status, 200, JSON.stringify(inv.data))
+  const list = await call(conn, 'GET', '/api/admin/invitations', invitations, { cookie: s.boss.cookie })
+  assert.equal(list.data.find((i) => i.email === 'twee-rollen@example.org').role_code, 'admin,teacher')
+  const token = new URL(inv.data.link).searchParams.get('uitnodiging')
+  await call(conn, 'POST', '/api/admin/accept-invite', acceptInvite, { body: { token, name: 'Twee', password: 'nog-een-lang-wachtwoord' } })
+  const all = await call(conn, 'GET', '/api/admin/users', users, { cookie: s.boss.cookie })
+  assert.deepEqual(all.data.find((u) => u.email === 'twee-rollen@example.org').roles.sort(), ['admin', 'teacher'])
+  const bad = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.admin1.cookie, body: { email: 'x2@example.org', roles: ['superadmin', 'teacher'] } })
+  assert.equal(bad.status, 403)
+  const none = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.boss.cookie, body: { email: 'x3@example.org', roles: [] } })
+  assert.equal(none.status, 400)
+})
+
+test('instituutpagina: studenten koppelen en loskoppelen', async () => {
+  const page = await call(conn, 'GET', '/api/admin/institutes/x', institute, { cookie: s.admin2.cookie, params: { id: String(s.inst2) } })
+  assert.equal(page.status, 200, JSON.stringify(page.data))
+  assert.ok(page.data.members.some((m) => m.email === 'student1@example.org' && m.groups.length === 1 && !m.linked))
+  const other = await call(conn, 'GET', '/api/admin/institutes/x', institute, { cookie: s.admin2.cookie, params: { id: '1' } })
+  assert.equal(other.status, 403)
+  const st = await account('student9@example.org', 'student')
+  const p2 = await call(conn, 'GET', '/api/admin/institutes/x', institute, { cookie: s.admin2.cookie, params: { id: String(s.inst2) } })
+  assert.ok(p2.data.candidates.some((u) => u.id === st.id))
+  const add = await call(conn, 'POST', '/api/admin/institutes/x/members', instMembers, { cookie: s.admin2.cookie, params: { id: String(s.inst2) }, body: { users: [st.id] } })
+  assert.equal(add.status, 200, JSON.stringify(add.data))
+  const notMine = await call(conn, 'POST', '/api/admin/institutes/x/members', instMembers, { cookie: s.admin2.cookie, params: { id: String(s.inst2) }, body: { users: [s.admin1.id] } })
+  assert.equal(notMine.status, 403)
+  const p3 = await call(conn, 'GET', '/api/admin/institutes/x', institute, { cookie: s.admin1.cookie, params: { id: '1' } })
+  assert.ok(!p3.data.candidates.some((u) => u.id === st.id)) // hoort nu bij instituut 2
+  const del = await call(conn, 'DELETE', `/api/admin/institutes/x/members?user=${s.student1.id}`, instMembers, { cookie: s.admin2.cookie, params: { id: String(s.inst2) }, body: {} })
+  assert.equal(del.status, 200)
+  const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM class_group_members m JOIN class_groups g ON g.id = m.group_id WHERE m.user_id = ? AND g.institute_id = ?', [s.student1.id, s.inst2])
+  assert.equal(Number(n), 0)
 })

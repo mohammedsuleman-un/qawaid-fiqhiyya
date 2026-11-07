@@ -1,8 +1,9 @@
-// GET: open uitnodigingen. POST {email, role, institutes}: nieuwe uitnodiging (users.manage).
+// GET: open uitnodigingen. POST {email, roles (of role), institutes}: nieuwe uitnodiging (users.manage),
+// met één of meer rollen.
 // Zonder institutes krijgt het nieuwe account de instituten van wie uitnodigt.
 // Alleen een superbeheerder mag iemand als superbeheerder uitnodigen.
 import { json, body, need, fail, str } from '../../../../lib/http.js'
-import { createInvitation } from '../../../../lib/users.js'
+import { createInvitation, parseRoles } from '../../../../lib/users.js'
 import { audit } from '../../../../lib/audit.js'
 import { inviteInstitutes, isSuper, myInstituteIds } from '../../../../lib/institutes.js'
 import { sendMail, inviteMail, studentInviteMail } from '../../../../lib/mail.js'
@@ -22,12 +23,13 @@ export async function onRequestGet ({ data: { conn, user } }) {
 export async function onRequestPost ({ request, env, data: { conn, user } }) {
   need(user, 'users.manage')
   const input = await body(request)
-  if (input.role === 'superadmin' && !user.roles.includes('superadmin')) fail(403, 'Alleen een superbeheerder kan een superbeheerder aanwijzen')
+  const roles = parseRoles(input.roles ?? input.role)
+  if (roles.includes('superadmin') && !user.roles.includes('superadmin')) fail(403, 'Alleen een superbeheerder kan een superbeheerder aanwijzen')
   const email = str(input.email, 255).toLowerCase()
   const institutes = await inviteInstitutes(conn, user, input.institutes)
-  const link = await createInvitation(conn, request, email, input.role, user.id, institutes)
-  await audit(conn, user, 'invitation.create', 'invitation', email, { role: input.role, institutes })
+  const link = await createInvitation(conn, request, email, roles, user.id, institutes)
+  await audit(conn, user, 'invitation.create', 'invitation', email, { roles, institutes })
   // Uitnodiging per mail; de link blijft ook zichtbaar zodat je hem zelf kunt doorsturen.
-  const mail = await sendMail(env, (input.role === 'student' ? studentInviteMail : inviteMail)({ email: email, role: input.role, link, inviter: user.name || user.email, origin: new URL(request.url).origin }))
+  const mail = await sendMail(env, (roles.join() === 'student' ? studentInviteMail : inviteMail)({ email: email, role: roles[0], roles, link, inviter: user.name || user.email, origin: new URL(request.url).origin }))
   return json({ link, mailed: mail.ok === true })
 }
