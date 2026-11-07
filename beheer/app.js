@@ -1,10 +1,10 @@
 // Beheeromgeving van De Zuivere Bron. Praat alleen met /api/admin; de sessie staat in
 // een HttpOnly-cookie. Knoppen worden verborgen als je een recht mist, maar de server
 // controleert elk recht zelf opnieuw.
-import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261107b'
+import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261107c'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261107b'
+import { serverError } from '/assets/server-errors.js?v=20261107c'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -24,6 +24,8 @@ const has = (p) => !!me && me.permissions.includes(p)
 const date = (s) => s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleString(lang === 'ar' ? 'ar' : 'nl-NL', { dateStyle: 'medium', timeStyle: 'short' }) : ''
 const badge = (status) => `<span class="badge s-${esc(status)}">${esc(t.status[status] || status)}</span>`
 const roleName = (r) => ROLE_NAMES[lang][r] || r
+// Meer rollen tegelijk ('admin,teacher') als 'Beheerder + Docent'.
+const rolesName = (s) => String(s || '').split(',').filter(Boolean).map(roleName).join(' + ')
 const stripTags = (s) => String(s ?? '').replace(/<[^>]+>/g, '')
 // Instituten: je ziet en kiest alleen de instituten waaraan je gekoppeld bent (superbeheerder: alle).
 const instName = (i) => i ? (lang === 'ar' ? i.name_ar : i.name_nl) : ''
@@ -110,7 +112,7 @@ function setNav () {
     ['/student/#/vragen', t.nav.tests, has('content.edit') || has('tests.manage')],
     ['/student/#/groepen', t.nav.groups, has('groups.manage')],
     ['#/gebruikers', t.nav.users, has('users.manage')],
-    ['#/instituten', t.nav.institutes, has('institutes.manage')],
+    ['#/instituten', t.nav.institutes, has('institutes.manage') || has('users.manage')],
     ['#/audit', t.nav.audit, has('audit.view')],
     ['#/instellingen', t.nav.settings, has('settings.manage')],
     ['#/profiel', t.nav.profile, true]
@@ -174,7 +176,7 @@ async function acceptView (token) {
     return render(`<div class="card narrow"><p class="msg err">${esc(err.message)}</p><a href="/beheer/">${t.login}</a></div>`)
   }
   render(html`<form class="card narrow" id="f"><h1>${t.acceptTitle}</h1>
-    <p>${fmt(t.acceptHelp, { role: roleName(inv.role_code), email: inv.email })}</p>
+    <p>${fmt(t.acceptHelp, { role: rolesName(inv.role_code), email: inv.email })}</p>
     <label>${t.name}<input name="name" autocomplete="name" required></label>
     <label>${t.newPassword}<input name="password" type="password" minlength="10" autocomplete="new-password" required>${pwHint()}</label>
     <button class="primary">${t.createAccount}</button><p class="msg"></p></form>`)
@@ -667,13 +669,14 @@ async function usersView () {
       ${myInst().length > 1 ? `<p class="insts"><b>${t.institutes}:</b> ${instChecks(myInst().map((i) => i.id))}</p>` : ''}<p class="msg"></p></form>
     <form class="card" id="inv"><h2>${t.invite}</h2><div class="grid3">
       <label>${t.email}<input name="email" type="email" required dir="ltr"></label>
-      <label>${t.role}<select name="role">${options(roleOpts, 'editor')}</select></label>
       <span class="end"><button class="primary">${t.invite}</button></span></div>
+      <p class="roles invroles"><b>${t.roles}:</b> ${roleOpts.map(([c, n]) => `<label class="inline"><input type="checkbox" data-role value="${c}"${c === 'editor' ? ' checked' : ''}> ${esc(n)}</label>`).join(' ')}<br><small class="muted">${t.multiRoleHelp}</small></p>
       ${myInst().length ? `<p class="insts"><b>${t.institutes}:</b> ${instChecks(myInst().map((i) => i.id))}</p>` : ''}<p class="msg"></p></form>
-    ${invites.length ? `<section class="card"><h2>${t.invitations}</h2><table class="tbl"><tbody>${invites.map((i) => `<tr><td dir="ltr">${esc(i.email)}</td><td>${esc(roleName(i.role_code))}</td><td><small>${date(i.expires_at)}</small></td>
+    ${invites.length ? `<section class="card"><h2>${t.invitations}</h2><table class="tbl"><tbody>${invites.map((i) => `<tr><td dir="ltr">${esc(i.email)}</td><td>${esc(rolesName(i.role_code))}</td><td><small>${date(i.expires_at)}</small></td>
       <td class="nowrap"><button data-resend="${i.id}">${t.resend}</button> <button class="danger" data-revoke="${i.id}">${t.revoke}</button></td></tr>`).join('')}</tbody></table><div id="invlink" class="msg"></div></section>` : ''}
     ${tabs}
     ${users.length ? '' : `<p class="muted">${t.noItems}</p>`}
+    <p class="muted small">${t.multiRoleHelp}</p>
     <table class="tbl users"><thead><tr><th>${t.name}</th><th>${t.roles}</th>${myInst().length ? `<th>${t.institutes}</th>` : ''}<th>${t.twofa}</th><th>${t.lastLogin}</th><th></th></tr></thead><tbody>
     ${users.map((u) => `<tr class="${u.status !== 'active' ? 'archived' : ''}" data-user="${u.id}"><td><b>${esc(u.name || '')}</b><br><small dir="ltr">${esc(u.email)}</small> ${u.status !== 'active' ? badge(u.status) : ''}</td>
       <td><div class="roles">${roleOpts.map(([c, n]) => `<label class="inline"><input type="checkbox" value="${c}" ${u.roles.includes(c) ? 'checked' : ''}> ${esc(n)}</label>`).join('')}
@@ -693,7 +696,11 @@ async function usersView () {
       <tbody>${roles.permissions.map((p) => `<tr><td>${esc(permName(p))}</td>${roles.roles.map((r) => `<td>${r.permissions.includes(p.code) ? '✓' : ''}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`)
   const inviteHelp = (r) => linkBox(r.mailed ? (t.inviteMailed || t.inviteLink) : t.inviteLink, r.link)
   const invInst = (f) => f.querySelector('[data-inst]') ? { institutes: checkedInst(f) } : {}
-  form($('#inv'), async (d) => inviteHelp(await api('invitations', 'POST', { ...d, ...invInst($('#inv')) })))
+  form($('#inv'), async (d) => {
+    const roles = $$('[data-role]:checked', $('#inv')).map((x) => x.value)
+    if (!roles.length) throw new Error(t.pickRole)
+    return inviteHelp(await api('invitations', 'POST', { email: d.email, roles, ...invInst($('#inv')) }))
+  })
   form($('#addStudent'), async (d) => inviteHelp(await api('invitations', 'POST', { email: d.email, role: 'student', ...invInst($('#addStudent')) })))
   $$('[data-resend]').forEach((b) => b.addEventListener('click', async () => { const r = await api('invitations/' + b.dataset.resend, 'POST'); $('#invlink').innerHTML = inviteHelp(r) }))
   $$('[data-revoke]').forEach((b) => b.addEventListener('click', async () => { await api('invitations/' + b.dataset.revoke, 'DELETE'); usersView() }))
@@ -737,19 +744,22 @@ async function usersView () {
 // ---------- instituten ----------
 async function institutesView () {
   const list = await api('institutes')
+  const edit = has('institutes.manage')
+  const nameCell = (i, f, dir) => edit ? `<input name="${f}" dir="${dir}" value="${esc(i[f])}">` : `<a href="#/instituut/${i.id}" dir="${dir}">${esc(i[f])}</a>`
   render(html`<h1>${t.nav.institutes}</h1><p class="muted">${t.institutesHelp}</p>
-    <table class="tbl"><thead><tr><th>${t.nameNl}</th><th>${t.nameAr}</th><th>${t.groupsCol}</th><th>${t.nav.books}</th><th>${t.staffCol}</th><th></th></tr></thead><tbody>
-    ${list.map((i) => `<tr data-inst-row="${i.id}"><td><input name="name_nl" value="${esc(i.name_nl)}"></td><td><input name="name_ar" dir="rtl" value="${esc(i.name_ar)}"></td>
+    <table class="tbl"><thead><tr><th>${t.nameNl}</th><th>${t.nameAr}</th><th>${t.groupsCol}</th><th>${t.nav.books}</th><th>${t.membersCol}</th><th></th></tr></thead><tbody>
+    ${list.map((i) => `<tr data-inst-row="${i.id}"><td>${nameCell(i, 'name_nl', 'ltr')}</td><td>${nameCell(i, 'name_ar', 'rtl')}</td>
       <td>${i.groups}</td><td><a href="#/boeken?instituut=${i.id}">${i.books}</a></td><td>${i.staff}</td>
-      <td class="nowrap"><button data-save>${t.save}</button> <a class="btn" href="/student/#/groepen?instituut=${i.id}">${t.nav.groups}</a><div class="msg"></div></td></tr>`).join('')}</tbody></table>
-    <form class="card" id="newInst"><h2>${t.newInstitute}</h2><div class="grid3">
+      <td class="nowrap"><a class="btn primary" href="#/instituut/${i.id}">${t.openInstitute}</a> ${edit ? `<button data-save>${t.save}</button>` : ''} <a class="btn" href="/student/#/groepen?instituut=${i.id}">${t.nav.groups}</a><div class="msg"></div></td></tr>`).join('')}</tbody></table>
+    ${edit ? '' : `<p class="muted"><small>${t.onlySuperCreates}</small></p>`}
+    <form class="card" id="newInst"${edit ? '' : ' hidden'}><h2>${t.newInstitute}</h2><div class="grid3">
       <label>${t.nameNl}<input name="name_nl" required></label>
       <label>${t.nameAr}<input name="name_ar" dir="rtl" required></label>
       <label>${t.slug}<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required dir="ltr"></label></div>
       <p class="muted"><small>${t.newInstituteHelp}</small></p>
       <button class="primary">${t.create}</button><p class="msg"></p></form>`)
   for (const row of $$('[data-inst-row]')) {
-    $('[data-save]', row).addEventListener('click', async () => {
+    $('[data-save]', row)?.addEventListener('click', async () => {
       const msg = $('.msg', row)
       try {
         await api('institutes/' + row.dataset.instRow, 'PATCH', { name_nl: $('[name=name_nl]', row).value, name_ar: $('[name=name_ar]', row).value })
@@ -759,6 +769,44 @@ async function institutesView () {
     })
   }
   form($('#newInst'), async (d) => { await api('institutes', 'POST', d); me = await api('me'); institutesView() })
+}
+
+// Eén instituut: leden (medewerkers en studenten) toevoegen of loskoppelen, en de groepen.
+const MEMBER_TABS = {
+  staff: (u) => u.roles.some((r) => ['superadmin', 'admin', 'editor', 'teacher'].includes(r)),
+  students: (u) => u.roles.includes('student') || !u.roles.length,
+  all: () => true
+}
+async function instituteView (iid) {
+  const d = await api('institutes/' + iid)
+  const q = new URLSearchParams(location.hash.split('?')[1] || '')
+  const tab = MEMBER_TABS[q.get('tab')] ? q.get('tab') : 'students'
+  const rows = d.members.filter(MEMBER_TABS[tab])
+  const gName = (id) => { const g = d.groups.find((x) => x.id === id); return g ? (lang === 'ar' ? g.name_ar : g.name_nl) : '' }
+  const label = (u) => `${u.name || u.email} (${u.email})${u.roles.length ? ' · ' + rolesName(u.roles.join(',')) : ''}`
+  const name = instName(d.institute)
+  render(html`<p><a href="#/instituten">← ${t.nav.institutes}</a></p>
+    <div class="head"><h1>${esc(name)}</h1><a class="btn" href="/student/#/groepen?instituut=${d.institute.id}">${t.nav.groups}</a> <a class="btn" href="#/boeken?instituut=${d.institute.id}">${t.nav.books}</a></div>
+    <p class="muted">${t.instMembersHelp}</p>
+    <div class="stats">${d.groups.map((g) => `<a class="stat" href="/student/#/groepen?instituut=${d.institute.id}"><b>${g.students}</b><span>${esc(lang === 'ar' ? g.name_ar : g.name_nl)}</span></a>`).join('')}</div>
+    <form class="card" id="addMem"><h2>${t.addToInstitute}</h2><div class="grid3">
+      <label>${t.chooseAccount}<select name="user" required><option value=""></option>${options(d.candidates.map((u) => [u.id, label(u)]))}</select></label>
+      <span class="end"><button class="primary">${t.add}</button></span></div>
+      <p class="muted"><small>${t.addToInstituteHelp}</small></p><p class="msg"></p></form>
+    <nav class="tabs">${Object.keys(MEMBER_TABS).map((k) => `<a href="#/instituut/${d.institute.id}?tab=${k}"${k === tab ? ' class="on" aria-current="page"' : ''}>${esc(t.memberTabs[k])} <span class="pill">${d.members.filter(MEMBER_TABS[k]).length}</span></a>`).join('')}</nav>
+    ${rows.length ? `<table class="tbl"><thead><tr><th>${t.name}</th><th>${t.roles}</th><th>${t.groupsCol}</th><th></th></tr></thead><tbody>
+      ${rows.map((u) => `<tr data-mem="${u.id}"><td><b>${esc(u.name || '')}</b><br><small dir="ltr">${esc(u.email)}</small> ${u.status !== 'active' ? badge(u.status) : ''}</td>
+        <td>${esc(rolesName(u.roles.join(',')))}</td>
+        <td>${u.groups.map((g) => esc(gName(g.id)) + (g.role === 'teacher' ? ` <small>(${esc(roleName('teacher'))})</small>` : '')).join('<br>') || `<small class="muted">${t.noGroupYet}</small>`}</td>
+        <td class="nowrap"><button class="danger" data-unlink>${t.unlink}</button><div class="msg"></div></td></tr>`).join('')}</tbody></table>`
+    : `<p class="muted">${t.noItems}</p>`}`)
+  form($('#addMem'), async (x) => { await api(`institutes/${d.institute.id}/members`, 'POST', { users: [Number(x.user)] }); instituteView(iid) })
+  for (const row of $$('[data-mem]')) {
+    $('[data-unlink]', row).addEventListener('click', async () => {
+      if (!confirm(t.confirmUnlink)) return
+      try { await api(`institutes/${d.institute.id}/members?user=${row.dataset.mem}`, 'DELETE'); instituteView(iid) } catch (e) { const m = $('.msg', row); m.className = 'msg err'; m.textContent = e.message }
+    })
+  }
 }
 
 async function auditView () {
@@ -831,7 +879,8 @@ const ROUTES = [
   [/^beoordelen$/, reviewView, 'content.edit'],
   [/^feedback$/, feedbackView, 'feedback.assigned'],
   [/^gebruikers$/, usersView, 'users.manage'],
-  [/^instituten$/, institutesView, 'institutes.manage'],
+  [/^instituten$/, institutesView, 'users.manage'],
+  [/^instituut\/(\d+)$/, instituteView, 'users.manage'],
   [/^audit$/, auditView, 'audit.view'],
   [/^instellingen$/, settingsView, 'settings.manage'],
   [/^profiel$/, profileView]
