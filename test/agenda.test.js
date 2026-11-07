@@ -110,6 +110,25 @@ test('student ziet alleen de agenda van zijn eigen groep, met examens en vakanti
   assert.equal(none.status, 401)
 })
 
+test('maand- en jaaroverzicht van de agenda', async () => {
+  const m = await call(conn, 'GET', '/api/student/agenda?view=month&from=2027-01-20', agenda, { cookie: s.amina.cookie })
+  assert.equal(m.status, 200, JSON.stringify(m.data))
+  assert.equal(m.data.view, 'month')
+  assert.equal(m.data.from, '2027-01-01')
+  assert.equal(m.data.to, '2027-01-31')
+  assert.ok(m.data.calendar.find((d) => d.date === '2027-01-07').lessons.length)
+  const feb = await call(conn, 'GET', '/api/student/agenda?view=month&from=2027-02-03', agenda, { cookie: s.amina.cookie })
+  assert.equal(feb.data.to, '2027-02-28')
+  const y = await call(conn, 'GET', '/api/student/agenda?view=year&from=2027-01-20', agenda, { cookie: s.amina.cookie })
+  assert.equal(y.status, 200)
+  assert.ok(y.data.from <= '2026-09-30' && y.data.to >= '2027-06-01', y.data.from + ' ' + y.data.to)
+  assert.ok(y.data.calendar.filter((d) => d.lessons.length).length > 30)
+  assert.ok(y.data.days.some((d) => d.kind === 'holiday') && y.data.days.some((d) => d.kind === 'exam'))
+  // Een datum buiten het ingevoerde schooljaar: het jaar daarna (september-juli).
+  const next = await call(conn, 'GET', '/api/student/agenda?view=year&from=' + y.data.to.slice(0, 4) + '-10-01', agenda, { cookie: s.amina.cookie })
+  assert.ok(next.data.from > y.data.to, next.data.from)
+})
+
 test('docent vult de aanwezigheid in voor zijn eigen groep', async () => {
   const blk = s.blocks.find((x) => x.cohort === 'A' && x.weekday === 4 && x.start_time === '19:00')
   const q = `?group=${s.groups['A-f']}&block=${blk.id}&date=2026-11-05`

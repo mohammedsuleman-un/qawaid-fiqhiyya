@@ -1,4 +1,5 @@
-// GET /api/student/agenda?from=YYYY-MM-DD&weeks=4&institute=: de lesagenda van de ingelogde
+// GET /api/student/agenda?from=YYYY-MM-DD&weeks=4&institute=&view=week|month|year: de lesagenda van de ingelogde
+// gebruiker. view=month geeft de hele maand van from, view=year het schooljaar waarin from valt.
 // gebruiker, per instituut. Studenten zien hun eigen groep, docenten de groepen waaraan ze
 // lesgeven, beheerders alle groepen van hun instituten. Zonder institute: het eerste instituut
 // waar de gebruiker in een groep zit, anders het eerste dat hij beheert.
@@ -11,9 +12,15 @@ import { allGroups, allBlocks, allDays, myGroups, managedInstitutes, canRecord, 
 export async function onRequestGet ({ request, data: { conn, user } }) {
   const url = new URL(request.url)
   const now = today()
-  const from = monday(url.searchParams.get('from') ? isoDate(url.searchParams.get('from')) : now)
+  const asked = url.searchParams.get('from') ? isoDate(url.searchParams.get('from')) : now
+  const view = ['month', 'year'].includes(url.searchParams.get('view')) ? url.searchParams.get('view') : 'week'
   const weeks = Math.min(Math.max(parseInt(url.searchParams.get('weeks') || '4', 10) || 4, 1), 12)
-  const to = addDays(from, weeks * 7 - 1)
+  let from = monday(asked)
+  let to = addDays(from, weeks * 7 - 1)
+  if (view === 'month') {
+    from = asked.slice(0, 8) + '01'
+    to = addDays(addDays(from, 32).slice(0, 8) + '01', -1)
+  }
   const managed = await managedInstitutes(conn, user)
   // Docenten van een instituut zien alle lessen van dat instituut; aanwezigheid invullen
   // blijft voor hun eigen groepen. Studenten zien alleen hun eigen groep.
@@ -30,7 +37,19 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
   const cohorts = [...new Set(visible.map((g) => g.cohort))]
   const blocks = inst ? (await allBlocks(conn, inst.id)).filter((b) => cohorts.includes(b.cohort)) : []
   const days = inst ? await allDays(conn, inst.id) : []
-  const year = schoolYear(days, from > now ? from : now)
+  // Het schooljaar waarin een datum valt; ligt hij in geen ingevoerd schooljaar, dan september-juli.
+  const yearOf = (date) => schoolYear(days.some((x) => x.kind === 'year' && x.date_from <= date && (x.date_to || x.date_from) >= date) ? days : [], date)
+  let year = schoolYear(days, from > now ? from : now)
+  if (view === 'month') year = yearOf(addDays(from, 14))
+  if (view === 'year') {
+    year = yearOf(asked)
+    from = year.from
+    // Tot het einde van de maand, en tot een slotdag of examen kort na de laatste lesdag.
+    const after = days.filter((x) => x.kind !== 'year' && x.date_from > year.to && x.date_from <= addDays(year.to, 62)).map((x) => x.date_from)
+    const last = [year.to, ...after].sort().pop()
+    to = addDays(addDays(last, 32).slice(0, 8) + '01', -1)
+    if (to > addDays(from, 400)) to = addDays(from, 400)
+  }
   const cal = cohorts.length ? calendar({ blocks, days, from, to, cohorts, year }) : []
   const usedDays = new Set(cal.flatMap((d) => d.events))
   const ids = visible.map((g) => g.id)
@@ -53,7 +72,7 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
       .map((r) => ({ group_id: Number(r.group_id), block_id: Number(r.block_id), date: String(r.lesson_date).slice(0, 10), n: Number(r.n), absent: Number(r.absent) }))
   }
   return json({
-    today: now, from, to, weeks, year, manager, institute: inst, institutes, recorder: canRecord(user) || manager,
+    today: now, view, from, to, weeks, year, manager, institute: inst, institutes, recorder: canRecord(user) || manager,
     groups: visible.map((g) => ({ ...g, student: mine.student.includes(g.id), teacher: mine.teacher.includes(g.id), canTeach: teachIds.includes(g.id) })),
     blocks, days: days.filter((d) => usedDays.has(d.id)), calendar: cal, items, attendance: own, recorded
   })
