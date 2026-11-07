@@ -1,6 +1,9 @@
 // Foutmeldingen van de server zijn Nederlands; in de Arabische modus van Beheer en de
 // studentenomgeving vertalen we ze hier. Onbekende meldingen blijven zoals ze zijn.
 const AR = {
+  'Kies broeder of zuster': 'اختر: أخ أم أخت',
+  'Dit is een groep voor broeders': 'هذه مجموعة للإخوة',
+  'Dit is een groep voor zusters': 'هذه مجموعة للأخوات',
   'Je bent niet aan dit instituut gekoppeld': 'أنت غير مرتبط بهذا المعهد',
   'Je bent nog aan geen instituut gekoppeld': 'لست مرتبطًا بأي معهد بعد',
   'Onbekend instituut': 'معهد غير معروف',

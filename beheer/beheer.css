@@ -186,3 +186,4 @@ html[dir="rtl"] .side-foot .logout svg{transform:scaleX(-1)}
 .side-tools .langseg button:not([aria-pressed="true"]):hover{background:rgba(255,255,255,.1);color:#fff}
 @media (max-width:900px){.side-tools{flex:1 1 100%}}
 .insts label.inline{display:inline-flex;margin-inline-end:12px}td.insts{min-width:160px}
+fieldset.gender{border:0;padding:0;margin:4px 0 8px;display:flex;gap:16px;flex-wrap:wrap}fieldset.gender legend{font-weight:600;margin-bottom:6px;padding:0}

@@ -36,10 +36,10 @@ test('installatie', async () => {
 test('student meldt zich aan', async () => {
   const weak = await call(conn, 'POST', '/api/student/register', register, { body: { name: 'Amina', email: 'amina@example.org', password: 'kort' } })
   assert.equal(weak.status, 400)
-  const r = await call(conn, 'POST', '/api/student/register', register, { body: { name: 'Amina', email: 'Amina@example.org', password: 'een-lang-wachtwoord', lang: 'nl' } })
+  const r = await call(conn, 'POST', '/api/student/register', register, { body: { name: 'Amina', email: 'Amina@example.org', password: 'een-lang-wachtwoord', lang: 'nl', gender: 'f' } })
   assert.equal(r.status, 200, JSON.stringify(r.data))
   s.student = r.cookie
-  const dup = await call(conn, 'POST', '/api/student/register', register, { body: { name: 'X', email: 'amina@example.org', password: 'een-lang-wachtwoord' } })
+  const dup = await call(conn, 'POST', '/api/student/register', register, { body: { name: 'X', email: 'amina@example.org', password: 'een-lang-wachtwoord', gender: 'f' } })
   assert.equal(dup.status, 400)
   const anon = await call(conn, 'GET', '/api/student/me', me)
   assert.equal(anon.status, 401)

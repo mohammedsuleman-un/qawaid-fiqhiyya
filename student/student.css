@@ -225,3 +225,4 @@ ol.opts-rv,ul.opts-rv{margin:2px 0;padding-inline-start:22px;font-size:14px;line
 .addmem select[name=user]{flex:1 1 100%}
 .tbl.edit input[name^=title]{min-width:180px}
 .instpick{display:inline-flex;flex-direction:row;gap:8px;align-items:center;margin:0 0 12px;font-weight:600}.instpick select{font:inherit;padding:4px 8px}
+fieldset.gender{border:0;padding:0;margin:4px 0 8px;display:flex;gap:16px;flex-wrap:wrap}fieldset.gender legend{font-weight:600;margin-bottom:6px;padding:0}

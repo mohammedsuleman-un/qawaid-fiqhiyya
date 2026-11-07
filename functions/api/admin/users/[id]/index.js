@@ -5,7 +5,7 @@
 // GET: wat er verdwijnt bij definitief verwijderen. DELETE {confirm_email}: definitief
 // verwijderen (zie deleteUser in lib/users.js).
 import { json, body, need, fail, id } from '../../../../../lib/http.js'
-import { ROLE_CODES, guardLastSuperadmin, deletionSummary, deleteUser } from '../../../../../lib/users.js'
+import { ROLE_CODES, guardLastSuperadmin, deletionSummary, deleteUser, GENDERS, setGender } from '../../../../../lib/users.js'
 import { PERMISSIONS } from '../../../../../lib/rbac.js'
 import { audit } from '../../../../../lib/audit.js'
 import { needUser, setUserInstitutes } from '../../../../../lib/institutes.js'
@@ -48,6 +48,10 @@ export async function onRequestPatch ({ request, params, data: { conn, user } })
       await conn.execute('INSERT INTO user_permissions (user_id, permission_code, granted) VALUES (?, ?, ?)', [targetId, p.code, p.granted ? 1 : 0])
     }
     await audit(conn, user, 'user.permissions', 'user', targetId, { email: target.email, permissions: input.permissions })
+  }
+  if (GENDERS.includes(input.gender)) {
+    await setGender(conn, targetId, input.gender)
+    await audit(conn, user, 'user.gender', 'user', targetId, { email: target.email, gender: input.gender })
   }
   if (input.institutes !== undefined) {
     const next = await setUserInstitutes(conn, user, targetId, input.institutes)

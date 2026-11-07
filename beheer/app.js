@@ -1,10 +1,10 @@
 // Beheeromgeving van De Zuivere Bron. Praat alleen met /api/admin; de sessie staat in
 // een HttpOnly-cookie. Knoppen worden verborgen als je een recht mist, maar de server
 // controleert elk recht zelf opnieuw.
-import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261107c'
+import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261107d'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261107c'
+import { serverError } from '/assets/server-errors.js?v=20261107d'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -179,6 +179,9 @@ async function acceptView (token) {
     <p>${fmt(t.acceptHelp, { role: rolesName(inv.role_code), email: inv.email })}</p>
     <label>${t.name}<input name="name" autocomplete="name" required></label>
     <label>${t.newPassword}<input name="password" type="password" minlength="10" autocomplete="new-password" required>${pwHint()}</label>
+    ${String(inv.role_code).split(',').includes('student') ? `<fieldset class="gender"><legend>${t.genderQ}</legend>
+      <label class="inline"><input type="radio" name="gender" value="m" required> ${t.brother}</label>
+      <label class="inline"><input type="radio" name="gender" value="f" required> ${t.sister}</label></fieldset>` : ''}
     <button class="primary">${t.createAccount}</button><p class="msg"></p></form>`)
   form($('#f'), async (d) => {
     await api('accept-invite', 'POST', { ...d, token })
@@ -678,7 +681,8 @@ async function usersView () {
     ${users.length ? '' : `<p class="muted">${t.noItems}</p>`}
     <p class="muted small">${t.multiRoleHelp}</p>
     <table class="tbl users"><thead><tr><th>${t.name}</th><th>${t.roles}</th>${myInst().length ? `<th>${t.institutes}</th>` : ''}<th>${t.twofa}</th><th>${t.lastLogin}</th><th></th></tr></thead><tbody>
-    ${users.map((u) => `<tr class="${u.status !== 'active' ? 'archived' : ''}" data-user="${u.id}"><td><b>${esc(u.name || '')}</b><br><small dir="ltr">${esc(u.email)}</small> ${u.status !== 'active' ? badge(u.status) : ''}</td>
+    ${users.map((u) => `<tr class="${u.status !== 'active' ? 'archived' : ''}" data-user="${u.id}"><td><b>${esc(u.name || '')}</b><br><small dir="ltr">${esc(u.email)}</small> ${u.status !== 'active' ? badge(u.status) : ''}
+        ${u.roles.includes('student') ? `<br><select data-gender aria-label="${t.genderQ}">${options([['', '—'], ['m', t.brother], ['f', t.sister]], u.gender || '')}</select>` : ''}</td>
       <td><div class="roles">${roleOpts.map(([c, n]) => `<label class="inline"><input type="checkbox" value="${c}" ${u.roles.includes(c) ? 'checked' : ''}> ${esc(n)}</label>`).join('')}
         ${!isSuper && u.roles.includes('superadmin') ? `<span class="pill">${roleName('superadmin')}</span>` : ''}</div>
         <button data-roles>${t.saveRoles}</button>
@@ -713,6 +717,7 @@ async function usersView () {
       if (!isSuper && $('.roles .pill', row)) chosen.push('superadmin')
       await api('users/' + uid, 'PATCH', { roles: chosen })
     }))
+    $('[data-gender]', row)?.addEventListener('change', (e) => run(async () => { if (e.target.value) await api('users/' + uid, 'PATCH', { gender: e.target.value }) }))
     $('[data-insts]', row)?.addEventListener('click', () => run(async () => {
       await api('users/' + uid, 'PATCH', { institutes: checkedInst(row) })
     }))

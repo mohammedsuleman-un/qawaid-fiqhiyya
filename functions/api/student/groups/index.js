@@ -18,8 +18,8 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
   const members = ids.length ? await conn.execute(`SELECT m.group_id, m.user_id, m.role, u.name, u.email FROM class_group_members m JOIN users u ON u.id = m.user_id
     WHERE u.status = 'active' AND m.group_id IN (${marks(ids)}) ORDER BY u.name, u.email`, ids) : []
   const scope = await userScope(conn, user)
-  const users = await conn.execute(`SELECT u.id, u.name, u.email, GROUP_CONCAT(r.role_code) AS roles FROM users u LEFT JOIN user_roles r ON r.user_id = u.id
-    WHERE u.status = 'active'${scope ? ' AND ' + scope.sql : ''} GROUP BY u.id, u.name, u.email ORDER BY u.name, u.email`, scope ? scope.args : [])
+  const users = await conn.execute(`SELECT u.*, (SELECT GROUP_CONCAT(r.role_code) FROM user_roles r WHERE r.user_id = u.id) AS roles FROM users u
+    WHERE u.status = 'active'${scope ? ' AND ' + scope.sql : ''} ORDER BY u.name, u.email`, scope ? scope.args : [])
   return json({
     institute: inst,
     institutes,
@@ -29,6 +29,6 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
     })),
     blocks: await allBlocks(conn, inst.id),
     days: await allDays(conn, inst.id),
-    users: users.map((u) => ({ id: Number(u.id), name: u.name, email: u.email, roles: String(u.roles || '').split(',').filter(Boolean) }))
+    users: users.map((u) => ({ id: Number(u.id), name: u.name, email: u.email, gender: u.gender || null, roles: String(u.roles || '').split(',').filter(Boolean) }))
   })
 }
