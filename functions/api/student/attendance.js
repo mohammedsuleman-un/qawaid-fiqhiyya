@@ -4,7 +4,7 @@
 // POST {group, block, date, entries: [{user_id, status, note}]}: opslaan.
 import { json, body, fail, id, str } from '../../../lib/http.js'
 import { audit } from '../../../lib/audit.js'
-import { allGroups, allBlocks, allDays, myGroups, managedInstitutes, canTeach, checkLesson, schoolYear, calendar, today, isoDate, STATUSES } from '../../../lib/agenda.js'
+import { allGroups, allBlocks, allDays, myGroups, managedInstitutes, canTeach, checkLesson, altLesson, schoolYear, calendar, today, isoDate, STATUSES } from '../../../lib/agenda.js'
 
 async function context (conn, user, groupId) {
   const groups = await allGroups(conn)
@@ -45,7 +45,7 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
   const rec = await conn.execute('SELECT user_id, status, note, recorded_at FROM attendance WHERE block_id = ? AND lesson_date = ? AND group_id = ?', [block.id, date, group.id])
   const items = await conn.execute(`SELECT id, kind, title_nl, title_ar FROM agenda_items WHERE institute_id = ? AND item_date = ? AND cohort = ? AND (group_id IS NULL OR group_id = ?) AND (block_id IS NULL OR block_id = ?)`, [group.institute_id, date, group.cohort, group.id, block.id])
   return json({
-    group, block, date, recorded: rec.length > 0, items,
+    group, block: { ...block, alt: altLesson(block, days, schoolYear(days, date), date) }, date, recorded: rec.length > 0, items,
     students: list.map((s) => { const r = rec.find((x) => Number(x.user_id) === s.id); return { ...s, status: r?.status || null, note: r?.note || '' } })
   })
 }

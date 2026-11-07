@@ -1,8 +1,8 @@
 // Studentenomgeving van De Zuivere Bron (NL/AR). Praat met /api/student; inloggen gaat
 // via /api/admin/login (zelfde account en sessie als de beheeromgeving). De server
 // controleert elk recht zelf; knoppen voor docenten worden alleen getoond als het mag.
-import { STRINGS } from './i18n.js?v=20261107f'
-import { serverError } from '/assets/server-errors.js?v=20261107f'
+import { STRINGS } from './i18n.js?v=20261107g'
+import { serverError } from '/assets/server-errors.js?v=20261107g'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -677,7 +677,10 @@ const dayName = (n) => new Date(Date.UTC(2024, 0, n, 12)).toLocaleDateString(loc
 const tr = (x, base) => x[base + '_' + lang] || x[base + '_' + (lang === 'ar' ? 'nl' : 'ar')] || ''
 const groupName = (g) => tr(g, 'name')
 const cohortName = (c) => fmt(t.ag.cohort, { c: lang === 'ar' ? ({ A: 'أ', B: 'ب' })[c] || c : c })
-const subject = (b) => tr(b, 'subject') || `<i class="muted">${t.ag.noSubject}</i>`
+// alt: deze les heeft het tweede vak (om en om).
+const subjText = (b, alt) => tr(b, alt ? 'alt_subject' : 'subject')
+const subject = (b, alt) => esc(subjText(b, alt)) || `<i class="muted">${t.ag.noSubject}</i>`
+const altOn = (d, date, bid) => !!d.calendar.find((c) => c.date === date)?.alt?.includes(bid)
 const addD = (s, n) => new Date(Date.parse(s + 'T00:00:00Z') + n * 86400000).toISOString().slice(0, 10)
 const kindBadge = (k) => `<span class="agk k-${esc(k)}">${esc(t.ag.kinds[k] || k)}</span>`
 const statusBadge = (s) => s ? `<span class="ags s-${esc(s)}">${esc(t.ag.status[s])}</span>` : ''
@@ -716,7 +719,7 @@ async function agendaView (from) {
     const its = d.items.filter((i) => i.item_date === date && i.block_id === bid)
     const teach = date <= d.today ? teachGroups.filter((g) => g.cohort === b.cohort) : []
     return `<li class="aglesson"><span class="agtime">${esc(b.start_time)}–${esc(b.end_time)}</span>
-      <span class="agsub"><b dir="auto">${subject(b)}</b>${many ? ` <small class="muted">${esc(cohortName(b.cohort))}</small>` : ''} ${statusBadge(own?.status)}${own?.note ? ` <small class="muted" dir="auto">${esc(own.note)}</small>` : ''}
+      <span class="agsub"><b dir="auto">${subject(b, altOn(d, date, bid))}</b>${many ? ` <small class="muted">${esc(cohortName(b.cohort))}</small>` : ''} ${statusBadge(own?.status)}${own?.note ? ` <small class="muted" dir="auto">${esc(own.note)}</small>` : ''}
         ${its.map((i) => itemHtml(i, d)).join('')}
         ${teach.length ? `<span class="agrec">${teach.map((g) => {
           const r = d.recorded.find((x) => x.group_id === g.id && x.block_id === bid && x.date === date)
@@ -761,7 +764,7 @@ async function agendaView (from) {
     const cohort = /^[AB]$/.test(gv) ? gv : d.groups.find((g) => String(g.id) === gv)?.cohort
     const wd = f.date.value ? ((new Date(f.date.value + 'T12:00:00Z').getUTCDay() + 6) % 7) + 1 : 0
     f.block.innerHTML = `<option value="">${t.ag.wholeDay}</option>` + d.blocks.filter((b) => b.cohort === cohort && b.weekday === wd)
-      .map((b) => `<option value="${b.id}">${esc(b.start_time)}–${esc(b.end_time)} ${esc(tr(b, 'subject'))}</option>`).join('')
+      .map((b) => `<option value="${b.id}">${esc(b.start_time)}–${esc(b.end_time)} ${esc(tr(b, 'subject'))}${subjText(b, true) ? ' / ' + esc(subjText(b, true)) : ''}</option>`).join('')
   }
   if (f) {
     f.group.onchange = fillBlocks
@@ -789,7 +792,7 @@ function dayInfo (d, date) {
   const x = d.calendar.find((c) => c.date === date)
   const evs = d.days.filter((e) => e.kind !== 'year' && e.date_from <= date && (e.date_to || e.date_from) >= date)
   return {
-    lessons: (x?.lessons || []).map((id) => d.blocks.find((b) => b.id === id)).filter(Boolean),
+    lessons: (x?.lessons || []).map((id) => d.blocks.find((b) => b.id === id)).filter(Boolean).map((b) => ({ ...b, alt: !!x.alt?.includes(b.id) })),
     evs,
     items: d.items.filter((i) => i.item_date === date),
     absent: d.attendance.some((a) => a.date === date && a.status === 'absent')
@@ -820,7 +823,7 @@ async function agendaMonthView (month) {
     return `<a class="mcell${date === d.today ? ' now' : ''}${k ? ' m-' + k : ''}" href="#/agenda/${date}" title="${esc(agDate(date, { weekday: 'long', day: 'numeric', month: 'long' }))}">
       <span class="mnum">${Number(date.slice(8))}</span>
       ${x.evs.map((e) => `<span class="mev ev-${esc(e.kind)}" dir="auto">${esc(tr(e, 'title') || t.ag.dayKinds[e.kind])}</span>`).join('')}
-      ${x.lessons.map((b) => `<span class="mles"><b>${esc(b.start_time)}</b> <span dir="auto">${esc(tr(b, 'subject'))}</span>${many ? ` <small>${esc(cohortName(b.cohort))}</small>` : ''}</span>`).join('')}
+      ${x.lessons.map((b) => `<span class="mles"><b>${esc(b.start_time)}</b> <span dir="auto">${esc(subjText(b, b.alt))}</span>${many ? ` <small>${esc(cohortName(b.cohort))}</small>` : ''}</span>`).join('')}
       ${x.items.map((i) => `<span class="mitem k-${esc(i.kind)}" dir="auto">${esc(t.ag.kinds[i.kind])}: ${esc(tr(i, 'title'))}</span>`).join('')}
       ${x.absent ? `<span class="ags s-absent">${esc(t.ag.status.absent)}</span>` : ''}${dots ? `<span class="mdots">${dots}</span>` : ''}</a>`
   }
@@ -847,7 +850,7 @@ async function agendaYearView (date) {
     const k = ['exam', 'special', 'holiday'].find((kind) => x.evs.some((e) => e.kind === kind))
     const cls = ['ycell', k ? 'y-' + k : x.lessons.length ? 'y-lesson' : '', s === d.today ? 'now' : '', s < d.from || s > d.to ? 'off' : ''].filter(Boolean).join(' ')
     const marks = x.items.some((i) => i.kind === 'test') ? '<i class="ydot k-test"></i>' : x.items.some((i) => i.kind === 'homework') ? '<i class="ydot k-homework"></i>' : ''
-    const tip = [...x.evs.map((e) => tr(e, 'title') || t.ag.dayKinds[e.kind]), ...x.lessons.map((b) => b.start_time + ' ' + tr(b, 'subject')), ...x.items.map((i) => t.ag.kinds[i.kind] + ': ' + tr(i, 'title'))].join('\n')
+    const tip = [...x.evs.map((e) => tr(e, 'title') || t.ag.dayKinds[e.kind]), ...x.lessons.map((b) => b.start_time + ' ' + subjText(b, b.alt)), ...x.items.map((i) => t.ag.kinds[i.kind] + ': ' + tr(i, 'title'))].join('\n')
     return `<a class="${cls}" href="#/agenda/${s}" title="${esc(agDate(s, { weekday: 'long', day: 'numeric', month: 'long' }) + (tip ? '\n' + tip : ''))}">${Number(s.slice(8))}${marks}</a>`
   }
   const lessonsIn = (m) => { const end = addD(addD(m, 32).slice(0, 8) + '01', -1); return d.calendar.filter((c) => c.date >= m && c.date <= end).reduce((n, c) => n + c.lessons.length, 0) }
@@ -880,7 +883,7 @@ async function attendanceView (groupId, blockId, date) {
   const st = ['present', 'absent', 'late', 'excused']
   render(`<p class="crumbs"><a href="#/agenda/${esc(date)}">${t.ag.title}</a> · <a href="#/groep/${d.group.id}">${fmt(t.ag.summaryOf, { g: groupName(d.group) })}</a></p>
     <div class="head"><h1>${t.ag.attendance}</h1></div>
-    <p class="muted"><b>${esc(groupName(d.group))}</b> · ${esc(agDate(date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))} · ${esc(d.block.start_time)}–${esc(d.block.end_time)} · <span dir="auto">${subject(d.block)}</span></p>
+    <p class="muted"><b>${esc(groupName(d.group))}</b> · ${esc(agDate(date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))} · ${esc(d.block.start_time)}–${esc(d.block.end_time)} · <span dir="auto">${subject(d.block, d.block.alt)}</span></p>
     ${d.items.length ? `<p>${d.items.map((i) => `${kindBadge(i.kind)} <span dir="auto">${esc(tr(i, 'title'))}</span>`).join(' · ')}</p>` : ''}
     ${d.recorded ? `<p class="ok small">✓ ${t.ag.alreadySaved}</p>` : `<p class="muted small">${t.ag.defaultPresent}</p>`}
     ${d.students.length ? `<form id="att" class="card">
@@ -931,6 +934,8 @@ async function groupsAdminView () {
     <td><input name="start_time" value="${esc(b.start_time || '19:00')}" size="5" inputmode="numeric"></td><td><input name="end_time" value="${esc(b.end_time || '20:30')}" size="5" inputmode="numeric"></td>
     <td><select name="preset"><option value="">${t.ag.pickSubject}</option>${SUBJECT_PRESETS.map(([nl, ar], i) => `<option value="${i}">${esc(lang === 'ar' ? ar : nl)}</option>`).join('')}<option value="none">${t.ag.noSubject}</option></select></td>
     <td><input name="subject_nl" value="${esc(b.subject_nl || '')}"></td><td><input name="subject_ar" dir="rtl" value="${esc(b.subject_ar || '')}"></td>
+    <td><input name="alt_subject_nl" value="${esc(b.alt_subject_nl || '')}"></td><td><input name="alt_subject_ar" dir="rtl" value="${esc(b.alt_subject_ar || '')}"></td>
+    <td><input type="date" name="alt_start" value="${esc(b.alt_start || '')}"></td>
     <td class="nowrap"><button type="button" class="small" data-save-block>${t.save}</button>${b.id ? ` <button type="button" class="small danger" data-del-block>${t.ag.remove}</button>` : ''}</td></tr>`
   render(`<p class="crumbs"><a href="#/agenda">${t.ag.title}</a></p><div class="head"><h1>${t.nav.groups}</h1></div>
     ${instPicker(d) || `<p class="muted small"><b>${esc(instName(d.institute))}</b></p>`}
@@ -947,7 +952,7 @@ async function groupsAdminView () {
           <button type="submit" class="primary">${t.ag.add}</button><p class="msg"></p></form></section>`
     }).join('')}</div>
     <h2>${t.ag.scheduleTitle}</h2><p class="muted small">${t.ag.scheduleHelp}</p>
-    ${['A', 'B'].map((c) => `<div class="card"><h3>${esc(cohortName(c))}</h3><div class="tblwrap"><table class="tbl edit"><thead><tr><th>${t.ag.day}</th><th>${t.ag.from}</th><th>${t.ag.to}</th><th>${t.ag.subject}</th><th>${t.ag.subjectNl}</th><th>${t.ag.subjectAr}</th><th></th></tr></thead>
+    ${['A', 'B'].filter((c) => d.groups.some((g) => g.cohort === c) || d.blocks.some((b) => b.cohort === c)).map((c) => `<div class="card"><h3>${esc(cohortName(c))}</h3><div class="tblwrap"><table class="tbl edit"><thead><tr><th>${t.ag.day}</th><th>${t.ag.from}</th><th>${t.ag.to}</th><th>${t.ag.subject}</th><th>${t.ag.subjectNl}</th><th>${t.ag.subjectAr}</th><th>${t.ag.altNl}</th><th>${t.ag.altAr}</th><th>${t.ag.altStart}</th><th></th></tr></thead>
       <tbody>${d.blocks.filter((b) => b.cohort === c).map((b) => blockRow(b, c)).join('')}${blockRow({ weekday: 4 }, c)}</tbody></table></div></div>`).join('')}
     <h2>${t.ag.yearTitle}</h2><p class="muted small">${t.ag.yearHelp}</p>
     <div class="card"><div class="tblwrap"><table class="tbl edit"><thead><tr><th>${t.ag.kind}</th><th>${t.ag.from}</th><th>${t.ag.to}</th><th>${t.ag.group}</th><th>${t.ag.titleNl}</th><th>${t.ag.titleAr}</th><th></th></tr></thead>
