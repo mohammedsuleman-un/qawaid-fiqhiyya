@@ -4,6 +4,7 @@ import { test, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { freshDb, call, checkQueries } from './helpers.js'
 import { migrate } from '../lib/migrate.js'
+import abuIsmail from '../db/migrations/166_instituut_abu_ismail.js'
 import { startSession, hashPassword } from '../lib/auth.js'
 import * as institutes from '../functions/api/admin/institutes/index.js'
 import * as institute from '../functions/api/admin/institutes/[id].js'
@@ -36,6 +37,14 @@ async function account (email, role, institutesOf = []) {
 
 test('bestaande boeken en roosters horen bij Instituut Ibn Al-Qayyim', async () => {
   await migrate(conn)
+  // Migratie 166 zet het instituut van shaykh Abū Ismāʿīl klaar: zondag 09:30–11:15, broeders en zusters.
+  const [ai] = await conn.execute("SELECT id FROM institutes WHERE slug = 'abu-ismail-usul-al-fiqh'")
+  const aiBlocks = await conn.execute('SELECT weekday, start_time, end_time FROM schedule_blocks WHERE institute_id = ?', [ai.id])
+  assert.deepEqual(aiBlocks.map((x) => [Number(x.weekday), x.start_time, x.end_time]), [[7, '09:30', '11:15']])
+  const [{ h }] = await conn.execute("SELECT COUNT(*) AS h FROM calendar_days WHERE institute_id = ? AND kind = 'holiday'", [ai.id])
+  assert.equal(Number(h), 7)
+  // De rest van deze tests gaat uit van één instituut aan het begin.
+  for (const sql of abuIsmail.down) await conn.execute(sql)
   const [inst] = await conn.execute('SELECT id, name_nl, name_ar FROM institutes')
   assert.deepEqual([Number(inst.id), inst.name_nl, inst.name_ar], [1, 'Instituut Ibn Al-Qayyim', 'معهد ابن القيم للعلوم الشرعية'])
   const [{ b, l }] = await conn.execute('SELECT (SELECT COUNT(*) FROM books) AS b, (SELECT COUNT(*) FROM book_institutes WHERE institute_id = 1) AS l')
