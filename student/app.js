@@ -1,8 +1,8 @@
 // Studentenomgeving van De Zuivere Bron (NL/AR). Praat met /api/student; inloggen gaat
 // via /api/admin/login (zelfde account en sessie als de beheeromgeving). De server
 // controleert elk recht zelf; knoppen voor docenten worden alleen getoond als het mag.
-import { STRINGS } from './i18n.js?v=20261107e'
-import { serverError } from '/assets/server-errors.js?v=20261107e'
+import { STRINGS } from './i18n.js?v=20261107f'
+import { serverError } from '/assets/server-errors.js?v=20261107f'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -795,7 +795,7 @@ function dayInfo (d, date) {
     absent: d.attendance.some((a) => a.date === date && a.status === 'absent')
   }
 }
-const weekHead = () => [1, 2, 3, 4, 5, 6, 7].map((n) => `<span class="mwd">${esc(new Date(Date.UTC(2024, 0, n, 12)).toLocaleDateString(locale(), { weekday: 'short', timeZone: 'UTC' }))}</span>`).join('')
+const weekHead = (weekday = 'short') => [1, 2, 3, 4, 5, 6, 7].map((n) => `<span class="mwd">${esc(new Date(Date.UTC(2024, 0, n, 12)).toLocaleDateString(locale(), { weekday, timeZone: 'UTC' }))}</span>`).join('')
 // Alle dagen van een maand, aangevuld tot hele weken (maandag t/m zondag); null = buiten de maand.
 function monthCells (first) {
   const last = addD(addD(first, 32).slice(0, 8) + '01', -1)
@@ -864,7 +864,7 @@ async function agendaYearView (date) {
     ${d.groups.length ? `<section class="card"><h2>${tr(d.year, 'title') ? esc(yTitle) : fmt(t.ag.yearOf, { y: esc(yTitle) })} <small class="muted">${esc(agDate(d.from, { day: 'numeric', month: 'long', year: 'numeric' }))} – ${esc(agDate(d.to, { day: 'numeric', month: 'long', year: 'numeric' }))}</small></h2>
       ${agLegend()}
       <div class="ymonths">${months.map((m) => `<div class="ymonth"><h3><a href="#/agenda/maand/${m.slice(0, 7)}">${esc(monthTitle(m))}</a> ${lessonsIn(m) ? `<small class="muted">${fmt(t.ag.lessonsN, { n: lessonsIn(m) })}</small>` : ''}</h3>
-        <div class="ygrid">${weekHead()}${monthCells(m).map(mini).join('')}</div></div>`).join('')}</div></section>
+        <div class="ygrid">${weekHead('narrow')}${monthCells(m).map(mini).join('')}</div></div>`).join('')}</div></section>
     <div class="ylists"><section class="card"><h2>${t.ag.yearEvents}</h2>
       ${evs.length ? `<ul class="ylist">${evs.map((e) => `<li><span class="agev ev-${esc(e.kind)}">${esc(t.ag.dayKinds[e.kind])}</span> <b dir="auto">${esc(tr(e, 'title'))}</b> <small class="muted">${span(e)}</small></li>`).join('')}</ul>` : `<p class="muted small">${t.none}</p>`}</section>
       <section class="card"><h2>${t.ag.yearTests}</h2>
