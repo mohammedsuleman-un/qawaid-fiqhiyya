@@ -1,7 +1,7 @@
 // Tweede instituut: de lessen van shaykh Abū Ismāʿīl in uṣūl al-fiqh (7 nov 2026, Mohammed).
 // Elke zondag 09:30–11:15. Geen les op 27 sep, 18 en 25 okt, 27 dec 2026, 3 jan en 28 mrt 2027.
 // Laatste les zo 27 jun 2027; zomervakantie juli en augustus. Begin schooljaar aangenomen op
-// 1 sep 2026 (eerste les zo 6 sep); aan te passen onder Groepen & lesagenda.
+// 1 sep 2026; migratie 167 zet het op 13 sep 2026 (eerste les).
 const SLUG = 'abu-ismail-usul-al-fiqh'
 const INST = `(SELECT id FROM institutes WHERE slug = '${SLUG}')`
 const day = (kind, from, to, nl, ar) => `INSERT INTO calendar_days (institute_id, kind, date_from, date_to, title_nl, title_ar)
