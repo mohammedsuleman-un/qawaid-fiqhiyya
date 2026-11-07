@@ -1,15 +1,22 @@
-// GET: open uitnodigingen. POST {email, role}: nieuwe uitnodiging (users.manage).
+// GET: open uitnodigingen. POST {email, role, institutes}: nieuwe uitnodiging (users.manage).
+// Zonder institutes krijgt het nieuwe account de instituten van wie uitnodigt.
 // Alleen een superbeheerder mag iemand als superbeheerder uitnodigen.
 import { json, body, need, fail, str } from '../../../../lib/http.js'
 import { createInvitation } from '../../../../lib/users.js'
 import { audit } from '../../../../lib/audit.js'
+import { inviteInstitutes, isSuper, myInstituteIds } from '../../../../lib/institutes.js'
 import { sendMail, inviteMail, studentInviteMail } from '../../../../lib/mail.js'
 
 export async function onRequestGet ({ data: { conn, user } }) {
   need(user, 'users.manage')
-  return json(await conn.execute(`SELECT i.id, i.email, i.role_code, i.expires_at, i.created_at, u.email AS invited_by
+  const rows = await conn.execute(`SELECT i.*, u.email AS inviter_email
     FROM invitations i LEFT JOIN users u ON u.id = i.invited_by
-    WHERE i.accepted_at IS NULL AND i.revoked_at IS NULL AND i.expires_at > NOW() ORDER BY i.created_at DESC`))
+    WHERE i.accepted_at IS NULL AND i.revoked_at IS NULL AND i.expires_at > NOW() ORDER BY i.created_at DESC`)
+  const ids = (r) => String(r.institutes || '').split(',').map(Number).filter(Boolean)
+  // Wie niet alle instituten ziet, ziet alleen eigen uitnodigingen en die voor zijn instituten.
+  const mine = isSuper(user) ? null : await myInstituteIds(conn, user)
+  return json(rows.filter((r) => !mine || Number(r.invited_by) === user.id || ids(r).some((i) => mine.includes(i)))
+    .map((r) => ({ id: r.id, email: r.email, role_code: r.role_code, expires_at: r.expires_at, created_at: r.created_at, invited_by: r.inviter_email, institutes: ids(r) })))
 }
 
 export async function onRequestPost ({ request, env, data: { conn, user } }) {
@@ -17,8 +24,9 @@ export async function onRequestPost ({ request, env, data: { conn, user } }) {
   const input = await body(request)
   if (input.role === 'superadmin' && !user.roles.includes('superadmin')) fail(403, 'Alleen een superbeheerder kan een superbeheerder aanwijzen')
   const email = str(input.email, 255).toLowerCase()
-  const link = await createInvitation(conn, request, email, input.role, user.id)
-  await audit(conn, user, 'invitation.create', 'invitation', email, { role: input.role })
+  const institutes = await inviteInstitutes(conn, user, input.institutes)
+  const link = await createInvitation(conn, request, email, input.role, user.id, institutes)
+  await audit(conn, user, 'invitation.create', 'invitation', email, { role: input.role, institutes })
   // Uitnodiging per mail; de link blijft ook zichtbaar zodat je hem zelf kunt doorsturen.
   const mail = await sendMail(env, (input.role === 'student' ? studentInviteMail : inviteMail)({ email: email, role: input.role, link, inviter: user.name || user.email, origin: new URL(request.url).origin }))
   return json({ link, mailed: mail.ok === true })

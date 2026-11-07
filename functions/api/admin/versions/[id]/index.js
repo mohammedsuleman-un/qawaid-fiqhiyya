@@ -5,10 +5,12 @@ import { loadVersion, EDITABLE } from '../../../../../lib/workflow.js'
 import { sanitizeHtml } from '../../../../../lib/sanitize.js'
 import { parseStudy } from '../../../../../lib/study.js'
 import { describe } from '../../../../../lib/content.js'
+import { needEntity } from '../../../../../lib/institutes.js'
 
 export async function onRequestGet ({ params, data: { conn, user } }) {
   need(user, 'content.edit')
   const v = await loadVersion(conn, id(params.id))
+  await needEntity(conn, user, v.entity_type, Number(v.entity_id))
   const [published] = v.published_version_id
     ? await conn.execute('SELECT id, title, body, published_at FROM content_versions WHERE id = ?', [v.published_version_id])
     : []

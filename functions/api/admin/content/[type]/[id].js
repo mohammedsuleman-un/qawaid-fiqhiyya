@@ -1,6 +1,7 @@
 // GET: een hoofdstuk of artikel met per taal de gepubliceerde versie en alle versies.
 import { json, need, fail, id } from '../../../../../lib/http.js'
 import { ENTITY_TYPES, LANGS, describe } from '../../../../../lib/content.js'
+import { needEntity } from '../../../../../lib/institutes.js'
 
 export async function onRequestGet ({ params, data: { conn, user } }) {
   need(user, 'content.edit')
@@ -8,6 +9,7 @@ export async function onRequestGet ({ params, data: { conn, user } }) {
   const entityId = id(params.id)
   const info = await describe(conn, params.type, entityId)
   if (!info) fail(404, 'Niet gevonden')
+  await needEntity(conn, user, params.type, entityId)
   const langs = {}
   for (const lang of LANGS) {
     const [t] = await conn.execute('SELECT * FROM content_translations WHERE entity_type = ? AND entity_id = ? AND lang = ?',

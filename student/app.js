@@ -1,8 +1,8 @@
 // Studentenomgeving van De Zuivere Bron (NL/AR). Praat met /api/student; inloggen gaat
 // via /api/admin/login (zelfde account en sessie als de beheeromgeving). De server
 // controleert elk recht zelf; knoppen voor docenten worden alleen getoond als het mag.
-import { STRINGS } from './i18n.js?v=20261107a'
-import { serverError } from '/assets/server-errors.js?v=20261107a'
+import { STRINGS } from './i18n.js?v=20261107b'
+import { serverError } from '/assets/server-errors.js?v=20261107b'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -108,7 +108,7 @@ function setNav () {
   navEl.innerHTML = items.map(([href, label]) => `<a href="${href}">${esc(label)}</a>`).join('')
   whoEl.innerHTML = `<span class="me">${esc(me.user.name || me.user.email)}</span> <button type="button" class="link" id="logoutBtn">${t.logout}</button>`
   $('#logoutBtn', whoEl).onclick = async () => { await api('logout', 'POST', {}, '/api/admin/'); me = null; location.hash = '#/'; start() }
-  const current = '#/' + (location.hash.slice(2).split('/')[0] || '')
+  const current = '#/' + (location.hash.slice(2).split(/[/?]/)[0] || '')
   for (const a of navEl.querySelectorAll('a')) a.classList.toggle('on', a.getAttribute('href') === current || (current === '#/boek' && a.getAttribute('href') === '#/boeken') || (current === '#/poging' && a.getAttribute('href') === '#/resultaten') || (['#/aanwezigheid', '#/groep'].includes(current) && a.getAttribute('href') === '#/agenda'))
 }
 
@@ -657,6 +657,14 @@ async function questionsView (slug, status = 'draft') {
 }
 
 // ---------- lesagenda ----------
+// Gekozen instituut (agenda en groepenbeheer); de server valt terug op een toegestaan instituut.
+let agInst = Number(store.get('zb-institute')) || 0
+const setInst = (id) => { agInst = Number(id) || 0; store.set('zb-institute', agInst ? String(agInst) : null) }
+const instName = (i) => i ? tr(i, 'name') : ''
+const instPicker = (d) => d.institutes && d.institutes.length > 1
+  ? `<label class="instpick">${t.ag.institute} <select id="instPick">${d.institutes.map((i) => `<option value="${i.id}"${i.id === d.institute?.id ? ' selected' : ''}>${esc(instName(i))}</option>`).join('')}</select></label>`
+  : ''
+const bindInstPicker = (again) => { const sel = document.getElementById('instPick'); if (sel) sel.onchange = () => { setInst(sel.value); again() } }
 const agDate = (s, opts = { weekday: 'short', day: 'numeric', month: 'short' }) => new Date(s + 'T12:00:00').toLocaleDateString(locale(), opts)
 const dayName = (n) => new Date(Date.UTC(2024, 0, n, 12)).toLocaleDateString(locale(), { weekday: 'long', timeZone: 'UTC' })
 const tr = (x, base) => x[base + '_' + lang] || x[base + '_' + (lang === 'ar' ? 'nl' : 'ar')] || ''
@@ -684,7 +692,7 @@ function itemHtml (i, d) {
 
 async function agendaView (from) {
   loading()
-  const d = await api('agenda?weeks=4' + (from ? '&from=' + encodeURIComponent(from) : ''))
+  const d = await api('agenda?weeks=4' + (from ? '&from=' + encodeURIComponent(from) : '') + (agInst ? '&institute=' + agInst : ''))
   const blockById = new Map(d.blocks.map((b) => [b.id, b]))
   const dayById = new Map(d.days.map((x) => [x.id, x]))
   const many = new Set(d.groups.map((g) => g.cohort)).size > 1
@@ -721,6 +729,7 @@ async function agendaView (from) {
   render(`<div class="head"><h1>${t.ag.title}</h1>
       ${d.recorder && teachGroups.length ? `<button type="button" class="primary" id="addItem">+ ${t.ag.addItem}</button>` : ''}
       ${me.user.groupsManager ? `<a class="btn" href="#/groepen">${t.nav.groups}</a>` : ''}</div>
+    ${instPicker(d)}${d.institutes?.length === 1 ? `<p class="muted small">${esc(instName(d.institute))}</p>` : ''}
     <p class="muted">${d.groups.length ? d.groups.map((g) => `<span class="pill">${esc(groupName(g))}${g.teacher ? ' · ' + t.ag.teacherOf : ''}</span>`).join(' ') : ''}
       ${d.year.title_nl || d.year.title_ar ? ` · ${esc(tr(d.year, 'title'))}` : ''}</p>
     ${d.groups.length ? '' : `<div class="card empty"><h2>${t.ag.noGroupTitle}</h2><p>${t.ag.noGroupText}</p></div>`}
@@ -752,11 +761,12 @@ async function agendaView (from) {
     fillBlocks()
     $('#addItem')?.addEventListener('click', () => { f.hidden = false; f.scrollIntoView({ behavior: 'smooth' }) })
     $('#cancelItem').onclick = () => { f.hidden = true }
-    form(f, async (x) => { await api('agenda-items', 'POST', x); agendaView(from) })
+    form(f, async (x) => { await api('agenda-items', 'POST', { ...x, institute: d.institute?.id }); agendaView(from) })
   }
   for (const b of $$('[data-del-item]')) {
     b.onclick = async () => { if (!confirm(t.ag.confirmRemove)) return; try { await api('agenda-items?id=' + b.dataset.delItem, 'DELETE'); agendaView(from) } catch (err) { alert(err.message) } }
   }
+  bindInstPicker(() => agendaView(from))
 }
 
 // Presentielijst van één les.
@@ -802,7 +812,7 @@ async function groupSummaryView (groupId) {
 // Beheer: groepen, weekrooster en jaarrooster.
 async function groupsAdminView () {
   loading()
-  const d = await api('groups')
+  const d = await api('groups' + (agInst ? '?institute=' + agInst : ''))
   const userLabel = (u) => `${u.name || u.email} (${u.email})`
   const roleLabel = (u) => u.roles.map((r) => t.ag.roles[r] || r).join(', ')
   const weekdays = [1, 2, 3, 4, 5, 6, 7]
@@ -819,7 +829,8 @@ async function groupsAdminView () {
     <td><input name="subject_nl" value="${esc(b.subject_nl || '')}"></td><td><input name="subject_ar" dir="rtl" value="${esc(b.subject_ar || '')}"></td>
     <td class="nowrap"><button type="button" class="small" data-save-block>${t.save}</button>${b.id ? ` <button type="button" class="small danger" data-del-block>${t.ag.remove}</button>` : ''}</td></tr>`
   render(`<p class="crumbs"><a href="#/agenda">${t.ag.title}</a></p><div class="head"><h1>${t.nav.groups}</h1></div>
-    <p class="muted">${t.ag.adminHelp}</p>
+    ${instPicker(d) || `<p class="muted small"><b>${esc(instName(d.institute))}</b></p>`}
+    <p class="muted">${t.ag.adminHelp}${d.institutes.length > 1 ? ' ' + t.ag.adminInstHelp : ''}</p>
     <h2>${t.ag.groupsTitle}</h2>
     <div class="aggroups">${d.groups.map((g) => {
       const studs = g.members.filter((m) => m.role === 'student')
@@ -853,16 +864,17 @@ async function groupsAdminView () {
     }
     tr.querySelector('[data-save-block]').onclick = () => run(() => {
       const x = vals(tr)
-      return tr.dataset.block ? api('groups/blocks', 'PATCH', { ...x, id: Number(tr.dataset.block) }) : api('groups/blocks', 'POST', { ...x, cohort: tr.dataset.cohort })
+      return tr.dataset.block ? api('groups/blocks', 'PATCH', { ...x, id: Number(tr.dataset.block) }) : api('groups/blocks', 'POST', { ...x, cohort: tr.dataset.cohort, institute: d.institute.id })
     })
     const del = tr.querySelector('[data-del-block]')
     if (del) del.onclick = () => confirm(t.ag.confirmRemove) && run(() => api('groups/blocks?id=' + tr.dataset.block, 'DELETE'))
   }
   for (const tr of $$('[data-day]')) {
-    tr.querySelector('[data-save-day]').onclick = () => run(() => tr.dataset.day ? api('groups/days', 'PATCH', { ...vals(tr), id: Number(tr.dataset.day) }) : api('groups/days', 'POST', vals(tr)))
+    tr.querySelector('[data-save-day]').onclick = () => run(() => tr.dataset.day ? api('groups/days', 'PATCH', { ...vals(tr), id: Number(tr.dataset.day) }) : api('groups/days', 'POST', { ...vals(tr), institute: d.institute.id }))
     const del = tr.querySelector('[data-del-day]')
     if (del) del.onclick = () => confirm(t.ag.confirmRemove) && run(() => api('groups/days?id=' + tr.dataset.day, 'DELETE'))
   }
+  bindInstPicker(again)
 }
 
 // ---------- routes ----------
@@ -870,7 +882,11 @@ async function route () {
   clearInterval(timer)
   if (!me) return loginView()
   setNav()
-  const parts = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent)
+  const [path, query] = location.hash.replace(/^#\/?/, '').split('?')
+  const parts = path.split('/').map(decodeURIComponent)
+  // ?instituut= in een link (bijvoorbeeld vanuit Beheer > Instituten) kiest het instituut.
+  const qi = new URLSearchParams(query || '').get('instituut')
+  if (qi) setInst(qi)
   try {
     switch (parts[0]) {
       case '': return await homeView()

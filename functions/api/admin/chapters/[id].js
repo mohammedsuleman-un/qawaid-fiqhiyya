@@ -1,12 +1,14 @@
 // PATCH {move: 'up'|'down'} of {archived: true|false}: hoofdstuk verplaatsen of archiveren.
 import { json, body, need, fail, id } from '../../../../lib/http.js'
 import { audit } from '../../../../lib/audit.js'
+import { needBook } from '../../../../lib/institutes.js'
 
 export async function onRequestPatch ({ request, params, data: { conn, user } }) {
   const chapterId = id(params.id)
   const input = await body(request)
   const [ch] = await conn.execute('SELECT id, book_id, position FROM chapters WHERE id = ?', [chapterId])
   if (!ch) fail(404, 'Hoofdstuk niet gevonden')
+  await needBook(conn, user, Number(ch.book_id))
   if (input.move) {
     need(user, 'content.create')
     const [other] = await conn.execute(`SELECT id, position FROM chapters WHERE book_id = ? AND position ${input.move === 'up' ? '<' : '>'} ?

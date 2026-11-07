@@ -28,6 +28,8 @@ export async function onRequestPost ({ request, env, data: { conn } }) {
   await conn.execute("INSERT INTO book_translations (book_id, lang, title, subtitle) VALUES (?, 'ar', ?, ?)",
     [bookId, book.title, book.subtitle])
   await importChapters(conn, bookId, blocks)
+  // Een startboek hoort bij alle instituten (migratie 162).
+  await conn.execute('INSERT IGNORE INTO book_institutes (book_id, institute_id) SELECT ?, id FROM institutes', [bookId])
   // Het eerste personenregister (migratie 5) hoort bij dit boek.
   if (slug === 'talkhis-jam-al-jawami') {
     await conn.execute(`INSERT IGNORE INTO person_books (person_id, book_id) SELECT id, ? FROM persons WHERE slug IN (${persons.map(() => '?').join(', ')})`,

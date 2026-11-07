@@ -3,11 +3,13 @@
 import { json, need, fail, id } from '../../../../../lib/http.js'
 import { randomToken, sha256 } from '../../../../../lib/auth.js'
 import { audit } from '../../../../../lib/audit.js'
+import { needUser } from '../../../../../lib/institutes.js'
 
 export async function onRequestPost ({ request, params, data: { conn, user } }) {
   need(user, 'users.manage')
   const [target] = await conn.execute('SELECT id, email FROM users WHERE id = ?', [id(params.id)])
   if (!target) fail(404, 'Gebruiker niet gevonden')
+  await needUser(conn, user, Number(target.id))
   const [targetSuper] = await conn.execute("SELECT 1 AS x FROM user_roles WHERE user_id = ? AND role_code = 'superadmin'", [target.id])
   if (targetSuper && !user.roles.includes('superadmin')) fail(403, 'Alleen een superbeheerder kan een herstellink voor een superbeheerder maken')
   const token = randomToken()

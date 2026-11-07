@@ -2,6 +2,7 @@
 import { json, body, need, fail, str, id } from '../../../../../lib/http.js'
 import { insert } from '../../../../../lib/content.js'
 import { audit } from '../../../../../lib/audit.js'
+import { needBook } from '../../../../../lib/institutes.js'
 
 export async function onRequestPost ({ request, params, data: { conn, user } }) {
   need(user, 'content.create')
@@ -10,6 +11,7 @@ export async function onRequestPost ({ request, params, data: { conn, user } }) 
   const lang = input.lang === 'nl' ? 'nl' : 'ar'
   const [book] = await conn.execute('SELECT id FROM books WHERE id = ?', [bookId])
   if (!book) fail(404, 'Boek niet gevonden')
+  await needBook(conn, user, bookId)
   let position
   if (input.after) {
     const [prev] = await conn.execute('SELECT position FROM chapters WHERE id = ? AND book_id = ?', [input.after, bookId])

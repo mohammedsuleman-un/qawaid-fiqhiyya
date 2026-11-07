@@ -1,10 +1,14 @@
 // GET: wie ben ik, met rollen en rechten (de interface gebruikt dit alleen om knoppen te tonen).
 // PATCH {name, lang}: eigen naam en taal van de beheeromgeving.
 import { json, body, str } from '../../../lib/http.js'
+import { allInstitutes, myInstituteIds } from '../../../lib/institutes.js'
 
-export function onRequestGet ({ data: { user } }) {
+// institutes: de instituten waaraan je gekoppeld bent (een superbeheerder: alle).
+export async function onRequestGet ({ data: { conn, user } }) {
+  const mine = await myInstituteIds(conn, user)
+  const institutes = mine.length ? (await allInstitutes(conn)).filter((i) => mine.includes(i.id)) : []
   return json({ id: user.id, email: user.email, name: user.name, lang: user.lang, totp_enabled: user.totp_enabled,
-    roles: user.roles, permissions: [...user.permissions] })
+    roles: user.roles, permissions: [...user.permissions], institutes })
 }
 
 export async function onRequestPatch ({ request, data: { conn, user } }) {

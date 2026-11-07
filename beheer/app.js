@@ -1,10 +1,10 @@
 // Beheeromgeving van De Zuivere Bron. Praat alleen met /api/admin; de sessie staat in
 // een HttpOnly-cookie. Knoppen worden verborgen als je een recht mist, maar de server
 // controleert elk recht zelf opnieuw.
-import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261107a'
+import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261107b'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261107a'
+import { serverError } from '/assets/server-errors.js?v=20261107b'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -19,12 +19,18 @@ let t = STRINGS[lang]
 // ---------- hulpfuncties ----------
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 const fmt = (s, vars) => s.replace(/\{(\w+)\}/g, (_, k) => esc(vars[k]))
-const can = (p) => !!me && me.permissions.includes(p) && (!['content.review', 'content.publish', 'users.manage', 'settings.manage'].includes(p) || me.totp_enabled)
+const can = (p) => !!me && me.permissions.includes(p) && (!['content.review', 'content.publish', 'users.manage', 'settings.manage', 'institutes.manage'].includes(p) || me.totp_enabled)
 const has = (p) => !!me && me.permissions.includes(p)
 const date = (s) => s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleString(lang === 'ar' ? 'ar' : 'nl-NL', { dateStyle: 'medium', timeStyle: 'short' }) : ''
 const badge = (status) => `<span class="badge s-${esc(status)}">${esc(t.status[status] || status)}</span>`
 const roleName = (r) => ROLE_NAMES[lang][r] || r
 const stripTags = (s) => String(s ?? '').replace(/<[^>]+>/g, '')
+// Instituten: je ziet en kiest alleen de instituten waaraan je gekoppeld bent (superbeheerder: alle).
+const instName = (i) => i ? (lang === 'ar' ? i.name_ar : i.name_nl) : ''
+const myInst = () => me?.institutes || []
+const instNames = (ids = []) => ids.map((id) => myInst().find((i) => i.id === id)).filter(Boolean).map(instName).join(' · ')
+const instChecks = (selected = []) => myInst().map((i) => `<label class="inline"><input type="checkbox" data-inst value="${i.id}"${selected.includes(i.id) ? ' checked' : ''}> ${esc(instName(i))}</label>`).join(' ')
+const checkedInst = (root) => [...root.querySelectorAll('[data-inst]:checked')].map((x) => Number(x.value))
 
 async function api (path, method = 'GET', data) {
   const res = await fetch('/api/admin/' + path, {
@@ -104,6 +110,7 @@ function setNav () {
     ['/student/#/vragen', t.nav.tests, has('content.edit') || has('tests.manage')],
     ['/student/#/groepen', t.nav.groups, has('groups.manage')],
     ['#/gebruikers', t.nav.users, has('users.manage')],
+    ['#/instituten', t.nav.institutes, has('institutes.manage')],
     ['#/audit', t.nav.audit, has('audit.view')],
     ['#/instellingen', t.nav.settings, has('settings.manage')],
     ['#/profiel', t.nav.profile, true]
@@ -113,7 +120,7 @@ function setNav () {
   meBox.innerHTML = `<div class="me"><span class="av" aria-hidden="true">${esc(who.trim().charAt(0).toUpperCase())}</span><span class="who"><b dir="auto">${esc(who)}</b><small>${me.roles.map(roleName).map(esc).join(', ')}</small></span></div>
     <button type="button" id="logoutBtn" class="logout"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M15 7l5 5-5 5"/><path d="M20 12H9"/></svg><span>${esc(t.logout)}</span></button>`
   $('#logoutBtn', meBox).onclick = async () => { await api('logout', 'POST'); me = null; location.hash = '#/'; route() }
-  const current = '#/' + (location.hash.slice(2).split('/')[0] || '')
+  const current = '#/' + (location.hash.slice(2).split(/[/?]/)[0] || '')
   for (const a of navEl.querySelectorAll('a')) a.classList.toggle('on', a.getAttribute('href') === current)
 }
 
@@ -233,8 +240,10 @@ async function categories () { return categoriesCache || (categoriesCache = awai
 const catName = (c) => c ? (lang === 'ar' ? c.name_ar : c.name_nl) : t.none
 
 async function booksView () {
-  const [books, cats] = await Promise.all([api('books'), categories()])
-  render(html`<div class="head"><h1>${t.nav.books}</h1>${has('content.create') ? `<button id="new" class="primary">${t.newBook}</button>
+  const [allBooks, cats] = await Promise.all([api('books'), categories()])
+  const inst = Number(new URLSearchParams(location.hash.split('?')[1] || '').get('instituut')) || 0
+  const books = inst ? allBooks.filter((b) => b.institutes.includes(inst)) : allBooks
+  render(html`<div class="head"><h1>${t.nav.books}</h1>${myInst().length > 1 ? `<select id="instFilter" aria-label="${t.institute}"><option value="">${t.allInstitutes}</option>${options(myInst().map((i) => [i.id, instName(i)]), inst || '')}</select>` : ''}${has('content.create') ? `<button id="new" class="primary">${t.newBook}</button>
       <label class="btn">${t.zadImport}<input type="file" id="zadfile" accept=".json,application/json" hidden></label>` : ''}</div>
     <p class="msg" id="zadmsg"></p>
     <form class="card" id="nf" hidden>
@@ -246,13 +255,15 @@ async function booksView () {
         <label>${t.author}<input name="author"></label>
         <label>${t.access}<select name="access_level">${options(Object.entries(t.accessLevels))}</select></label>
       </div>
+      ${myInst().length ? `<p class="insts"><b>${t.institutes}:</b> ${instChecks(inst ? [inst] : myInst().map((i) => i.id))}</p>` : ''}
       <button class="primary">${t.create}</button><p class="msg"></p></form>
     <table class="tbl"><thead><tr><th>${t.title}</th><th>${t.category}</th><th>${t.bookStatus}</th><th>${t.chapters}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th></tr></thead>
-    <tbody>${books.map((b, i) => (b.zad_level && !books[i - 1]?.zad_level ? `<tr class="group"><th colspan="6">سلسلة زاد · ${t.zadSeries}</th></tr>` : '') + `<tr><td><a href="#/boek/${b.id}"><b dir="rtl">${esc(b.title_ar || '')}</b> ${b.title_nl ? `<span dir="ltr">${esc(b.title_nl)}</span>` : ''}</a><br><small dir="ltr">${esc(b.slug)}</small></td>
+    <tbody>${books.map((b, i) => (b.zad_level && !books[i - 1]?.zad_level ? `<tr class="group"><th colspan="6">سلسلة زاد · ${t.zadSeries}</th></tr>` : '') + `<tr><td><a href="#/boek/${b.id}"><b dir="rtl">${esc(b.title_ar || '')}</b> ${b.title_nl ? `<span dir="ltr">${esc(b.title_nl)}</span>` : ''}</a><br><small dir="ltr">${esc(b.slug)}</small>${myInst().length > 1 ? `<br><small class="muted">${esc(instNames(b.institutes)) || t.noInstitute}</small>` : ''}</td>
       <td>${esc(lang === 'ar' ? b.category_ar || '' : b.category_nl || '')}</td><td>${badge(b.status)}</td><td>${b.chapters}</td>
       <td>${b.published_ar}/${b.chapters}</td><td>${b.published_nl}/${b.chapters}</td></tr>`).join('')}</tbody></table>`)
   $('#new')?.addEventListener('click', () => { $('#nf').hidden = !$('#nf').hidden })
-  form($('#nf'), async (d) => { const r = await api('books', 'POST', d); location.hash = '#/boek/' + r.id })
+  $('#instFilter')?.addEventListener('change', (e) => { location.hash = '#/boeken' + (e.target.value ? '?instituut=' + e.target.value : '') })
+  form($('#nf'), async (d) => { const r = await api('books', 'POST', { ...d, institutes: checkedInst($('#nf')) }); location.hash = '#/boek/' + r.id })
   // ZAD-boek in het importformaat: alle lessen komen binnen als concept.
   $('#zadfile')?.addEventListener('change', async (e) => {
     const msg = $('#zadmsg')
@@ -297,7 +308,9 @@ async function bookView (id) {
       <label>${t.publisher}<input name="publisher" value="${esc(book.publisher)}"></label>
       <label>${t.language}<select name="language">${options([['ar', t.langs.ar], ['nl', t.langs.nl]], book.language)}</select></label>
       <label>${t.pdf}<input name="pdf" dir="ltr" value="${esc(book.pdf)}"></label>
-    </div><button class="primary">${t.save}</button><p class="msg"></p></form>
+    </div>
+    ${has('content.create') && myInst().length ? `<p class="insts"><b>${t.institutes}:</b> ${instChecks(book.institutes || [])}<br><small class="muted">${t.bookInstHelp}</small></p>` : ''}
+    <button class="primary">${t.save}</button><p class="msg"></p></form>
     <div class="head"><h2>${t.chapters}</h2>${has('content.create') ? `<button id="addCh">${t.addChapter}</button>` : ''}</div>
     <table class="tbl"><thead><tr><th>#</th><th>${t.title}</th><th>${t.langs.ar}</th><th>${t.langs.nl}</th>${book.zad_level ? `<th>${t.study}</th>` : ''}<th></th></tr></thead><tbody>
     ${chapters.map((c, i) => `<tr class="${c.archived ? 'archived' : ''}"><td>${i + 1}</td>
@@ -312,6 +325,7 @@ async function bookView (id) {
     for (const l of ['ar', 'nl']) {
       if (d['title_' + l] || tr[l]) payload.translations[l] = { title: d['title_' + l], subtitle: d['subtitle_' + l], description: d['description_' + l] }
     }
+    if (has('content.create') && myInst().length) payload.institutes = checkedInst($('#meta'))
     if (has('content.create')) Object.assign(payload, { category_id: d.category_id, access_level: d.access_level, author: d.author, translator: d.translator, summarizer: d.summarizer, publisher: d.publisher, language: d.language, pdf: d.pdf })
     await api('books/' + id, 'PATCH', payload)
     return t.saved
@@ -649,16 +663,18 @@ async function usersView () {
   render(html`<h1>${t.nav.users}</h1>
     <form class="card" id="addStudent"><h2>${t.addStudent || ''}</h2><p class="muted">${t.addStudentHelp || ''}</p><div class="grid3">
       <label>${t.email}<input name="email" type="email" required dir="ltr"></label>
-      <span class="end"><button class="primary">${t.addStudentBtn || ''}</button></span></div><p class="msg"></p></form>
+      <span class="end"><button class="primary">${t.addStudentBtn || ''}</button></span></div>
+      ${myInst().length > 1 ? `<p class="insts"><b>${t.institutes}:</b> ${instChecks(myInst().map((i) => i.id))}</p>` : ''}<p class="msg"></p></form>
     <form class="card" id="inv"><h2>${t.invite}</h2><div class="grid3">
       <label>${t.email}<input name="email" type="email" required dir="ltr"></label>
       <label>${t.role}<select name="role">${options(roleOpts, 'editor')}</select></label>
-      <span class="end"><button class="primary">${t.invite}</button></span></div><p class="msg"></p></form>
+      <span class="end"><button class="primary">${t.invite}</button></span></div>
+      ${myInst().length ? `<p class="insts"><b>${t.institutes}:</b> ${instChecks(myInst().map((i) => i.id))}</p>` : ''}<p class="msg"></p></form>
     ${invites.length ? `<section class="card"><h2>${t.invitations}</h2><table class="tbl"><tbody>${invites.map((i) => `<tr><td dir="ltr">${esc(i.email)}</td><td>${esc(roleName(i.role_code))}</td><td><small>${date(i.expires_at)}</small></td>
       <td class="nowrap"><button data-resend="${i.id}">${t.resend}</button> <button class="danger" data-revoke="${i.id}">${t.revoke}</button></td></tr>`).join('')}</tbody></table><div id="invlink" class="msg"></div></section>` : ''}
     ${tabs}
     ${users.length ? '' : `<p class="muted">${t.noItems}</p>`}
-    <table class="tbl users"><thead><tr><th>${t.name}</th><th>${t.roles}</th><th>${t.twofa}</th><th>${t.lastLogin}</th><th></th></tr></thead><tbody>
+    <table class="tbl users"><thead><tr><th>${t.name}</th><th>${t.roles}</th>${myInst().length ? `<th>${t.institutes}</th>` : ''}<th>${t.twofa}</th><th>${t.lastLogin}</th><th></th></tr></thead><tbody>
     ${users.map((u) => `<tr class="${u.status !== 'active' ? 'archived' : ''}" data-user="${u.id}"><td><b>${esc(u.name || '')}</b><br><small dir="ltr">${esc(u.email)}</small> ${u.status !== 'active' ? badge(u.status) : ''}</td>
       <td><div class="roles">${roleOpts.map(([c, n]) => `<label class="inline"><input type="checkbox" value="${c}" ${u.roles.includes(c) ? 'checked' : ''}> ${esc(n)}</label>`).join('')}
         ${!isSuper && u.roles.includes('superadmin') ? `<span class="pill">${roleName('superadmin')}</span>` : ''}</div>
@@ -667,6 +683,7 @@ async function usersView () {
           const e = u.extra.find((x) => x.code === p.code)
           return `<label class="perm">${esc(permName(p))}<select data-perm="${p.code}">${options([['', '—'], ['1', t.grant], ['0', t.deny]], e ? (e.granted ? '1' : '0') : '')}</select></label>`
         }).join('')}<button data-perms>${t.save}</button></details>` : ''}</td>
+      ${myInst().length ? `<td class="insts">${u.roles.includes('superadmin') ? `<small class="muted">${t.allInstitutes}</small>` : `${instChecks(u.institutes)}<br><button data-insts>${t.saveInstitutes}</button>`}</td>` : ''}
       <td>${Number(u.totp_enabled) ? '✓' : '—'}</td><td><small>${date(u.last_login_at)}</small></td>
       <td class="nowrap">${u.id === me.id ? '' : `<button data-status="${u.status === 'active' ? 'deactivated' : 'active'}">${u.status === 'active' ? t.deactivate : t.activate}</button>`}
         ${isSuper || !u.roles.includes('superadmin') ? `<button data-reset>${t.resetLink}</button>` : ''}
@@ -675,8 +692,9 @@ async function usersView () {
     <details class="card"><summary>${t.permMatrix}</summary><table class="tbl matrix"><thead><tr><th></th>${roles.roles.map((r) => `<th>${esc(roleName(r.code))}</th>`).join('')}</tr></thead>
       <tbody>${roles.permissions.map((p) => `<tr><td>${esc(permName(p))}</td>${roles.roles.map((r) => `<td>${r.permissions.includes(p.code) ? '✓' : ''}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`)
   const inviteHelp = (r) => linkBox(r.mailed ? (t.inviteMailed || t.inviteLink) : t.inviteLink, r.link)
-  form($('#inv'), async (d) => inviteHelp(await api('invitations', 'POST', d)))
-  form($('#addStudent'), async (d) => inviteHelp(await api('invitations', 'POST', { email: d.email, role: 'student' })))
+  const invInst = (f) => f.querySelector('[data-inst]') ? { institutes: checkedInst(f) } : {}
+  form($('#inv'), async (d) => inviteHelp(await api('invitations', 'POST', { ...d, ...invInst($('#inv')) })))
+  form($('#addStudent'), async (d) => inviteHelp(await api('invitations', 'POST', { email: d.email, role: 'student', ...invInst($('#addStudent')) })))
   $$('[data-resend]').forEach((b) => b.addEventListener('click', async () => { const r = await api('invitations/' + b.dataset.resend, 'POST'); $('#invlink').innerHTML = inviteHelp(r) }))
   $$('[data-revoke]').forEach((b) => b.addEventListener('click', async () => { await api('invitations/' + b.dataset.revoke, 'DELETE'); usersView() }))
   $$('tr[data-user]').forEach((row) => {
@@ -687,6 +705,9 @@ async function usersView () {
       const chosen = $$('.roles input:checked', row).map((i) => i.value)
       if (!isSuper && $('.roles .pill', row)) chosen.push('superadmin')
       await api('users/' + uid, 'PATCH', { roles: chosen })
+    }))
+    $('[data-insts]', row)?.addEventListener('click', () => run(async () => {
+      await api('users/' + uid, 'PATCH', { institutes: checkedInst(row) })
     }))
     $('[data-perms]', row)?.addEventListener('click', () => run(async () => {
       const permissions = $$('[data-perm]', row).filter((s) => s.value !== '').map((s) => ({ code: s.dataset.perm, granted: s.value === '1' }))
@@ -711,6 +732,33 @@ async function usersView () {
       input.focus()
     })
   })
+}
+
+// ---------- instituten ----------
+async function institutesView () {
+  const list = await api('institutes')
+  render(html`<h1>${t.nav.institutes}</h1><p class="muted">${t.institutesHelp}</p>
+    <table class="tbl"><thead><tr><th>${t.nameNl}</th><th>${t.nameAr}</th><th>${t.groupsCol}</th><th>${t.nav.books}</th><th>${t.staffCol}</th><th></th></tr></thead><tbody>
+    ${list.map((i) => `<tr data-inst-row="${i.id}"><td><input name="name_nl" value="${esc(i.name_nl)}"></td><td><input name="name_ar" dir="rtl" value="${esc(i.name_ar)}"></td>
+      <td>${i.groups}</td><td><a href="#/boeken?instituut=${i.id}">${i.books}</a></td><td>${i.staff}</td>
+      <td class="nowrap"><button data-save>${t.save}</button> <a class="btn" href="/student/#/groepen?instituut=${i.id}">${t.nav.groups}</a><div class="msg"></div></td></tr>`).join('')}</tbody></table>
+    <form class="card" id="newInst"><h2>${t.newInstitute}</h2><div class="grid3">
+      <label>${t.nameNl}<input name="name_nl" required></label>
+      <label>${t.nameAr}<input name="name_ar" dir="rtl" required></label>
+      <label>${t.slug}<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required dir="ltr"></label></div>
+      <p class="muted"><small>${t.newInstituteHelp}</small></p>
+      <button class="primary">${t.create}</button><p class="msg"></p></form>`)
+  for (const row of $$('[data-inst-row]')) {
+    $('[data-save]', row).addEventListener('click', async () => {
+      const msg = $('.msg', row)
+      try {
+        await api('institutes/' + row.dataset.instRow, 'PATCH', { name_nl: $('[name=name_nl]', row).value, name_ar: $('[name=name_ar]', row).value })
+        msg.className = 'msg ok'; msg.textContent = t.saved
+        me = await api('me')
+      } catch (e) { msg.className = 'msg err'; msg.textContent = e.message }
+    })
+  }
+  form($('#newInst'), async (d) => { await api('institutes', 'POST', d); me = await api('me'); institutesView() })
 }
 
 async function auditView () {
@@ -783,6 +831,7 @@ const ROUTES = [
   [/^beoordelen$/, reviewView, 'content.edit'],
   [/^feedback$/, feedbackView, 'feedback.assigned'],
   [/^gebruikers$/, usersView, 'users.manage'],
+  [/^instituten$/, institutesView, 'institutes.manage'],
   [/^audit$/, auditView, 'audit.view'],
   [/^instellingen$/, settingsView, 'settings.manage'],
   [/^profiel$/, profileView]

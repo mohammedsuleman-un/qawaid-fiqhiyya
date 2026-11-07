@@ -6,6 +6,7 @@ import { ENTITY_TYPES, LANGS, ensureTranslation, insert, describe } from '../../
 import { sanitizeHtml } from '../../../../lib/sanitize.js'
 import { parseStudy } from '../../../../lib/study.js'
 import { audit } from '../../../../lib/audit.js'
+import { needEntity } from '../../../../lib/institutes.js'
 
 export async function onRequestPost ({ request, data: { conn, user } }) {
   need(user, 'content.edit')
@@ -13,6 +14,7 @@ export async function onRequestPost ({ request, data: { conn, user } }) {
   if (!ENTITY_TYPES.includes(input.entity_type) || !LANGS.includes(input.lang)) fail(400, 'Onbekend type of taal')
   const entityId = id(input.entity_id)
   if (!(await describe(conn, input.entity_type, entityId))) fail(404, 'Niet gevonden')
+  await needEntity(conn, user, input.entity_type, entityId)
   const translation = await ensureTranslation(conn, input.entity_type, entityId, input.lang, str(input.title))
   const title = str(input.title)
   // Een studiekaart is JSON (gecontroleerd en zonder HTML), al het andere is opgeschoonde HTML.

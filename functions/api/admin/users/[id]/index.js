@@ -1,11 +1,14 @@
-// PATCH {roles, status, permissions}: rollen, status (active/deactivated) en losse rechten
-// van een gebruiker wijzigen. permissions = [{code, granted}] vervangt de losse rechten.
+// PATCH {roles, status, permissions, institutes}: rollen, status (active/deactivated), losse
+// rechten en instituten van een gebruiker wijzigen. permissions = [{code, granted}] vervangt de
+// losse rechten. Wie niet alle instituten ziet, beheert alleen gebruikers van zijn instituten en
+// kan alleen zijn eigen instituten aan- of uitzetten.
 // GET: wat er verdwijnt bij definitief verwijderen. DELETE {confirm_email}: definitief
 // verwijderen (zie deleteUser in lib/users.js).
 import { json, body, need, fail, id } from '../../../../../lib/http.js'
 import { ROLE_CODES, guardLastSuperadmin, deletionSummary, deleteUser } from '../../../../../lib/users.js'
 import { PERMISSIONS } from '../../../../../lib/rbac.js'
 import { audit } from '../../../../../lib/audit.js'
+import { needUser, setUserInstitutes } from '../../../../../lib/institutes.js'
 
 export async function onRequestPatch ({ request, params, data: { conn, user } }) {
   need(user, 'users.manage')
@@ -13,6 +16,7 @@ export async function onRequestPatch ({ request, params, data: { conn, user } })
   const input = await body(request)
   const [target] = await conn.execute('SELECT id, email FROM users WHERE id = ?', [targetId])
   if (!target) fail(404, 'Gebruiker niet gevonden')
+  await needUser(conn, user, targetId)
   const isSuper = user.roles.includes('superadmin')
   const [targetSuper] = await conn.execute("SELECT 1 AS x FROM user_roles WHERE user_id = ? AND role_code = 'superadmin'", [targetId])
   if (targetSuper && !isSuper) fail(403, 'Alleen een superbeheerder kan een superbeheerder wijzigen')
@@ -45,12 +49,17 @@ export async function onRequestPatch ({ request, params, data: { conn, user } })
     }
     await audit(conn, user, 'user.permissions', 'user', targetId, { email: target.email, permissions: input.permissions })
   }
+  if (input.institutes !== undefined) {
+    const next = await setUserInstitutes(conn, user, targetId, input.institutes)
+    await audit(conn, user, 'user.institutes', 'user', targetId, { email: target.email, institutes: next })
+  }
   return json({ ok: true })
 }
 
 async function loadTarget (conn, user, targetId) {
   const [target] = await conn.execute('SELECT id, email, name, status FROM users WHERE id = ?', [targetId])
   if (!target) fail(404, 'Gebruiker niet gevonden')
+  await needUser(conn, user, targetId)
   const [targetSuper] = await conn.execute("SELECT 1 AS x FROM user_roles WHERE user_id = ? AND role_code = 'superadmin'", [targetId])
   if (targetSuper && !user.roles.includes('superadmin')) fail(403, 'Alleen een superbeheerder kan een superbeheerder verwijderen')
   return target
