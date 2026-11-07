@@ -48,7 +48,7 @@ test('bestaande boeken en roosters horen bij Instituut Ibn Al-Qayyim', async () 
   assert.equal(String(yr.date_from).slice(0, 10), '2026-09-13')
   const aiGroups = await conn.execute('SELECT code FROM class_groups WHERE institute_id = ?', [ai.id])
   assert.deepEqual(aiGroups.map((x) => x.code), ['A-m'])
-  // Om en om (migratie 169): 8 nov al-Ashbāh, 15 nov Jamʿ al-jawāmiʿ; vakanties tellen niet mee.
+  // Om en om (migratie 170): 8 nov al-Ashbāh, 15 nov Jamʿ al-jawāmiʿ; vakanties tellen niet mee.
   const aiDays = await allDays(conn, Number(ai.id))
   const [blk] = await allBlocks(conn, Number(ai.id))
   assert.equal(blk.subject_ar, 'الأشباه والنظائر')

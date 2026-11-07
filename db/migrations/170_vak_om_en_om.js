@@ -3,7 +3,7 @@
 // zondag 8 nov 2026 al-Ashbāh wa-n-naẓāʾir, de week erop Jamʿ al-jawāmiʿ, en zo verder.
 const INST = "(SELECT id FROM institutes WHERE slug = 'abu-ismail-usul-al-fiqh')"
 export default {
-  id: 169,
+  id: 170,
   name: 'vak-om-en-om',
   up: [
     "ALTER TABLE schedule_blocks ADD COLUMN alt_subject_nl VARCHAR(255) NOT NULL DEFAULT ''",
