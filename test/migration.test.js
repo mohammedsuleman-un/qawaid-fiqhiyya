@@ -49,7 +49,7 @@ test('oude database met blokken en een eigenaar wordt omgezet zonder tekstverlie
 
   const roles = await conn.execute('SELECT u.email, r.role_code FROM users u JOIN user_roles r ON r.user_id = u.id ORDER BY u.email')
   assert.deepEqual(roles.map((r) => [r.email, r.role_code]), [['eigenaar@example.org', 'superadmin'], ['redacteur@example.org', 'editor']])
-  const [{ n }] = await conn.execute("SELECT COUNT(*) AS n FROM search_index WHERE plain LIKE '%⟦12⟧%'")
+  const [{ n }] = await conn.execute("SELECT COUNT(*) AS n FROM search_index WHERE book_id = 1 AND plain LIKE '%⟦12⟧%'")
   assert.equal(Number(n), 1)
   // Het hadithregister is gevuld uit de opmaak, met paginanummers; alleen de goedgekeurde biografieën (ZAD-import, al-Aʿlām) zijn gepubliceerd.
   const hadith = await conn.execute("SELECT h.page, h.text FROM hadith_index h JOIN chapters c ON h.entity_type = 'chapter' AND c.id = h.entity_id WHERE c.book_id = 1")
@@ -172,6 +172,10 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
       AND t.published_version_id IS NOT NULL WHERE c.book_id = b.id) AS pub
     FROM books b WHERE b.slug IN ('zad-n3-arabic', 'zad-n3-tafsir', 'zad-n3-hadith', 'zad-n3-seerah', 'zad-n3-fiqh', 'zad-n3-tarbiyah', 'zad-n4-tafsir', 'zad-n4-hadith', 'zad-n4-seerah', 'zad-n4-fiqh', 'zad-n4-tarbiyah', 'zad-n4-arabic') ORDER BY b.slug`)
   assert.deepEqual(n3.map((r) => [r.slug, r.status, Number(r.lessons), Number(r.pub)]), [['zad-n3-arabic', 'published', 24, 48], ['zad-n3-fiqh', 'published', 36, 72], ['zad-n3-hadith', 'published', 24, 48], ['zad-n3-seerah', 'published', 24, 48], ['zad-n3-tafsir', 'published', 24, 48], ['zad-n3-tarbiyah', 'published', 24, 48], ['zad-n4-arabic', 'published', 24, 48], ['zad-n4-fiqh', 'published', 36, 72], ['zad-n4-hadith', 'published', 24, 48], ['zad-n4-seerah', 'published', 24, 48], ['zad-n4-tafsir', 'published', 24, 48], ['zad-n4-tarbiyah', 'published', 24, 48]])
-  const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.zad_level IS NULL')
+  const [{ n }] = await conn.execute("SELECT COUNT(*) AS n FROM chapters c JOIN books b ON b.id = c.book_id WHERE b.slug = 'talkhis-jam-al-jawami'")
   assert.equal(Number(n), 60)
+  // تلخيص أحكام القرآن (migratie 165): één hoofdstuk per besproken vers, gepubliceerd.
+  const [ahkam] = await conn.execute("SELECT b.status, (SELECT COUNT(*) FROM chapters c WHERE c.book_id = b.id) AS n FROM books b WHERE b.slug = 'talkhis-ahkam-al-quran'")
+  assert.equal(ahkam.status, 'published')
+  assert.ok(Number(ahkam.n) > 40)
 })
