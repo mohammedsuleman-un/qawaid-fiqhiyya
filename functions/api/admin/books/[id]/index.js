@@ -29,7 +29,7 @@ export async function onRequestPatch ({ request, params, data: { conn, user } })
   const [book] = await conn.execute('SELECT id, slug, status FROM books WHERE id = ?', [bookId])
   if (!book) fail(404, 'Boek niet gevonden')
 
-  const meta = ['category_id', 'author', 'translator', 'publisher', 'language', 'access_level', 'pdf', 'cover'].filter((f) => input[f] !== undefined)
+  const meta = ['category_id', 'author', 'translator', 'summarizer', 'publisher', 'language', 'access_level', 'pdf', 'cover'].filter((f) => input[f] !== undefined)
   if (meta.length) {
     need(user, 'content.create')
     if (input.access_level !== undefined && !ACCESS_LEVELS.includes(input.access_level)) fail(400, 'Onbekend toegangsniveau')

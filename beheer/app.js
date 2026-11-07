@@ -1,7 +1,7 @@
 // Beheeromgeving van De Zuivere Bron. Praat alleen met /api/admin; de sessie staat in
 // een HttpOnly-cookie. Knoppen worden verborgen als je een recht mist, maar de server
 // controleert elk recht zelf opnieuw.
-import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261101u'
+import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261107a'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
 import { serverError } from '/assets/server-errors.js?v=20261101g'
@@ -292,6 +292,7 @@ async function bookView (id) {
       <label>${t.access}<select name="access_level">${options(Object.entries(t.accessLevels), book.access_level)}</select></label>
       <label>${t.author}<input name="author" value="${esc(book.author)}"></label>
       <label>${t.translator}<input name="translator" value="${esc(book.translator)}"></label>
+      <label>${t.summarizer}<input name="summarizer" dir="auto" value="${esc(book.summarizer)}"></label>
       <label>${t.publisher}<input name="publisher" value="${esc(book.publisher)}"></label>
       <label>${t.language}<select name="language">${options([['ar', t.langs.ar], ['nl', t.langs.nl]], book.language)}</select></label>
       <label>${t.pdf}<input name="pdf" dir="ltr" value="${esc(book.pdf)}"></label>
@@ -310,7 +311,7 @@ async function bookView (id) {
     for (const l of ['ar', 'nl']) {
       if (d['title_' + l] || tr[l]) payload.translations[l] = { title: d['title_' + l], subtitle: d['subtitle_' + l], description: d['description_' + l] }
     }
-    if (has('content.create')) Object.assign(payload, { category_id: d.category_id, access_level: d.access_level, author: d.author, translator: d.translator, publisher: d.publisher, language: d.language, pdf: d.pdf })
+    if (has('content.create')) Object.assign(payload, { category_id: d.category_id, access_level: d.access_level, author: d.author, translator: d.translator, summarizer: d.summarizer, publisher: d.publisher, language: d.language, pdf: d.pdf })
     await api('books/' + id, 'PATCH', payload)
     return t.saved
   })

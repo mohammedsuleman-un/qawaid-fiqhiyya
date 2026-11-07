@@ -37,10 +37,10 @@ export async function onRequestPost ({ request, data: { conn, user } }) {
   const [dup] = await conn.execute('SELECT 1 AS x FROM books WHERE slug = ?', [slug])
   if (dup) fail(400, 'Dit adres bestaat al')
   const access = ACCESS_LEVELS.includes(input.access_level) ? input.access_level : 'public'
-  const bookId = await insert(conn, `INSERT INTO books (slug, title, subtitle, status, category_id, author, translator, publisher, language, access_level, pdf)
-    VALUES (?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?, ?)`,
+  const bookId = await insert(conn, `INSERT INTO books (slug, title, subtitle, status, category_id, author, translator, summarizer, publisher, language, access_level, pdf)
+    VALUES (?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?, ?, ?)`,
   [slug, str(input.title_ar || input.title_nl, 255), str(input.subtitle_ar || input.subtitle_nl), input.category_id || null,
-    str(input.author, 255), str(input.translator, 255), str(input.publisher, 255), input.language === 'nl' ? 'nl' : 'ar', access, str(input.pdf)])
+    str(input.author, 255), str(input.translator, 255), str(input.summarizer, 255), str(input.publisher, 255), input.language === 'nl' ? 'nl' : 'ar', access, str(input.pdf)])
   for (const lang of ['ar', 'nl']) {
     if (str(input['title_' + lang])) {
       await conn.execute('INSERT INTO book_translations (book_id, lang, title, subtitle, description) VALUES (?, ?, ?, ?, ?)',
