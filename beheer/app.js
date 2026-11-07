@@ -4,7 +4,7 @@
 import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261107a'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261101g'
+import { serverError } from '/assets/server-errors.js?v=20261107a'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -102,6 +102,7 @@ function setNav () {
     ['#/beoordelen', t.nav.review, has('content.edit')],
     ['#/feedback', t.nav.feedback, has('feedback.assigned')],
     ['/student/#/vragen', t.nav.tests, has('content.edit') || has('tests.manage')],
+    ['/student/#/groepen', t.nav.groups, has('groups.manage')],
     ['#/gebruikers', t.nav.users, has('users.manage')],
     ['#/audit', t.nav.audit, has('audit.view')],
     ['#/instellingen', t.nav.settings, has('settings.manage')],

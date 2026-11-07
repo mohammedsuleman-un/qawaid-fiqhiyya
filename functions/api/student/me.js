@@ -4,12 +4,15 @@
 import { json, body, str } from '../../../lib/http.js'
 import { can } from '../../../lib/rbac.js'
 import { myBooks, testsForStudent, myAttempts } from '../../../lib/student.js'
+import { myGroups } from '../../../lib/agenda.js'
 
 export async function onRequestGet ({ data: { conn, user } }) {
   const [books, tests, attempts] = [await myBooks(conn, user.id), await testsForStudent(conn, user.id), await myAttempts(conn, user.id, 10)]
+  const groups = await myGroups(conn, user)
   return json({
     user: { id: user.id, name: user.name, email: user.email, lang: user.lang, roles: user.roles,
-      teacher: can(user, 'tests.manage'), reviewer: can(user, 'content.review'), staff: user.permissions.has('content.edit') },
+      teacher: can(user, 'tests.manage'), reviewer: can(user, 'content.review'), staff: user.permissions.has('content.edit'),
+      groupsManager: can(user, 'groups.manage'), recorder: can(user, 'attendance.record'), inGroup: groups.student.length + groups.teacher.length > 0 },
     books, tests, attempts
   })
 }
