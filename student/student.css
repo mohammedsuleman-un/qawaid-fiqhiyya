@@ -172,3 +172,55 @@ ol.opts-rv,ul.opts-rv{margin:2px 0;padding-inline-start:22px;font-size:14px;line
 .topright .themesw{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:17px;cursor:pointer;padding:0}
 .pwhint.ok{color:#1d7a46}
 .pick .ar-sub{font-family:Amiri,serif;font-size:14px;color:var(--muted);line-height:1.4}
+/* Lesagenda */
+.agnav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.agweek h2{margin:0 0 6px;font-size:16px}
+.agday{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;padding:10px 0;border-top:1px solid var(--line)}
+.agday:first-of-type{border-top:0}
+.agday.now .agdate b{color:var(--gold)}
+.agdate{display:flex;flex-direction:column;font-size:14px}
+.agdate span{color:var(--muted);font-size:13px}
+.aglessons{list-style:none;margin:0;padding:0}
+.aglesson{display:flex;gap:12px;padding:4px 0;align-items:flex-start}
+.agtime{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;min-width:96px;direction:ltr;text-align:start}
+.agsub{flex:1;min-width:0}
+.agrec{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.btn.small,button.small{font-size:13px;padding:4px 10px}
+.btn.todo{border-style:dashed}
+.agev{border-radius:8px;padding:4px 10px;margin:0 0 6px;font-size:14px;background:var(--surface2);border-inline-start:4px solid var(--line)}
+.agev.ev-holiday{border-inline-start-color:var(--ok)}
+.agev.ev-exam{border-inline-start-color:var(--danger);font-weight:600}
+.agev.ev-special{border-inline-start-color:var(--gold)}
+.agitem{border:1px dashed var(--line);border-radius:8px;padding:5px 10px;margin:6px 0;font-size:14px}
+.agitem p{margin:4px 0 0}
+.agk,.ags{display:inline-block;font-size:12px;border-radius:99px;padding:0 9px;border:1px solid currentColor}
+.agk.k-test{color:var(--danger)}
+.agk.k-homework{color:var(--green)}
+.agk.k-note{color:var(--mid)}
+.ags.s-present{color:var(--ok)}
+.ags.s-absent{color:var(--danger)}
+.ags.s-late,.ags.s-excused{color:var(--mid)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .agk.k-homework{color:var(--accent)}}
+:root[data-theme="dark"] .agk.k-homework{color:var(--accent)}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg label{flex-direction:row;align-items:center;gap:4px;margin:0;border:1px solid var(--line);border-radius:99px;padding:3px 10px;color:var(--ink);font-size:13.5px;cursor:pointer}
+.seg label:has(input:checked){border-color:currentColor;font-weight:600}
+.seg label.s-present:has(input:checked){color:var(--ok)}
+.seg label.s-absent:has(input:checked){color:var(--danger)}
+.seg label.s-late:has(input:checked),.seg label.s-excused:has(input:checked){color:var(--mid)}
+.aggroups{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.aggroups .card{margin:0}
+.memlist{list-style:none;margin:8px 0;padding:0;max-height:320px;overflow:auto}
+.memlist li{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px solid var(--line);font-size:14px}
+.mem{white-space:nowrap}
+.addmem{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.addmem select{flex:1 1 160px;width:auto}
+.addmem .msg{flex-basis:100%}
+.tblwrap{overflow-x:auto}
+.tbl.edit input,.tbl.edit select{padding:5px 7px;font-size:14px;min-width:70px}
+.nowrap{white-space:nowrap}
+@media (max-width:640px){.agday{grid-template-columns:minmax(0,1fr);gap:4px}.aglesson{flex-direction:column;gap:2px}.tbl.att td{display:block}.tbl.att thead{display:none}}
+.st [hidden]{display:none!important}
+.addmem select{max-width:100%;min-width:0}
+.addmem select[name=user]{flex:1 1 100%}
+.tbl.edit input[name^=title]{min-width:180px}

@@ -1,8 +1,8 @@
 // Studentenomgeving van De Zuivere Bron (NL/AR). Praat met /api/student; inloggen gaat
 // via /api/admin/login (zelfde account en sessie als de beheeromgeving). De server
 // controleert elk recht zelf; knoppen voor docenten worden alleen getoond als het mag.
-import { STRINGS } from './i18n.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261101g'
+import { STRINGS } from './i18n.js?v=20261107a'
+import { serverError } from '/assets/server-errors.js?v=20261107a'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -101,14 +101,15 @@ function setNav () {
   try { if (me) localStorage.setItem('zb:who', me.user.name || me.user.email); else localStorage.removeItem('zb:who') } catch (e) {}
   if (!me) { navEl.innerHTML = ''; whoEl.innerHTML = ''; document.body.classList.add('anon'); return }
   document.body.classList.remove('anon')
-  const items = [['#/', t.nav.home], ['#/boeken', t.nav.books], ['#/toetsen', t.nav.tests], ['#/resultaten', t.nav.results]]
+  const items = [['#/', t.nav.home], ['#/agenda', t.nav.agenda], ['#/boeken', t.nav.books], ['#/toetsen', t.nav.tests], ['#/resultaten', t.nav.results]]
   if (me.user.teacher) items.push(['#/docent', t.nav.teacher])
   if (me.user.staff) items.push(['#/vragen', t.nav.questions])
+  if (me.user.groupsManager) items.push(['#/groepen', t.nav.groups])
   navEl.innerHTML = items.map(([href, label]) => `<a href="${href}">${esc(label)}</a>`).join('')
   whoEl.innerHTML = `<span class="me">${esc(me.user.name || me.user.email)}</span> <button type="button" class="link" id="logoutBtn">${t.logout}</button>`
   $('#logoutBtn', whoEl).onclick = async () => { await api('logout', 'POST', {}, '/api/admin/'); me = null; location.hash = '#/'; start() }
   const current = '#/' + (location.hash.slice(2).split('/')[0] || '')
-  for (const a of navEl.querySelectorAll('a')) a.classList.toggle('on', a.getAttribute('href') === current || (current === '#/boek' && a.getAttribute('href') === '#/boeken') || (current === '#/poging' && a.getAttribute('href') === '#/resultaten'))
+  for (const a of navEl.querySelectorAll('a')) a.classList.toggle('on', a.getAttribute('href') === current || (current === '#/boek' && a.getAttribute('href') === '#/boeken') || (current === '#/poging' && a.getAttribute('href') === '#/resultaten') || (['#/aanwezigheid', '#/groep'].includes(current) && a.getAttribute('href') === '#/agenda'))
 }
 
 // Wachtwoordeisen vooraf tonen en tijdens het typen bijwerken.
@@ -207,6 +208,7 @@ async function homeView () {
       <div class="tile"><b>${avg == null ? '–' : avg + '%'}</b><span>${t.tileScore}</span></div>
       <div class="tile"><b>${open.length}</b><span>${t.tileOpen}</span></div>
     </div>
+    ${me.user.inGroup || me.user.groupsManager ? `<a class="card bookrow" href="#/agenda"><span class="bt">📅 ${t.ag.homeTitle}</span><span class="muted small">${me.user.recorder ? t.ag.homeTeacher : t.ag.homeText}</span></a>` : ''}
     ${books.length ? '' : `<div class="card empty"><h2>${t.noBooksTitle}</h2><p>${t.noBooksText}</p><a class="btn primary" href="#/boeken">${t.addBooks}</a></div>`}
     <div class="cols">
       <section>
@@ -654,6 +656,215 @@ async function questionsView (slug, status = 'draft') {
   }
 }
 
+// ---------- lesagenda ----------
+const agDate = (s, opts = { weekday: 'short', day: 'numeric', month: 'short' }) => new Date(s + 'T12:00:00').toLocaleDateString(locale(), opts)
+const dayName = (n) => new Date(Date.UTC(2024, 0, n, 12)).toLocaleDateString(locale(), { weekday: 'long', timeZone: 'UTC' })
+const tr = (x, base) => x[base + '_' + lang] || x[base + '_' + (lang === 'ar' ? 'nl' : 'ar')] || ''
+const groupName = (g) => tr(g, 'name')
+const cohortName = (c) => fmt(t.ag.cohort, { c: lang === 'ar' ? ({ A: 'أ', B: 'ب' })[c] || c : c })
+const subject = (b) => tr(b, 'subject') || `<i class="muted">${t.ag.noSubject}</i>`
+const addD = (s, n) => new Date(Date.parse(s + 'T00:00:00Z') + n * 86400000).toISOString().slice(0, 10)
+const kindBadge = (k) => `<span class="agk k-${esc(k)}">${esc(t.ag.kinds[k] || k)}</span>`
+const statusBadge = (s) => s ? `<span class="ags s-${esc(s)}">${esc(t.ag.status[s])}</span>` : ''
+const SUBJECT_PRESETS = [
+  ['Fiqh en sīra', 'الفقه والسيرة'], ['Geloofsleer en tafsīr', 'العقيدة والتفسير'], ['Hadith en islamitische opvoeding', 'الحديث والتربية الإسلامية'],
+  ['Geloofsleer', 'العقيدة'], ['Tafsīr', 'التفسير'], ['Hadith', 'الحديث'], ['Sīra', 'السيرة النبوية'], ['Fiqh', 'الفقه'],
+  ['Islamitische opvoeding', 'التربية الإسلامية'], ['Arabische taal', 'اللغة العربية']
+]
+
+function itemHtml (i, d) {
+  const g = i.group_id ? d.groups.find((x) => x.id === i.group_id) : null
+  const mayEdit = d.manager || i.created_by === me.user.id
+  const info = tr(i, 'info')
+  return `<div class="agitem"><div>${kindBadge(i.kind)} <b dir="auto">${esc(tr(i, 'title'))}</b>
+    <small class="muted">${esc(g ? groupName(g) : cohortName(i.cohort))}${i.author ? ' · ' + esc(i.author) : ''}</small></div>
+    ${info ? `<p class="small" dir="auto">${esc(info)}</p>` : ''}
+    ${mayEdit ? `<button type="button" class="link small" data-del-item="${i.id}">${t.ag.remove}</button>` : ''}</div>`
+}
+
+async function agendaView (from) {
+  loading()
+  const d = await api('agenda?weeks=4' + (from ? '&from=' + encodeURIComponent(from) : ''))
+  const blockById = new Map(d.blocks.map((b) => [b.id, b]))
+  const dayById = new Map(d.days.map((x) => [x.id, x]))
+  const many = new Set(d.groups.map((g) => g.cohort)).size > 1
+  const teachGroups = d.groups.filter((g) => g.canTeach)
+  const weeks = []
+  for (let w = 0; w < d.weeks; w++) {
+    const start = addD(d.from, w * 7)
+    const end = addD(start, 6)
+    weeks.push({ start, days: d.calendar.filter((x) => x.date >= start && x.date <= end) })
+  }
+  const lessonHtml = (date, bid) => {
+    const b = blockById.get(bid)
+    const own = d.attendance.find((a) => a.block_id === bid && a.date === date)
+    const its = d.items.filter((i) => i.item_date === date && i.block_id === bid)
+    const teach = date <= d.today ? teachGroups.filter((g) => g.cohort === b.cohort) : []
+    return `<li class="aglesson"><span class="agtime">${esc(b.start_time)}–${esc(b.end_time)}</span>
+      <span class="agsub"><b dir="auto">${subject(b)}</b>${many ? ` <small class="muted">${esc(cohortName(b.cohort))}</small>` : ''} ${statusBadge(own?.status)}${own?.note ? ` <small class="muted" dir="auto">${esc(own.note)}</small>` : ''}
+        ${its.map((i) => itemHtml(i, d)).join('')}
+        ${teach.length ? `<span class="agrec">${teach.map((g) => {
+          const r = d.recorded.find((x) => x.group_id === g.id && x.block_id === bid && x.date === date)
+          return `<a class="btn small${r ? '' : ' todo'}" href="#/aanwezigheid/${g.id}/${bid}/${date}">${r ? '✓ ' : ''}${esc(groupName(g))}${r ? ` · ${fmt(t.ag.absentN, { n: r.absent })}` : ` · ${t.ag.fillIn}`}</a>`
+        }).join('')}</span>` : ''}</span></li>`
+  }
+  const dayHtml = (x) => {
+    const evs = x.events.map((id) => dayById.get(id)).filter(Boolean)
+    const loose = d.items.filter((i) => i.item_date === x.date && !i.block_id)
+    return `<div class="agday${x.date === d.today ? ' now' : ''}"><div class="agdate"><b>${esc(agDate(x.date, { weekday: 'long' }))}</b><span>${esc(agDate(x.date, { day: 'numeric', month: 'long' }))}</span></div>
+      <div class="agbody">${evs.map((e) => `<div class="agev ev-${esc(e.kind)}">${esc(t.ag.dayKinds[e.kind])}: <span dir="auto">${esc(tr(e, 'title'))}</span>${e.date_to && e.date_to !== e.date_from ? ` <small>(${esc(agDate(e.date_from, { day: 'numeric', month: 'short' }))} – ${esc(agDate(e.date_to, { day: 'numeric', month: 'short' }))})</small>` : ''}</div>`).join('')}
+        ${loose.map((i) => itemHtml(i, d)).join('')}
+        ${x.lessons.length ? `<ul class="aglessons">${x.lessons.map((bid) => lessonHtml(x.date, bid)).join('')}</ul>` : ''}</div></div>`
+  }
+  const groupOpts = () => [...(d.manager ? [...new Set(d.groups.map((g) => g.cohort))].map((c) => `<option value="${c}">${esc(cohortName(c))} (${t.ag.bothGroups})</option>`) : []),
+    ...teachGroups.map((g) => `<option value="${g.id}">${esc(groupName(g))}</option>`)].join('')
+  render(`<div class="head"><h1>${t.ag.title}</h1>
+      ${d.recorder && teachGroups.length ? `<button type="button" class="primary" id="addItem">+ ${t.ag.addItem}</button>` : ''}
+      ${me.user.groupsManager ? `<a class="btn" href="#/groepen">${t.nav.groups}</a>` : ''}</div>
+    <p class="muted">${d.groups.length ? d.groups.map((g) => `<span class="pill">${esc(groupName(g))}${g.teacher ? ' · ' + t.ag.teacherOf : ''}</span>`).join(' ') : ''}
+      ${d.year.title_nl || d.year.title_ar ? ` · ${esc(tr(d.year, 'title'))}` : ''}</p>
+    ${d.groups.length ? '' : `<div class="card empty"><h2>${t.ag.noGroupTitle}</h2><p>${t.ag.noGroupText}</p></div>`}
+    <form class="card" id="itemForm" hidden><h2>${t.ag.addItem}</h2>
+      <div class="row3"><label>${t.ag.kind}<select name="kind">${['test', 'homework', 'note'].map((k) => `<option value="${k}">${t.ag.kinds[k]}</option>`).join('')}</select></label>
+        <label>${t.ag.group}<select name="group" required>${groupOpts()}</select></label>
+        <label>${t.ag.date}<input type="date" name="date" required value="${esc(d.today)}"></label></div>
+      <label>${t.ag.lesson}<select name="block"><option value="">${t.ag.wholeDay}</option></select></label>
+      <div class="row2"><label>${t.ag.titleNl}<input name="title_nl" maxlength="255"></label><label>${t.ag.titleAr}<input name="title_ar" dir="rtl" maxlength="255"></label></div>
+      <div class="row2"><label>${t.ag.infoNl}<textarea name="info_nl" rows="3"></textarea></label><label>${t.ag.infoAr}<textarea name="info_ar" rows="3" dir="rtl"></textarea></label></div>
+      <div class="actions"><button class="primary" type="submit">${t.save}</button><button type="button" id="cancelItem">${t.ag.cancel}</button></div><p class="msg"></p></form>
+    <div class="agnav"><a class="btn" href="#/agenda/${addD(d.from, -7 * d.weeks)}">${lang === 'ar' ? '→' : '←'} ${t.ag.earlier}</a>
+      <a class="btn" href="#/agenda">${t.ag.thisWeek}</a>
+      <a class="btn" href="#/agenda/${addD(d.from, 7 * d.weeks)}">${t.ag.later} ${lang === 'ar' ? '←' : '→'}</a></div>
+    ${d.groups.length ? weeks.map((w) => `<section class="card agweek"><h2>${fmt(t.ag.weekOf, { d: agDate(w.start, { day: 'numeric', month: 'long', year: 'numeric' }) })}</h2>
+      ${w.days.length ? w.days.map(dayHtml).join('') : `<p class="muted small">${t.ag.noLessons}</p>`}</section>`).join('') : ''}
+    ${teachGroups.length ? `<p>${teachGroups.map((g) => `<a class="btn small" href="#/groep/${g.id}">${fmt(t.ag.summaryOf, { g: groupName(g) })}</a>`).join(' ')}</p>` : ''}`)
+  const f = $('#itemForm')
+  const fillBlocks = () => {
+    const gv = f.group.value
+    const cohort = /^[AB]$/.test(gv) ? gv : d.groups.find((g) => String(g.id) === gv)?.cohort
+    const wd = f.date.value ? ((new Date(f.date.value + 'T12:00:00Z').getUTCDay() + 6) % 7) + 1 : 0
+    f.block.innerHTML = `<option value="">${t.ag.wholeDay}</option>` + d.blocks.filter((b) => b.cohort === cohort && b.weekday === wd)
+      .map((b) => `<option value="${b.id}">${esc(b.start_time)}–${esc(b.end_time)} ${esc(tr(b, 'subject'))}</option>`).join('')
+  }
+  if (f) {
+    f.group.onchange = fillBlocks
+    f.date.onchange = fillBlocks
+    fillBlocks()
+    $('#addItem')?.addEventListener('click', () => { f.hidden = false; f.scrollIntoView({ behavior: 'smooth' }) })
+    $('#cancelItem').onclick = () => { f.hidden = true }
+    form(f, async (x) => { await api('agenda-items', 'POST', x); agendaView(from) })
+  }
+  for (const b of $$('[data-del-item]')) {
+    b.onclick = async () => { if (!confirm(t.ag.confirmRemove)) return; try { await api('agenda-items?id=' + b.dataset.delItem, 'DELETE'); agendaView(from) } catch (err) { alert(err.message) } }
+  }
+}
+
+// Presentielijst van één les.
+async function attendanceView (groupId, blockId, date) {
+  loading()
+  const d = await api(`attendance?group=${groupId}&block=${blockId}&date=${encodeURIComponent(date)}`)
+  const st = ['present', 'absent', 'late', 'excused']
+  render(`<p class="crumbs"><a href="#/agenda/${esc(date)}">${t.ag.title}</a> · <a href="#/groep/${d.group.id}">${fmt(t.ag.summaryOf, { g: groupName(d.group) })}</a></p>
+    <div class="head"><h1>${t.ag.attendance}</h1></div>
+    <p class="muted"><b>${esc(groupName(d.group))}</b> · ${esc(agDate(date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))} · ${esc(d.block.start_time)}–${esc(d.block.end_time)} · <span dir="auto">${subject(d.block)}</span></p>
+    ${d.items.length ? `<p>${d.items.map((i) => `${kindBadge(i.kind)} <span dir="auto">${esc(tr(i, 'title'))}</span>`).join(' · ')}</p>` : ''}
+    ${d.recorded ? `<p class="ok small">✓ ${t.ag.alreadySaved}</p>` : `<p class="muted small">${t.ag.defaultPresent}</p>`}
+    ${d.students.length ? `<form id="att" class="card">
+      <div class="actions"><button type="button" id="allPresent">${t.ag.allPresent}</button></div>
+      <table class="tbl att"><thead><tr><th>${t.student}</th><th>${t.ag.statusCol}</th><th>${t.ag.note}</th></tr></thead><tbody>
+      ${d.students.map((s) => `<tr data-u="${s.id}"><td>${esc(s.name || s.email)}<br><small class="muted">${esc(s.email)}</small></td>
+        <td><div class="seg" role="radiogroup">${st.map((x) => `<label class="s-${x}"><input type="radio" name="s${s.id}" value="${x}"${(s.status || 'present') === x ? ' checked' : ''}> ${t.ag.status[x]}</label>`).join('')}</div></td>
+        <td><input name="n${s.id}" value="${esc(s.note)}" maxlength="255" dir="auto"></td></tr>`).join('')}</tbody></table>
+      <div class="actions sticky"><button class="primary" type="submit">${t.save}</button></div><p class="msg"></p></form>`
+    : `<div class="card"><p class="muted">${t.ag.noStudents}</p></div>`}`)
+  const f = $('#att')
+  if (!f) return
+  $('#allPresent').onclick = () => { for (const r of $$('input[value=present]', f)) r.checked = true }
+  form(f, async () => {
+    const entries = d.students.map((s) => ({ user_id: s.id, status: f.querySelector(`[name="s${s.id}"]:checked`).value, note: f.querySelector(`[name="n${s.id}"]`).value }))
+    await api('attendance', 'POST', { group: d.group.id, block: d.block.id, date, entries })
+    return t.ag.saved
+  })
+}
+
+// Overzicht van de aanwezigheid van één groep over het schooljaar.
+async function groupSummaryView (groupId) {
+  loading()
+  const d = await api('attendance?group=' + groupId)
+  render(`<p class="crumbs"><a href="#/agenda">${t.ag.title}</a></p>
+    <div class="head"><h1>${esc(groupName(d.group))}</h1></div>
+    <p class="muted">${fmt(t.ag.summaryHelp, { n: d.lessons, r: d.recordedLessons })}</p>
+    ${d.students.length ? `<table class="tbl"><thead><tr><th>${t.student}</th>${['present', 'absent', 'late', 'excused'].map((x) => `<th>${t.ag.status[x]}</th>`).join('')}</tr></thead><tbody>
+      ${d.students.map((s) => `<tr><td>${esc(s.name || s.email)}<br><small class="muted">${esc(s.email)}</small></td>${['present', 'absent', 'late', 'excused'].map((x) => `<td>${s.counts[x] ? statusBadge(x) + ' ' + s.counts[x] : '–'}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+    : `<p class="muted">${t.ag.noStudents}</p>`}`)
+}
+
+// Beheer: groepen, weekrooster en jaarrooster.
+async function groupsAdminView () {
+  loading()
+  const d = await api('groups')
+  const userLabel = (u) => `${u.name || u.email} (${u.email})`
+  const roleLabel = (u) => u.roles.map((r) => t.ag.roles[r] || r).join(', ')
+  const weekdays = [1, 2, 3, 4, 5, 6, 7]
+  const dayRow = (x) => `<tr data-day="${x.id || ''}">
+    <td><select name="kind">${['year', 'holiday', 'exam', 'special'].map((k) => `<option value="${k}"${x.kind === k ? ' selected' : ''}>${t.ag.dayKinds[k]}</option>`).join('')}</select></td>
+    <td><input type="date" name="date_from" value="${esc(x.date_from || '')}"></td><td><input type="date" name="date_to" value="${esc(x.date_to || '')}"></td>
+    <td><select name="cohort"><option value="">${t.ag.all}</option>${['A', 'B'].map((c) => `<option value="${c}"${x.cohort === c ? ' selected' : ''}>${esc(cohortName(c))}</option>`).join('')}</select></td>
+    <td><input name="title_nl" value="${esc(x.title_nl || '')}"></td><td><input name="title_ar" dir="rtl" value="${esc(x.title_ar || '')}"></td>
+    <td class="nowrap"><button type="button" class="small" data-save-day>${t.save}</button>${x.id ? ` <button type="button" class="small danger" data-del-day>${t.ag.remove}</button>` : ''}</td></tr>`
+  const blockRow = (b, cohort) => `<tr data-block="${b.id || ''}" data-cohort="${cohort}">
+    <td><select name="weekday">${weekdays.map((n) => `<option value="${n}"${b.weekday === n ? ' selected' : ''}>${esc(dayName(n))}</option>`).join('')}</select></td>
+    <td><input name="start_time" value="${esc(b.start_time || '19:00')}" size="5" inputmode="numeric"></td><td><input name="end_time" value="${esc(b.end_time || '20:30')}" size="5" inputmode="numeric"></td>
+    <td><select name="preset"><option value="">${t.ag.pickSubject}</option>${SUBJECT_PRESETS.map(([nl, ar], i) => `<option value="${i}">${esc(lang === 'ar' ? ar : nl)}</option>`).join('')}<option value="none">${t.ag.noSubject}</option></select></td>
+    <td><input name="subject_nl" value="${esc(b.subject_nl || '')}"></td><td><input name="subject_ar" dir="rtl" value="${esc(b.subject_ar || '')}"></td>
+    <td class="nowrap"><button type="button" class="small" data-save-block>${t.save}</button>${b.id ? ` <button type="button" class="small danger" data-del-block>${t.ag.remove}</button>` : ''}</td></tr>`
+  render(`<p class="crumbs"><a href="#/agenda">${t.ag.title}</a></p><div class="head"><h1>${t.nav.groups}</h1></div>
+    <p class="muted">${t.ag.adminHelp}</p>
+    <h2>${t.ag.groupsTitle}</h2>
+    <div class="aggroups">${d.groups.map((g) => {
+      const studs = g.members.filter((m) => m.role === 'student')
+      const teach = g.members.filter((m) => m.role === 'teacher')
+      return `<section class="card" data-group="${g.id}"><div class="th"><h3>${esc(groupName(g))}</h3><span class="pill">${fmt(t.ag.studentsN, { n: studs.length })}</span></div>
+        <p class="small"><b>${t.ag.teachers}:</b> ${teach.map((m) => `<span class="mem">${esc(m.name || m.email)} <button type="button" class="link" title="${t.ag.remove}" data-rm="${m.id}">×</button></span>`).join(' ') || `<span class="muted">${t.ag.noneYet}</span>`}</p>
+        <ul class="memlist">${studs.map((m) => `<li><span>${esc(m.name || m.email)} <small class="muted">${esc(m.email)}</small></span><button type="button" class="link" title="${t.ag.remove}" data-rm="${m.id}">×</button></li>`).join('') || `<li class="muted">${t.ag.noneYet}</li>`}</ul>
+        <form class="addmem"><select name="user" required><option value="">${t.ag.chooseAccount}</option>${d.users.filter((u) => !g.members.some((m) => m.id === u.id)).map((u) => `<option value="${u.id}">${esc(userLabel(u))}${u.roles.length ? ' · ' + esc(roleLabel(u)) : ''}</option>`).join('')}</select>
+          <select name="role"><option value="student">${t.ag.asStudent}</option><option value="teacher">${t.ag.asTeacher}</option></select>
+          <button type="submit" class="primary">${t.ag.add}</button><p class="msg"></p></form></section>`
+    }).join('')}</div>
+    <h2>${t.ag.scheduleTitle}</h2><p class="muted small">${t.ag.scheduleHelp}</p>
+    ${['A', 'B'].map((c) => `<div class="card"><h3>${esc(cohortName(c))}</h3><div class="tblwrap"><table class="tbl edit"><thead><tr><th>${t.ag.day}</th><th>${t.ag.from}</th><th>${t.ag.to}</th><th>${t.ag.subject}</th><th>${t.ag.subjectNl}</th><th>${t.ag.subjectAr}</th><th></th></tr></thead>
+      <tbody>${d.blocks.filter((b) => b.cohort === c).map((b) => blockRow(b, c)).join('')}${blockRow({ weekday: 4 }, c)}</tbody></table></div></div>`).join('')}
+    <h2>${t.ag.yearTitle}</h2><p class="muted small">${t.ag.yearHelp}</p>
+    <div class="card"><div class="tblwrap"><table class="tbl edit"><thead><tr><th>${t.ag.kind}</th><th>${t.ag.from}</th><th>${t.ag.to}</th><th>${t.ag.group}</th><th>${t.ag.titleNl}</th><th>${t.ag.titleAr}</th><th></th></tr></thead>
+      <tbody>${d.days.map(dayRow).join('')}${dayRow({ kind: 'holiday' })}</tbody></table></div></div>`)
+  const again = () => groupsAdminView()
+  const run = async (fn) => { try { await fn(); again() } catch (err) { alert(err.message) } }
+  for (const sec of $$('[data-group]')) {
+    const gid = Number(sec.dataset.group)
+    form($('.addmem', sec), async (x) => { await api('groups/members', 'POST', { group: gid, users: [Number(x.user)], role: x.role }); again() })
+    for (const b of $$('[data-rm]', sec)) b.onclick = () => confirm(t.ag.confirmRemoveMember) && run(() => api(`groups/members?group=${gid}&user=${b.dataset.rm}`, 'DELETE'))
+  }
+  const vals = (tr) => Object.fromEntries([...tr.querySelectorAll('input,select')].map((i) => [i.name, i.value]))
+  for (const tr of $$('[data-block]')) {
+    tr.querySelector('[name=preset]').onchange = (e) => {
+      const v = e.target.value
+      const [nl, ar] = v === 'none' ? ['', ''] : SUBJECT_PRESETS[Number(v)] || []
+      if (nl !== undefined) { tr.querySelector('[name=subject_nl]').value = nl; tr.querySelector('[name=subject_ar]').value = ar }
+    }
+    tr.querySelector('[data-save-block]').onclick = () => run(() => {
+      const x = vals(tr)
+      return tr.dataset.block ? api('groups/blocks', 'PATCH', { ...x, id: Number(tr.dataset.block) }) : api('groups/blocks', 'POST', { ...x, cohort: tr.dataset.cohort })
+    })
+    const del = tr.querySelector('[data-del-block]')
+    if (del) del.onclick = () => confirm(t.ag.confirmRemove) && run(() => api('groups/blocks?id=' + tr.dataset.block, 'DELETE'))
+  }
+  for (const tr of $$('[data-day]')) {
+    tr.querySelector('[data-save-day]').onclick = () => run(() => tr.dataset.day ? api('groups/days', 'PATCH', { ...vals(tr), id: Number(tr.dataset.day) }) : api('groups/days', 'POST', vals(tr)))
+    const del = tr.querySelector('[data-del-day]')
+    if (del) del.onclick = () => confirm(t.ag.confirmRemove) && run(() => api('groups/days?id=' + tr.dataset.day, 'DELETE'))
+  }
+}
+
 // ---------- routes ----------
 async function route () {
   clearInterval(timer)
@@ -669,6 +880,10 @@ async function route () {
       case 'poging': return await attemptView(Number(parts[1]))
       case 'resultaten': return await resultsView()
       case 'docent': return await teacherRoute(parts)
+      case 'agenda': return await agendaView(parts[1] || '')
+      case 'aanwezigheid': return await attendanceView(Number(parts[1]), Number(parts[2]), parts[3])
+      case 'groep': return await groupSummaryView(Number(parts[1]))
+      case 'groepen': return await groupsAdminView()
       case 'vragen': return await questionsView(parts[1] || '', parts[2] || 'draft')
       default: location.hash = '#/'
     }

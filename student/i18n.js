@@ -2,7 +2,7 @@
 export const STRINGS = {
   nl: {
     site: 'De Zuivere Bron', title: 'Studenten', loading: 'Laden…', error: 'Er ging iets mis', none: 'Nog niets.',
-    nav: { home: 'Overzicht', books: 'Mijn boeken', tests: 'Toetsen', results: 'Resultaten', teacher: 'Docent', questions: 'Vragen controleren' },
+    nav: { home: 'Overzicht', agenda: 'Agenda', groups: 'Groepen en rooster', books: 'Mijn boeken', tests: 'Toetsen', results: 'Resultaten', teacher: 'Docent', questions: 'Vragen controleren' },
     login: 'Inloggen', register: 'Account maken', logout: 'Uitloggen', email: 'E-mailadres', password: 'Wachtwoord', name: 'Naam',
     pwRule: 'Eisen: minstens 10 tekens. Letters, cijfers, spaties en leestekens mogen allemaal; een korte zin is makkelijk te onthouden.', pwLeft: 'Nog {n} tekens nodig', pwOk: '✓ Lang genoeg', passwordHelp: 'Minstens 10 tekens.', registerHelp: 'Na het aanmaken ben je meteen ingelogd en krijg je een bevestigingsmail met uitleg over inloggen en je studieomgeving. Als student heb je geen tweestapsverificatie nodig.', createAccount: 'Account maken', next: 'Verder', code: 'Code',
     twoStep: 'Tweestapsverificatie', rememberDevice: 'Dit apparaat 90 dagen onthouden (geen code nodig)', twoStepHelp: 'Vul de code uit je authenticator-app in.',
@@ -53,11 +53,35 @@ export const STRINGS = {
     status: 'Status', qstatus: { draft: 'Concept', published: 'Goedgekeurd', rejected: 'Afgewezen', all: 'Alle' },
     qtype: { mc: 'meerkeuze', tf: 'juist/onjuist', match: 'koppelen', open: 'open' },
     qcounts: 'Tussen haakjes: concept / goedgekeurd.', selectAll: 'Alles selecteren', selected: '{n} geselecteerd',
-    approve: 'Goedkeuren', toDraft: 'Terug naar concept', reject: 'Afwijzen', selectFirst: 'Selecteer eerst vragen.'
+    approve: 'Goedkeuren', toDraft: 'Terug naar concept', reject: 'Afwijzen', selectFirst: 'Selecteer eerst vragen.',
+    ag: {
+      title: 'Lesagenda', cohort: 'Groep {c}', noSubject: 'nog geen vak', absentN: '{n} afwezig', fillIn: 'aanwezigheid invullen',
+      addItem: 'Toets of huiswerk toevoegen', kind: 'Soort', group: 'Groep', date: 'Datum', lesson: 'Les', wholeDay: 'Hele dag (geen bepaalde les)',
+      titleNl: 'Omschrijving (Nederlands)', titleAr: 'Omschrijving (Arabisch)', infoNl: 'Toelichting (Nederlands)', infoAr: 'Toelichting (Arabisch)',
+      cancel: 'Annuleren', bothGroups: 'broeders en zusters', teacherOf: 'docent',
+      kinds: { test: 'Toets', homework: 'Huiswerk', note: 'Mededeling' },
+      dayKinds: { year: 'Schooljaar', holiday: 'Vakantie, geen les', exam: 'Examen', special: 'Bijzondere dag' },
+      status: { present: 'Aanwezig', absent: 'Afwezig', late: 'Te laat', excused: 'Afgemeld' },
+      noGroupTitle: 'Je bent nog niet ingedeeld', noGroupText: 'Zodra de beheerder je in een groep zet, zie je hier je lessen, examens, vakanties, toetsen en huiswerk.',
+      earlier: 'Eerder', thisWeek: 'Deze week', later: 'Later', weekOf: 'Week van {d}', noLessons: 'Geen lessen deze week.',
+      summaryOf: 'Aanwezigheid {g}', remove: 'Weghalen', confirmRemove: 'Weet je het zeker?',
+      attendance: 'Aanwezigheid', alreadySaved: 'Al ingevuld. Je kunt het nog aanpassen.', defaultPresent: 'Nog niet ingevuld. Iedereen staat op aanwezig; pas aan wie er niet was.',
+      allPresent: 'Iedereen aanwezig', statusCol: 'Aanwezigheid', note: 'Opmerking', saved: 'Opgeslagen.', noStudents: 'In deze groep zitten nog geen studenten.',
+      summaryHelp: 'Dit schooljaar tot vandaag: {n} lessen volgens het rooster, waarvan {r} met ingevulde aanwezigheid.',
+      adminHelp: 'Zet studenten en docenten in een groep, koppel vakken aan de blokken en houd vakanties en examens bij. Een student zit in één groep; toevoegen aan een andere groep verplaatst hem. Een docent kan aan meer groepen lesgeven.',
+      groupsTitle: 'Groepen', studentsN: '{n} studenten', teachers: 'Docenten', noneYet: 'nog niemand', chooseAccount: 'Kies een account…',
+      asStudent: 'als student', asTeacher: 'als docent', add: 'Toevoegen', confirmRemoveMember: 'Uit deze groep halen? De ingevulde aanwezigheid blijft bewaard.',
+      roles: { superadmin: 'superbeheerder', admin: 'beheerder', editor: 'redacteur', teacher: 'docent', student: 'student' },
+      scheduleTitle: 'Weekrooster', scheduleHelp: 'Elk blok geldt voor de broeders en de zusters van die groep. Kies een vak of typ zelf; leeg = nog geen vak. Tijden in Nederlandse tijd (uu:mm). De onderste regel is om een blok toe te voegen.',
+      day: 'Dag', from: 'Van', to: 'Tot', subject: 'Vak kiezen', subjectNl: 'Vak (Nederlands)', subjectAr: 'Vak (Arabisch)', pickSubject: '—',
+      yearTitle: 'Jaarrooster', yearHelp: 'Schooljaar (lessen alleen tussen begin en einde), vakanties (dan geen les), examens en bijzondere dagen. Laat "Tot" leeg voor één dag. De onderste regel is om iets toe te voegen.',
+      all: 'Alle groepen', homeTitle: 'Lesagenda', homeText: 'Bekijk je lessen, examens, vakanties, toetsen en huiswerk.', homeTeacher: 'Bekijk je lessen en vul de aanwezigheid in.'
+    }
   },
+
   ar: {
     site: 'النبع الصافي', title: 'الطلاب', loading: 'جارٍ التحميل…', error: 'حدث خطأ', none: 'لا شيء بعد.',
-    nav: { home: 'الرئيسية', books: 'كتبي', tests: 'الاختبارات', results: 'النتائج', teacher: 'المدرّس', questions: 'مراجعة الأسئلة' },
+    nav: { home: 'الرئيسية', agenda: 'الجدول', groups: 'المجموعات والجدول', books: 'كتبي', tests: 'الاختبارات', results: 'النتائج', teacher: 'المدرّس', questions: 'مراجعة الأسئلة' },
     login: 'تسجيل الدخول', register: 'إنشاء حساب', logout: 'تسجيل الخروج', email: 'البريد الإلكتروني', password: 'كلمة المرور', name: 'الاسم',
     pwRule: 'الشروط: عشرة أحرف على الأقل. يجوز استعمال الحروف والأرقام والمسافات وعلامات الترقيم، والجملة القصيرة سهلة الحفظ.', pwLeft: 'بقي {n} من الأحرف', pwOk: '✓ الطول كافٍ', passwordHelp: 'عشرة أحرف على الأقل.', registerHelp: 'بعد إنشاء الحساب تدخل مباشرة، وتصلك رسالة تأكيد فيها شرح لتسجيل الدخول وصفحة دراستك. لا يحتاج الطالب إلى التحقق بخطوتين.', createAccount: 'إنشاء حساب', next: 'متابعة', code: 'الرمز',
     twoStep: 'التحقق بخطوتين', rememberDevice: 'تذكّر هذا الجهاز 90 يومًا (دون رمز)', twoStepHelp: 'أدخل الرمز من تطبيق المصادقة.',
@@ -108,6 +132,29 @@ export const STRINGS = {
     status: 'الحالة', qstatus: { draft: 'مسودة', published: 'مقبول', rejected: 'مرفوض', all: 'الكل' },
     qtype: { mc: 'اختيار من متعدد', tf: 'صواب/خطأ', match: 'توصيل', open: 'مفتوح' },
     qcounts: 'بين القوسين: مسودة / مقبول.', selectAll: 'تحديد الكل', selected: 'حُدِّد {n}',
-    approve: 'قبول', toDraft: 'إرجاع إلى المسودة', reject: 'رفض', selectFirst: 'حدِّد أسئلة أولًا.'
+    approve: 'قبول', toDraft: 'إرجاع إلى المسودة', reject: 'رفض', selectFirst: 'حدِّد أسئلة أولًا.',
+    ag: {
+      title: 'الجدول الدراسي', cohort: 'المجموعة {c}', noSubject: 'لم تُحدَّد المادة بعد', absentN: '{n} غائب', fillIn: 'تسجيل الحضور',
+      addItem: 'إضافة اختبار أو واجب', kind: 'النوع', group: 'المجموعة', date: 'التاريخ', lesson: 'الحصة', wholeDay: 'اليوم كله (بلا حصة محددة)',
+      titleNl: 'الوصف (بالهولندية)', titleAr: 'الوصف (بالعربية)', infoNl: 'تفاصيل (بالهولندية)', infoAr: 'تفاصيل (بالعربية)',
+      cancel: 'إلغاء', bothGroups: 'الإخوة والأخوات', teacherOf: 'مدرّس',
+      kinds: { test: 'اختبار', homework: 'واجب', note: 'إعلان' },
+      dayKinds: { year: 'العام الدراسي', holiday: 'عطلة، لا دروس', exam: 'امتحان', special: 'يوم خاص' },
+      status: { present: 'حاضر', absent: 'غائب', late: 'متأخر', excused: 'معتذر' },
+      noGroupTitle: 'لم تُضَف إلى مجموعة بعد', noGroupText: 'حين يضيفك المشرف إلى مجموعة، سترى هنا دروسك والامتحانات والعطل والاختبارات والواجبات.',
+      earlier: 'السابق', thisWeek: 'هذا الأسبوع', later: 'التالي', weekOf: 'أسبوع {d}', noLessons: 'لا دروس في هذا الأسبوع.',
+      summaryOf: 'حضور {g}', remove: 'حذف', confirmRemove: 'هل أنت متأكد؟',
+      attendance: 'الحضور', alreadySaved: 'سُجِّل الحضور. يمكنك تعديله.', defaultPresent: 'لم يُسجَّل بعد. الجميع حاضر افتراضيًا؛ عدِّل لمن غاب.',
+      allPresent: 'الجميع حاضر', statusCol: 'الحضور', note: 'ملاحظة', saved: 'حُفظ.', noStudents: 'لا طلاب في هذه المجموعة بعد.',
+      summaryHelp: 'هذا العام الدراسي حتى اليوم: {n} حصة حسب الجدول، سُجِّل الحضور في {r} منها.',
+      adminHelp: 'أضف الطلاب والمدرّسين إلى المجموعات، واربط المواد بالحصص، وحدِّث العطل والامتحانات. يكون الطالب في مجموعة واحدة؛ إضافته إلى مجموعة أخرى تنقله إليها. ويمكن للمدرّس أن يدرّس أكثر من مجموعة.',
+      groupsTitle: 'المجموعات', studentsN: '{n} طالب', teachers: 'المدرّسون', noneYet: 'لا أحد بعد', chooseAccount: 'اختر حسابًا…',
+      asStudent: 'طالبًا', asTeacher: 'مدرّسًا', add: 'إضافة', confirmRemoveMember: 'إخراجه من هذه المجموعة؟ يبقى الحضور المسجَّل محفوظًا.',
+      roles: { superadmin: 'مشرف عام', admin: 'مشرف', editor: 'محرر', teacher: 'مدرّس', student: 'طالب' },
+      scheduleTitle: 'الجدول الأسبوعي', scheduleHelp: 'كل حصة تخص الإخوة والأخوات في تلك المجموعة. اختر مادة أو اكتبها؛ الفراغ = لم تُحدَّد بعد. الأوقات بتوقيت هولندا (سس:دد). السطر الأخير لإضافة حصة.',
+      day: 'اليوم', from: 'من', to: 'إلى', subject: 'اختيار المادة', subjectNl: 'المادة (بالهولندية)', subjectAr: 'المادة (بالعربية)', pickSubject: '—',
+      yearTitle: 'التقويم السنوي', yearHelp: 'العام الدراسي (الدروس بين بدايته ونهايته فقط)، والعطل (لا دروس فيها)، والامتحانات، والأيام الخاصة. اترك "إلى" فارغًا ليوم واحد. السطر الأخير للإضافة.',
+      all: 'كل المجموعات', homeTitle: 'الجدول الدراسي', homeText: 'اطّلع على دروسك والامتحانات والعطل والاختبارات والواجبات.', homeTeacher: 'اطّلع على حصصك وسجِّل الحضور.'
+    }
   }
 }
