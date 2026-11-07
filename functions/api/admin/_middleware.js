@@ -3,7 +3,7 @@
 import { currentUser } from '../../../lib/auth.js'
 import { fail } from '../../../lib/http.js'
 
-const OPEN = new Set(['login', 'login-2fa', 'accept-invite', 'reset-password', 'bootstrap', 'invitation'])
+const OPEN = new Set(['login', 'login-2fa', 'accept-invite', 'reset-password', 'forgot-password', 'bootstrap', 'invitation'])
 
 export async function onRequest (context) {
   const { request, data } = context

@@ -130,6 +130,8 @@ const genderPick = () => `<fieldset class="gender"><legend>${t.genderQ}</legend>
   <label class="inline"><input type="radio" name="gender" value="m" required> ${t.brother}</label>
   <label class="inline"><input type="radio" name="gender" value="f" required> ${t.sister}</label></fieldset>`
 function loginView (mode = 'login') {
+  const herstel = new URLSearchParams(location.search).get('herstel')
+  if (herstel) return resetView(herstel)
   render(`<div class="auth">
     <div class="intro"><h1>${t.welcomeTitle}</h1><p>${t.welcomeText}</p>
       <ul class="feat">${t.features.map((f) => `<li>${esc(f)}</li>`).join('')}</ul></div>
@@ -138,7 +140,8 @@ function loginView (mode = 'login') {
       ${mode === 'login'
         ? `<form id="f"><label>${t.email}<input name="email" type="email" autocomplete="username" required></label>
           <label>${t.password}<input name="password" type="password" autocomplete="current-password" required></label>
-          <button class="primary" type="submit">${t.login}</button><p class="msg"></p></form>`
+          <button class="primary" type="submit">${t.login}</button><p class="msg"></p>
+          <p><button type="button" class="link" id="forgot">${t.forgot}</button></p></form>`
         : `<form id="f"><label>${t.name}<input name="name" autocomplete="name" required maxlength="255"></label>
           <label>${t.email}<input name="email" type="email" autocomplete="email" required></label>
           <label>${t.password}<input name="password" type="password" autocomplete="new-password" minlength="10" required>${pwHint()}</label>
@@ -148,6 +151,7 @@ function loginView (mode = 'login') {
           <button class="primary" type="submit">${t.createAccount}</button><p class="msg"></p></form>`}
     </div></div>`)
   for (const b of $$('.tabs button')) b.onclick = () => loginView(b.dataset.m)
+  if ($('#forgot')) $('#forgot').onclick = () => forgotView($('#f').elements.email.value)
   form($('#f'), async (d) => {
     if (mode === 'register') {
       await api('register', 'POST', { ...d, lang })
@@ -156,6 +160,33 @@ function loginView (mode = 'login') {
     const r = await api('login', 'POST', d, '/api/admin/')
     if (r.needs2fa) return twoStepView()
     await start()
+  })
+}
+
+// "Wachtwoord vergeten?": de server antwoordt altijd hetzelfde, of het adres nu bestaat of niet.
+function forgotView (email = '') {
+  render(`<form class="card authcard narrow" id="f"><h1>${t.forgotTitle}</h1><p>${t.forgotHelp}</p>
+    <label>${t.email}<input name="email" type="email" autocomplete="username" required value="${esc(email)}"></label>
+    <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button class="primary" type="submit">${t.forgotSend}</button><p class="msg"></p>
+    <p><button type="button" class="link" id="back">${t.backToLogin}</button></p></form>`)
+  $('#back').onclick = () => loginView()
+  form($('#f'), async (d) => {
+    await api('forgot-password', 'POST', { ...d, lang, from: 'student' }, '/api/admin/')
+    return t.forgotSent
+  })
+}
+
+// Nieuw wachtwoord kiezen via de herstellink uit de mail (?herstel=...).
+function resetView (token) {
+  render(`<form class="card authcard narrow" id="f"><h1>${t.resetTitle}</h1>
+    <label>${t.newPassword}<input name="password" type="password" minlength="10" autocomplete="new-password" required>${pwHint()}</label>
+    <button class="primary" type="submit">${t.save}</button><p class="msg"></p></form>`)
+  form($('#f'), async (d) => {
+    await api('reset-password', 'POST', { ...d, token }, '/api/admin/')
+    history.replaceState(null, '', location.pathname + location.hash)
+    setTimeout(() => loginView(), 2500)
+    return t.resetDone
   })
 }
 

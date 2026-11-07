@@ -13,7 +13,8 @@ let me = null
 // Gedeelde taalkeuze voor de hele site (openbare pagina's, Studenten en Beheer).
 const cookieLang = () => { const m = document.cookie.match(/(?:^|;\s*)zb_lang=(nl|ar)(?:;|$)/); return m ? m[1] : null }
 const saveLang = (l) => { try { document.cookie = 'zb_lang=' + l + ';path=/;max-age=31536000;samesite=lax' } catch {} }
-let lang = cookieLang() || (localStorage.getItem('zb-admin-lang') === 'ar' ? 'ar' : 'nl')
+const urlLang = new URLSearchParams(location.search).get('lang')
+let lang = ['nl', 'ar'].includes(urlLang) ? urlLang : cookieLang() || (localStorage.getItem('zb-admin-lang') === 'ar' ? 'ar' : 'nl')
 let t = STRINGS[lang]
 
 // ---------- hulpfuncties ----------
@@ -148,7 +149,8 @@ async function loginView () {
     <h1>${t.login}</h1>
     <label>${t.email}<input name="email" type="email" autocomplete="username" required></label>
     <label>${t.password}<input name="password" type="password" autocomplete="current-password" required></label>
-    <button class="primary">${t.login}</button><p class="msg"></p></form>
+    <button class="primary">${t.login}</button><p class="msg"></p>
+    <p><button type="button" class="link" id="forgot">${t.forgot}</button></p></form>
     <form class="card narrow" id="boot" hidden><p>${t.firstAdmin}</p>
     <label>${t.email}<input name="email" type="email" required></label><button>${t.makeLink}</button><p class="msg"></p></form>`)
   form($('#f'), async (d) => {
@@ -156,10 +158,25 @@ async function loginView () {
     if (r.needs2fa) return twoStepView()
     await start()
   })
+  $('#forgot').onclick = () => forgotView($('#f').elements.email.value)
   form($('#boot'), async (d) => linkBox(t.inviteLink, (await api('bootstrap', 'POST', d)).link))
   // De eerste-beheerderknop verschijnt alleen als de server zegt dat het nog kan.
   fetch('/api/admin/bootstrap', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"email":""}' })
     .then((r) => { if (r.status === 400) $('#boot').hidden = false }).catch(() => {})
+}
+
+// "Wachtwoord vergeten?": de server antwoordt altijd hetzelfde, of het adres nu bestaat of niet.
+function forgotView (email = '') {
+  render(html`<form class="card narrow" id="f"><h1>${t.forgotTitle}</h1><p>${t.forgotHelp}</p>
+    <label>${t.email}<input name="email" type="email" autocomplete="username" required value="${esc(email)}"></label>
+    <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button class="primary">${t.forgotSend}</button><p class="msg"></p>
+    <p><button type="button" class="link" id="back">${t.backToLogin}</button></p></form>`)
+  $('#back').onclick = () => loginView()
+  form($('#f'), async (d) => {
+    await api('forgot-password', 'POST', { ...d, lang, from: 'beheer' })
+    return t.forgotSent
+  })
 }
 
 function twoStepView () {
@@ -199,8 +216,8 @@ function resetView (token) {
   form($('#f'), async (d) => {
     await api('reset-password', 'POST', { ...d, token })
     history.replaceState(null, '', '/beheer/')
-    setTimeout(loginView, 1200)
-    return t.done
+    setTimeout(loginView, 2500)
+    return t.resetDone
   })
 }
 
