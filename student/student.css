@@ -52,7 +52,7 @@ button.link{border:0;background:none;padding:0;color:var(--accent);text-decorati
 .row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 14px}
 @media (max-width:600px){.row2,.row3{grid-template-columns:minmax(0,1fr)}}
 .row2 .actions,.row2 .msg{grid-column:1/-1}
-.hp{position:absolute;left:-9999px;width:1px}
+.hp{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);opacity:0;pointer-events:none}
 
 /* Inloggen */
 .auth{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:center;margin-top:24px}

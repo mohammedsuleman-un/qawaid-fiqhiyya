@@ -2,7 +2,7 @@
 export const STRINGS = {
   nl: {
     appName: 'De Zuivere Bron', admin: 'Beheer', logout: 'Uitloggen', switchLang: 'العربية',
-    login: 'Inloggen', email: 'E-mailadres', password: 'Wachtwoord', code: 'Code uit je app', next: 'Verder',
+    login: 'Inloggen', forgot: 'Wachtwoord vergeten?', forgotTitle: 'Wachtwoord vergeten', forgotHelp: 'Vul het e-mailadres van je account in. Je krijgt dan een mail met een link om een nieuw wachtwoord te kiezen.', forgotSend: 'Herstellink sturen', forgotSent: 'Als er een account bij dit e-mailadres hoort, is er nu een mail met een herstellink onderweg. De link is 1 uur geldig. Kijk ook in je spammap.', backToLogin: 'Terug naar inloggen', resetDone: 'Je wachtwoord is gewijzigd. Log nu in met je nieuwe wachtwoord.', email: 'E-mailadres', password: 'Wachtwoord', code: 'Code uit je app', next: 'Verder',
     twoStepTitle: 'Tweestapsverificatie', rememberDevice: 'Dit apparaat 90 dagen onthouden (geen code nodig)', twoStepHelp: 'Open je authenticator-app en vul de zescijferige code in.',
     genderQ: 'Broeder of zuster?', brother: 'Broeder', sister: 'Zuster', acceptTitle: 'Account aanmaken', acceptHelp: 'Je bent uitgenodigd als {role} voor {email}. Kies je naam en een wachtwoord van minstens 10 tekens.',
     zadSeries: 'ZAD-reeks (4 niveaus × 7 vakken)', zadImport: 'ZAD-boek importeren', zadImported: '{lessons} lessen geïmporteerd: {versions} conceptversies, {terms} begrippen, {questions} vragen, {persons} nieuwe personen.', open: 'Openen',
@@ -66,7 +66,7 @@ export const STRINGS = {
   },
   ar: {
     appName: 'النبع الصافي', admin: 'لوحة الإدارة', logout: 'تسجيل الخروج', switchLang: 'Nederlands',
-    login: 'تسجيل الدخول', email: 'البريد الإلكتروني', password: 'كلمة المرور', code: 'الرمز من التطبيق', next: 'متابعة',
+    login: 'تسجيل الدخول', forgot: 'نسيت كلمة المرور؟', forgotTitle: 'نسيت كلمة المرور', forgotHelp: 'أدخل البريد الإلكتروني لحسابك، فتصلك رسالة فيها رابط لاختيار كلمة مرور جديدة.', forgotSend: 'إرسال رابط إعادة التعيين', forgotSent: 'إن كان لهذا البريد حساب فقد أُرسلت إليه الآن رسالة فيها رابط إعادة التعيين. الرابط صالح لمدة ساعة واحدة. انظر أيضًا في مجلد الرسائل غير المرغوب فيها.', backToLogin: 'العودة إلى تسجيل الدخول', resetDone: 'تم تغيير كلمة المرور. سجّل الدخول الآن بكلمة المرور الجديدة.', email: 'البريد الإلكتروني', password: 'كلمة المرور', code: 'الرمز من التطبيق', next: 'متابعة',
     twoStepTitle: 'التحقق بخطوتين', rememberDevice: 'تذكّر هذا الجهاز 90 يومًا (دون رمز)', twoStepHelp: 'افتح تطبيق المصادقة وأدخل الرمز المكوّن من ستة أرقام.',
     genderQ: 'أخ أم أخت؟', brother: 'أخ', sister: 'أخت', acceptTitle: 'إنشاء حساب', acceptHelp: 'تمت دعوتك بصفة {role} للبريد {email}. اختر اسمك وكلمة مرور لا تقل عن 10 أحرف.',
     zadSeries: 'أربعة مستويات في كل منها سبع مواد', zadImport: 'استيراد كتاب من زاد', zadImported: 'تم استيراد {lessons} درسًا: {versions} مسودة، {terms} مصطلحًا، {questions} سؤالًا، {persons} علمًا جديدًا.', open: 'فتح',

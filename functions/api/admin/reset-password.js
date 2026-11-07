@@ -1,4 +1,4 @@
-// POST {token, password}: nieuw wachtwoord via een herstellink (die een superbeheerder maakt).
+// POST {token, password}: nieuw wachtwoord via een herstellink (van een beheerder of via "Wachtwoord vergeten?").
 import { json, body, fail } from '../../../lib/http.js'
 import { hashPassword, passwordProblem, sha256 } from '../../../lib/auth.js'
 import { audit } from '../../../lib/audit.js'
