@@ -1,8 +1,8 @@
 // Studentenomgeving van De Zuivere Bron (NL/AR). Praat met /api/student; inloggen gaat
 // via /api/admin/login (zelfde account en sessie als de beheeromgeving). De server
 // controleert elk recht zelf; knoppen voor docenten worden alleen getoond als het mag.
-import { STRINGS } from './i18n.js?v=20261107d'
-import { serverError } from '/assets/server-errors.js?v=20261107d'
+import { STRINGS } from './i18n.js?v=20261107e'
+import { serverError } from '/assets/server-errors.js?v=20261107e'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -737,6 +737,7 @@ async function agendaView (from) {
       ${d.recorder && teachGroups.length ? `<button type="button" class="primary" id="addItem">+ ${t.ag.addItem}</button>` : ''}
       ${me.user.groupsManager ? `<a class="btn" href="#/groepen">${t.nav.groups}</a>` : ''}</div>
     ${instPicker(d)}${d.institutes?.length === 1 ? `<p class="muted small">${esc(instName(d.institute))}</p>` : ''}
+    ${agTabs('week', from || d.today)}
     <p class="muted">${d.groups.length ? d.groups.map((g) => `<span class="pill">${esc(groupName(g))}${g.teacher ? ' · ' + t.ag.teacherOf : ''}</span>`).join(' ') : ''}
       ${d.year.title_nl || d.year.title_ar ? ` · ${esc(tr(d.year, 'title'))}` : ''}</p>
     ${d.groups.length ? '' : `<div class="card empty"><h2>${t.ag.noGroupTitle}</h2><p>${t.ag.noGroupText}</p></div>`}
@@ -774,6 +775,102 @@ async function agendaView (from) {
     b.onclick = async () => { if (!confirm(t.ag.confirmRemove)) return; try { await api('agenda-items?id=' + b.dataset.delItem, 'DELETE'); agendaView(from) } catch (err) { alert(err.message) } }
   }
   bindInstPicker(() => agendaView(from))
+}
+
+// ---------- maand- en jaaroverzicht ----------
+// Wisselen tussen week, maand en jaar; date is de datum waar je bent.
+const agTabs = (view, date) => `<div class="agtabs" role="group" aria-label="${t.ag.viewLabel}">${[
+  ['week', '#/agenda/' + (date || '')], ['month', '#/agenda/maand/' + (date || '').slice(0, 7)], ['year', '#/agenda/jaar/' + (date || '')]
+].map(([v, h]) => `<a class="btn${v === view ? ' on' : ''}" href="${h}"${v === view ? ' aria-current="page"' : ''}>${t.ag.views[v]}</a>`).join('')}</div>`
+const instQ = () => agInst ? '&institute=' + agInst : ''
+const wdOf = (s) => ((new Date(s + 'T12:00:00Z').getUTCDay() + 6) % 7) + 1
+// Wat er op een dag is: vakanties en examens (ook midden in een vakantie), lessen, toetsen en huiswerk.
+function dayInfo (d, date) {
+  const x = d.calendar.find((c) => c.date === date)
+  const evs = d.days.filter((e) => e.kind !== 'year' && e.date_from <= date && (e.date_to || e.date_from) >= date)
+  return {
+    lessons: (x?.lessons || []).map((id) => d.blocks.find((b) => b.id === id)).filter(Boolean),
+    evs,
+    items: d.items.filter((i) => i.item_date === date),
+    absent: d.attendance.some((a) => a.date === date && a.status === 'absent')
+  }
+}
+const weekHead = () => [1, 2, 3, 4, 5, 6, 7].map((n) => `<span class="mwd">${esc(new Date(Date.UTC(2024, 0, n, 12)).toLocaleDateString(locale(), { weekday: 'short', timeZone: 'UTC' }))}</span>`).join('')
+// Alle dagen van een maand, aangevuld tot hele weken (maandag t/m zondag); null = buiten de maand.
+function monthCells (first) {
+  const last = addD(addD(first, 32).slice(0, 8) + '01', -1)
+  const cells = Array(wdOf(first) - 1).fill(null)
+  for (let s = first; s <= last; s = addD(s, 1)) cells.push(s)
+  while (cells.length % 7) cells.push(null)
+  return cells
+}
+const monthTitle = (first) => agDate(first, { month: 'long', year: 'numeric' })
+const agLegend = () => `<p class="aglegend small">${['lesson', 'holiday', 'exam', 'special', 'test', 'homework'].map((k) => `<span><i class="lg lg-${k}"></i>${esc(t.ag.legend[k])}</span>`).join('')}</p>`
+
+async function agendaMonthView (month) {
+  loading()
+  const first = /^\d{4}-\d{2}$/.test(month || '') ? month + '-01' : ''
+  const d = await api('agenda?view=month' + (first ? '&from=' + first : '') + instQ())
+  const many = new Set(d.groups.map((g) => g.cohort)).size > 1
+  const cell = (date) => {
+    if (!date) return '<span class="mcell out"></span>'
+    const x = dayInfo(d, date)
+    const k = ['exam', 'special', 'holiday'].find((kind) => x.evs.some((e) => e.kind === kind))
+    const dots = [...x.lessons.map(() => 'lesson'), ...x.items.map((i) => i.kind)].map((c) => `<i class="lg lg-${esc(c)}"></i>`).join('')
+    return `<a class="mcell${date === d.today ? ' now' : ''}${k ? ' m-' + k : ''}" href="#/agenda/${date}" title="${esc(agDate(date, { weekday: 'long', day: 'numeric', month: 'long' }))}">
+      <span class="mnum">${Number(date.slice(8))}</span>
+      ${x.evs.map((e) => `<span class="mev ev-${esc(e.kind)}" dir="auto">${esc(tr(e, 'title') || t.ag.dayKinds[e.kind])}</span>`).join('')}
+      ${x.lessons.map((b) => `<span class="mles"><b>${esc(b.start_time)}</b> <span dir="auto">${esc(tr(b, 'subject'))}</span>${many ? ` <small>${esc(cohortName(b.cohort))}</small>` : ''}</span>`).join('')}
+      ${x.items.map((i) => `<span class="mitem k-${esc(i.kind)}" dir="auto">${esc(t.ag.kinds[i.kind])}: ${esc(tr(i, 'title'))}</span>`).join('')}
+      ${x.absent ? `<span class="ags s-absent">${esc(t.ag.status.absent)}</span>` : ''}${dots ? `<span class="mdots">${dots}</span>` : ''}</a>`
+  }
+  render(`<div class="head"><h1>${t.ag.title}</h1>${me.user.groupsManager ? `<a class="btn" href="#/groepen">${t.nav.groups}</a>` : ''}</div>
+    ${instPicker(d)}${d.institutes?.length === 1 ? `<p class="muted small">${esc(instName(d.institute))}</p>` : ''}
+    ${agTabs('month', d.from)}
+    <div class="agnav"><a class="btn" href="#/agenda/maand/${addD(d.from, -1).slice(0, 7)}">${lang === 'ar' ? '→' : '←'} ${t.ag.prevMonth}</a>
+      <a class="btn" href="#/agenda/maand/${d.today.slice(0, 7)}">${t.ag.thisMonth}</a>
+      <a class="btn" href="#/agenda/maand/${addD(d.to, 1).slice(0, 7)}">${t.ag.nextMonth} ${lang === 'ar' ? '←' : '→'}</a></div>
+    ${d.groups.length ? `<section class="card"><h2>${esc(monthTitle(d.from))}</h2>
+      ${agLegend()}<div class="mgrid">${weekHead()}${monthCells(d.from).map(cell).join('')}</div>
+      <p class="muted small">${t.ag.clickDay}</p></section>` : `<div class="card empty"><h2>${t.ag.noGroupTitle}</h2><p>${t.ag.noGroupText}</p></div>`}`)
+  bindInstPicker(() => agendaMonthView(month))
+}
+
+async function agendaYearView (date) {
+  loading()
+  const d = await api('agenda?view=year' + (/^\d{4}-\d{2}-\d{2}$/.test(date || '') ? '&from=' + date : '') + instQ())
+  const months = []
+  for (let m = d.from.slice(0, 8) + '01'; m <= d.to; m = addD(m, 32).slice(0, 8) + '01') months.push(m)
+  const mini = (s) => {
+    if (!s) return '<span class="ycell out"></span>'
+    const x = dayInfo(d, s)
+    const k = ['exam', 'special', 'holiday'].find((kind) => x.evs.some((e) => e.kind === kind))
+    const cls = ['ycell', k ? 'y-' + k : x.lessons.length ? 'y-lesson' : '', s === d.today ? 'now' : '', s < d.from || s > d.to ? 'off' : ''].filter(Boolean).join(' ')
+    const marks = x.items.some((i) => i.kind === 'test') ? '<i class="ydot k-test"></i>' : x.items.some((i) => i.kind === 'homework') ? '<i class="ydot k-homework"></i>' : ''
+    const tip = [...x.evs.map((e) => tr(e, 'title') || t.ag.dayKinds[e.kind]), ...x.lessons.map((b) => b.start_time + ' ' + tr(b, 'subject')), ...x.items.map((i) => t.ag.kinds[i.kind] + ': ' + tr(i, 'title'))].join('\n')
+    return `<a class="${cls}" href="#/agenda/${s}" title="${esc(agDate(s, { weekday: 'long', day: 'numeric', month: 'long' }) + (tip ? '\n' + tip : ''))}">${Number(s.slice(8))}${marks}</a>`
+  }
+  const lessonsIn = (m) => { const end = addD(addD(m, 32).slice(0, 8) + '01', -1); return d.calendar.filter((c) => c.date >= m && c.date <= end).reduce((n, c) => n + c.lessons.length, 0) }
+  const evs = d.days.filter((e) => e.kind !== 'year').sort((a, b) => a.date_from.localeCompare(b.date_from))
+  const tests = d.items.filter((i) => i.kind === 'test')
+  const span = (e) => esc(agDate(e.date_from, { day: 'numeric', month: 'short' })) + (e.date_to && e.date_to !== e.date_from ? ' – ' + esc(agDate(e.date_to, { day: 'numeric', month: 'short' })) : '')
+  const yTitle = tr(d.year, 'title') || `${d.from.slice(0, 4)}–${d.to.slice(0, 4)}`
+  render(`<div class="head"><h1>${t.ag.title}</h1>${me.user.groupsManager ? `<a class="btn" href="#/groepen">${t.nav.groups}</a>` : ''}</div>
+    ${instPicker(d)}${d.institutes?.length === 1 ? `<p class="muted small">${esc(instName(d.institute))}</p>` : ''}
+    ${agTabs('year', d.today >= d.from && d.today <= d.to ? d.today : d.from)}
+    <div class="agnav"><a class="btn" href="#/agenda/jaar/${addD(d.from, -60)}">${lang === 'ar' ? '→' : '←'} ${t.ag.prevYear}</a>
+      <a class="btn" href="#/agenda/jaar/${d.today}">${t.ag.thisYear}</a>
+      <a class="btn" href="#/agenda/jaar/${addD(d.to, 30)}">${t.ag.nextYear} ${lang === 'ar' ? '←' : '→'}</a></div>
+    ${d.groups.length ? `<section class="card"><h2>${tr(d.year, 'title') ? esc(yTitle) : fmt(t.ag.yearOf, { y: esc(yTitle) })} <small class="muted">${esc(agDate(d.from, { day: 'numeric', month: 'long', year: 'numeric' }))} – ${esc(agDate(d.to, { day: 'numeric', month: 'long', year: 'numeric' }))}</small></h2>
+      ${agLegend()}
+      <div class="ymonths">${months.map((m) => `<div class="ymonth"><h3><a href="#/agenda/maand/${m.slice(0, 7)}">${esc(monthTitle(m))}</a> ${lessonsIn(m) ? `<small class="muted">${fmt(t.ag.lessonsN, { n: lessonsIn(m) })}</small>` : ''}</h3>
+        <div class="ygrid">${weekHead()}${monthCells(m).map(mini).join('')}</div></div>`).join('')}</div></section>
+    <div class="ylists"><section class="card"><h2>${t.ag.yearEvents}</h2>
+      ${evs.length ? `<ul class="ylist">${evs.map((e) => `<li><span class="agev ev-${esc(e.kind)}">${esc(t.ag.dayKinds[e.kind])}</span> <b dir="auto">${esc(tr(e, 'title'))}</b> <small class="muted">${span(e)}</small></li>`).join('')}</ul>` : `<p class="muted small">${t.none}</p>`}</section>
+      <section class="card"><h2>${t.ag.yearTests}</h2>
+      ${tests.length ? `<ul class="ylist">${tests.map((i) => `<li><a href="#/agenda/${i.item_date}">${esc(agDate(i.item_date, { day: 'numeric', month: 'short' }))}</a> <b dir="auto">${esc(tr(i, 'title'))}</b> <small class="muted">${esc(i.group_id ? groupName(d.groups.find((g) => g.id === i.group_id) || {}) : cohortName(i.cohort))}</small></li>`).join('')}</ul>` : `<p class="muted small">${t.none}</p>`}</section></div>`
+    : `<div class="card empty"><h2>${t.ag.noGroupTitle}</h2><p>${t.ag.noGroupText}</p></div>`}`)
+  bindInstPicker(() => agendaYearView(date))
 }
 
 // Presentielijst van één les.
@@ -903,7 +1000,7 @@ async function route () {
       case 'poging': return await attemptView(Number(parts[1]))
       case 'resultaten': return await resultsView()
       case 'docent': return await teacherRoute(parts)
-      case 'agenda': return await agendaView(parts[1] || '')
+      case 'agenda': return parts[1] === 'maand' ? await agendaMonthView(parts[2]) : parts[1] === 'jaar' ? await agendaYearView(parts[2]) : await agendaView(parts[1] || '')
       case 'aanwezigheid': return await attendanceView(Number(parts[1]), Number(parts[2]), parts[3])
       case 'groep': return await groupSummaryView(Number(parts[1]))
       case 'groepen': return await groupsAdminView()

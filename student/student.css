@@ -1,7 +1,7 @@
 /* Studentenomgeving: zelfde kleuren als de site (donkergroen en goud), NL (ltr) en AR (rtl). */
-:root{--green:#04403a;--gold:#b5873f;--danger:#a32a2a;--ok:#1b6e2a;--mid:#8a5a00;--warnbg:#fff6df}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--danger:#e07a7a;--ok:#8fd6a0;--mid:#e2c48f;--warnbg:#3a3218}}
-:root[data-theme="dark"]{--danger:#e07a7a;--ok:#8fd6a0;--mid:#e2c48f;--warnbg:#3a3218}
+:root{--hol:#2f6fb0;--green:#04403a;--gold:#b5873f;--danger:#a32a2a;--ok:#1b6e2a;--mid:#8a5a00;--warnbg:#fff6df}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--hol:#8db8e6;--danger:#e07a7a;--ok:#8fd6a0;--mid:#e2c48f;--warnbg:#3a3218}}
+:root[data-theme="dark"]{--hol:#8db8e6;--danger:#e07a7a;--ok:#8fd6a0;--mid:#e2c48f;--warnbg:#3a3218}
 html[dir="rtl"] body{direction:rtl}
 body.st{font-family:var(--body);font-size:15px;min-height:100vh}
 .st .wrap{max-width:1150px;margin:0 auto;padding:22px 16px 70px;outline:0}
@@ -219,6 +219,38 @@ ol.opts-rv,ul.opts-rv{margin:2px 0;padding-inline-start:22px;font-size:14px;line
 .tblwrap{overflow-x:auto}
 .tbl.edit input,.tbl.edit select{padding:5px 7px;font-size:14px;min-width:70px}
 .nowrap{white-space:nowrap}
+.agtabs{display:flex;gap:4px;margin:0 0 12px}
+.agtabs .btn.on{background:var(--green);color:#fff;border-color:var(--green)}
+.mgrid,.ygrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.mwd{font-size:12px;color:var(--mid);text-align:center;padding:2px 0}
+.mcell{display:flex;flex-direction:column;gap:2px;min-height:92px;padding:4px;border:1px solid var(--line);border-radius:8px;color:inherit;text-decoration:none;overflow:hidden;font-size:12px;line-height:1.25}
+.mcell:hover{border-color:var(--gold)}
+.mcell.out{border:0;background:none}
+.mcell.now{outline:2px solid var(--gold)}
+.mcell.m-holiday{background:color-mix(in srgb,var(--hol) 14%,transparent)}.mcell.m-exam{background:color-mix(in srgb,var(--danger) 12%,transparent)}.mcell.m-special{background:color-mix(in srgb,var(--gold) 14%,transparent)}
+.mdots{display:none;flex-wrap:wrap;gap:2px}.mdots .lg{width:7px;height:7px;border-radius:50%}.mdots .lg-lesson{background:var(--green)}.mdots .lg-note{background:var(--mid)}
+.mnum{font-weight:700;font-size:13px}
+.mev{border-radius:4px;padding:0 4px;background:var(--surface2);border-inline-start:3px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mev.ev-holiday{border-inline-start-color:var(--hol)}.mev.ev-exam{border-inline-start-color:var(--danger);font-weight:600}.mev.ev-special{border-inline-start-color:var(--gold)}
+.mles,.mitem{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mitem.k-test{color:var(--danger);font-weight:600}.mitem.k-homework{color:var(--green)}.mitem.k-note{color:var(--mid)}
+.ymonths{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.ymonth h3{font-size:15px;margin:0 0 4px}.ymonth h3 a{color:inherit}
+.ycell{position:relative;display:block;text-align:center;font-size:12px;padding:3px 0;border-radius:6px;color:inherit;text-decoration:none}
+.ycell.out{visibility:hidden}.ycell.off{opacity:.35}
+.ycell.y-lesson,.lg-lesson{background:color-mix(in srgb,var(--green) 20%,transparent)}
+.ycell.y-holiday,.lg-holiday{background:color-mix(in srgb,var(--hol) 28%,transparent)}
+.ycell.y-exam,.lg-exam{background:color-mix(in srgb,var(--danger) 35%,transparent);font-weight:700}
+.ycell.y-special,.lg-special{background:color-mix(in srgb,var(--gold) 35%,transparent)}
+.ycell.now{outline:2px solid var(--gold)}
+.ydot{position:absolute;top:2px;inset-inline-end:2px;width:6px;height:6px;border-radius:50%}
+.ydot.k-test,.lg-test{background:var(--danger)}.ydot.k-homework,.lg-homework{background:var(--green)}
+.aglegend{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 12px}.aglegend span{display:inline-flex;align-items:center;gap:5px}
+.lg{display:inline-block;width:14px;height:14px;border-radius:4px}.lg-test,.lg-homework{width:8px;height:8px;border-radius:50%}
+.ylists{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.ylist{list-style:none;padding:0;margin:0}.ylist li{padding:5px 0;border-top:1px solid var(--line)}.ylist li:first-child{border-top:0}
+.ylist .agev{display:inline-block;margin:0}
+@media (max-width:640px){.mcell{min-height:52px;padding:3px}.mles,.mev,.mitem,.mcell .ags{display:none}.mdots{display:flex}}
 @media (max-width:640px){.agday{grid-template-columns:minmax(0,1fr);gap:4px}.aglesson{flex-direction:column;gap:2px}.tbl.att td{display:block}.tbl.att thead{display:none}}
 .st [hidden]{display:none!important}
 .addmem select{max-width:100%;min-width:0}
