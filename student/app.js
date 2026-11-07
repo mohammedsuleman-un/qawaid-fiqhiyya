@@ -1,8 +1,8 @@
 // Studentenomgeving van De Zuivere Bron (NL/AR). Praat met /api/student; inloggen gaat
 // via /api/admin/login (zelfde account en sessie als de beheeromgeving). De server
 // controleert elk recht zelf; knoppen voor docenten worden alleen getoond als het mag.
-import { STRINGS } from './i18n.js?v=20261107b'
-import { serverError } from '/assets/server-errors.js?v=20261107b'
+import { STRINGS } from './i18n.js?v=20261107d'
+import { serverError } from '/assets/server-errors.js?v=20261107d'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -126,6 +126,9 @@ document.addEventListener('input', (e) => {
 })
 
 // ---------- inloggen en aanmelden ----------
+const genderPick = () => `<fieldset class="gender"><legend>${t.genderQ}</legend>
+  <label class="inline"><input type="radio" name="gender" value="m" required> ${t.brother}</label>
+  <label class="inline"><input type="radio" name="gender" value="f" required> ${t.sister}</label></fieldset>`
 function loginView (mode = 'login') {
   render(`<div class="auth">
     <div class="intro"><h1>${t.welcomeTitle}</h1><p>${t.welcomeText}</p>
@@ -139,6 +142,7 @@ function loginView (mode = 'login') {
         : `<form id="f"><label>${t.name}<input name="name" autocomplete="name" required maxlength="255"></label>
           <label>${t.email}<input name="email" type="email" autocomplete="email" required></label>
           <label>${t.password}<input name="password" type="password" autocomplete="new-password" minlength="10" required>${pwHint()}</label>
+          ${genderPick()}
           <p class="muted small">${t.registerHelp || ''}</p>
           <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
           <button class="primary" type="submit">${t.createAccount}</button><p class="msg"></p></form>`}
@@ -208,6 +212,7 @@ async function homeView () {
       <div class="tile"><b>${avg == null ? '–' : avg + '%'}</b><span>${t.tileScore}</span></div>
       <div class="tile"><b>${open.length}</b><span>${t.tileOpen}</span></div>
     </div>
+    ${me.user.student && !me.user.gender ? `<form class="card" id="gform"><h2>${t.genderQ}</h2><p class="muted small">${t.genderWhy}</p>${genderPick()}<button class="primary" type="submit">${t.save}</button><p class="msg"></p></form>` : ''}
     ${me.user.inGroup || me.user.groupsManager ? `<a class="card bookrow" href="#/agenda"><span class="bt">📅 ${t.ag.homeTitle}</span><span class="muted small">${me.user.recorder ? t.ag.homeTeacher : t.ag.homeText}</span></a>` : ''}
     ${books.length ? '' : `<div class="card empty"><h2>${t.noBooksTitle}</h2><p>${t.noBooksText}</p><a class="btn primary" href="#/boeken">${t.addBooks}</a></div>`}
     <div class="cols">
@@ -233,6 +238,8 @@ async function homeView () {
       </section>
     </div>`)
   bindTestButtons()
+  const gf = $('#gform')
+  if (gf) form(gf, async (x) => { await api('me', 'PATCH', { gender: x.gender }); homeView() })
 }
 
 const attemptRow = (a) => `<li><a href="#/poging/${a.id}">${scoreBadge(a.score, a.max_score)}
@@ -813,7 +820,7 @@ async function groupSummaryView (groupId) {
 async function groupsAdminView () {
   loading()
   const d = await api('groups' + (agInst ? '?institute=' + agInst : ''))
-  const userLabel = (u) => `${u.name || u.email} (${u.email})`
+  const userLabel = (u) => `${u.name || u.email} (${u.email})${u.gender ? ' · ' + (u.gender === 'm' ? t.brother : t.sister) : ''}`
   const roleLabel = (u) => u.roles.map((r) => t.ag.roles[r] || r).join(', ')
   const weekdays = [1, 2, 3, 4, 5, 6, 7]
   const dayRow = (x) => `<tr data-day="${x.id || ''}">
@@ -838,7 +845,7 @@ async function groupsAdminView () {
       return `<section class="card" data-group="${g.id}"><div class="th"><h3>${esc(groupName(g))}</h3><span class="pill">${fmt(t.ag.studentsN, { n: studs.length })}</span></div>
         <p class="small"><b>${t.ag.teachers}:</b> ${teach.map((m) => `<span class="mem">${esc(m.name || m.email)} <button type="button" class="link" title="${t.ag.remove}" data-rm="${m.id}">×</button></span>`).join(' ') || `<span class="muted">${t.ag.noneYet}</span>`}</p>
         <ul class="memlist">${studs.map((m) => `<li><span>${esc(m.name || m.email)} <small class="muted">${esc(m.email)}</small></span><button type="button" class="link" title="${t.ag.remove}" data-rm="${m.id}">×</button></li>`).join('') || `<li class="muted">${t.ag.noneYet}</li>`}</ul>
-        <form class="addmem"><select name="user" required><option value="">${t.ag.chooseAccount}</option>${d.users.filter((u) => !g.members.some((m) => m.id === u.id)).map((u) => `<option value="${u.id}">${esc(userLabel(u))}${u.roles.length ? ' · ' + esc(roleLabel(u)) : ''}</option>`).join('')}</select>
+        <form class="addmem"><select name="user" required><option value="">${t.ag.chooseAccount}</option>${d.users.filter((u) => !g.members.some((m) => m.id === u.id) && (!u.gender || u.gender === g.gender || !u.roles.every((r) => r === 'student'))).map((u) => `<option value="${u.id}">${esc(userLabel(u))}${u.roles.length ? ' · ' + esc(roleLabel(u)) : ''}</option>`).join('')}</select>
           <select name="role"><option value="student">${t.ag.asStudent}</option><option value="teacher">${t.ag.asTeacher}</option></select>
           <button type="submit" class="primary">${t.ag.add}</button><p class="msg"></p></form></section>`
     }).join('')}</div>

@@ -15,13 +15,15 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
   if (scope) { where.push(scope.sql); args.push(...scope.args) }
   if (p.get('institute')) { where.push('EXISTS (SELECT 1 FROM user_institutes x WHERE x.user_id = u.id AND x.institute_id = ?)'); args.push(Number(p.get('institute'))) }
   if (p.get('role')) { where.push('EXISTS (SELECT 1 FROM user_roles x WHERE x.user_id = u.id AND x.role_code = ?)'); args.push(p.get('role')) }
-  const users = await conn.execute(`SELECT u.id, u.email, u.name, u.status, u.totp_enabled, u.last_login_at, u.created_at,
+  const users = await conn.execute(`SELECT u.*, u.id, u.email, u.name, u.status, u.totp_enabled, u.last_login_at, u.created_at,
       (SELECT GROUP_CONCAT(role_code) FROM user_roles r WHERE r.user_id = u.id) AS roles
     FROM users u WHERE ${where.join(' AND ')} ORDER BY u.created_at LIMIT 500`, args)
   const extra = await conn.execute('SELECT user_id, permission_code, granted FROM user_permissions')
   const inst = await institutesOfUsers(conn, users.map((u) => Number(u.id)))
   return json(users.map((u) => ({
     ...u,
+    password_hash: undefined, totp_secret: undefined,
+    gender: u.gender || null,
     institutes: inst.get(Number(u.id)) || [],
     roles: u.roles ? u.roles.split(',') : [],
     extra: extra.filter((e) => Number(e.user_id) === Number(u.id)).map((e) => ({ code: e.permission_code, granted: Number(e.granted) === 1 }))

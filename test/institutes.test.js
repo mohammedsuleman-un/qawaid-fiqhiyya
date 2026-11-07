@@ -241,3 +241,23 @@ test('instituutpagina: studenten koppelen en loskoppelen', async () => {
   const [{ n }] = await conn.execute('SELECT COUNT(*) AS n FROM class_group_members m JOIN class_groups g ON g.id = m.group_id WHERE m.user_id = ? AND g.institute_id = ?', [s.student1.id, s.inst2])
   assert.equal(Number(n), 0)
 })
+
+test('broeder of zuster: verplicht bij aanmelden, alleen in de juiste groep', async () => {
+  const register = await import('../functions/api/student/register.js')
+  const no = await call(conn, 'POST', '/api/student/register', register, { body: { name: 'Zaid', email: 'zaid@example.org', password: 'een-lang-wachtwoord' } })
+  assert.equal(no.status, 400)
+  const ok = await call(conn, 'POST', '/api/student/register', register, { body: { name: 'Zaid', email: 'zaid@example.org', password: 'een-lang-wachtwoord', gender: 'm' } })
+  assert.equal(ok.status, 200, JSON.stringify(ok.data))
+  const [z] = await conn.execute("SELECT id, gender FROM users WHERE email = 'zaid@example.org'")
+  assert.equal(z.gender, 'm')
+  const wrong = await call(conn, 'POST', '/api/student/groups/members', members, { cookie: s.admin1.cookie, body: { group: s.g1['A-f'], users: [Number(z.id)], role: 'student' } })
+  assert.equal(wrong.status, 400)
+  const right = await call(conn, 'POST', '/api/student/groups/members', members, { cookie: s.admin1.cookie, body: { group: s.g1['A-m'], users: [Number(z.id)], role: 'student' } })
+  assert.equal(right.status, 200)
+  // De student ziet alleen zijn eigen groep; een docent van het instituut ziet alle groepen.
+  const st = await call(conn, 'GET', '/api/student/agenda?from=2027-01-04&weeks=1&institute=1', agenda, { cookie: ok.cookie })
+  assert.deepEqual(st.data.groups.map((g) => g.code), ['A-m'])
+  const t1 = await call(conn, 'GET', '/api/student/agenda?from=2027-01-04&weeks=1&institute=1', agenda, { cookie: s.teacher1.cookie })
+  assert.equal(t1.data.groups.length, 4)
+  assert.equal(t1.data.groups.filter((g) => g.canTeach).length, 0)
+})

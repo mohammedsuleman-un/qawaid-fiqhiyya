@@ -5,7 +5,7 @@
 // Met lessen per dag, vakanties, examens, bijzondere dagen, toetsen en huiswerk, en de
 // aanwezigheid (eigen status voor studenten; ingevuld of niet voor docenten).
 import { json } from '../../../lib/http.js'
-import { allInstitutes } from '../../../lib/institutes.js'
+import { allInstitutes, myInstituteIds } from '../../../lib/institutes.js'
 import { allGroups, allBlocks, allDays, myGroups, managedInstitutes, canRecord, canTeach, schoolYear, calendar, today, monday, addDays, isoDate, marks } from '../../../lib/agenda.js'
 
 export async function onRequestGet ({ request, data: { conn, user } }) {
@@ -15,15 +15,18 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
   const weeks = Math.min(Math.max(parseInt(url.searchParams.get('weeks') || '4', 10) || 4, 1), 12)
   const to = addDays(from, weeks * 7 - 1)
   const managed = await managedInstitutes(conn, user)
+  // Docenten van een instituut zien alle lessen van dat instituut; aanwezigheid invullen
+  // blijft voor hun eigen groepen. Studenten zien alleen hun eigen groep.
+  const teaching = canRecord(user) ? await myInstituteIds(conn, user) : []
   const mine = await myGroups(conn, user)
   const groups = await allGroups(conn)
   const ownGroups = groups.filter((g) => mine.student.includes(g.id) || mine.teacher.includes(g.id))
-  const instIds = new Set([...ownGroups.map((g) => g.institute_id), ...managed])
+  const instIds = new Set([...ownGroups.map((g) => g.institute_id), ...managed, ...teaching])
   const institutes = instIds.size ? (await allInstitutes(conn)).filter((i) => instIds.has(i.id)) : []
   const want = Number(url.searchParams.get('institute'))
   const inst = institutes.find((i) => i.id === want) || institutes.find((i) => ownGroups.some((g) => g.institute_id === i.id)) || institutes[0] || null
   const manager = !!inst && managed.includes(inst.id)
-  const visible = inst ? groups.filter((g) => g.institute_id === inst.id && (manager || ownGroups.includes(g))) : []
+  const visible = inst ? groups.filter((g) => g.institute_id === inst.id && (manager || teaching.includes(inst.id) || ownGroups.includes(g))) : []
   const cohorts = [...new Set(visible.map((g) => g.cohort))]
   const blocks = inst ? (await allBlocks(conn, inst.id)).filter((b) => cohorts.includes(b.cohort)) : []
   const days = inst ? await allDays(conn, inst.id) : []

@@ -17,8 +17,10 @@ export async function onRequestPost ({ request, data: { conn, user } }) {
   const ids = [...new Set((Array.isArray(input.users) ? input.users : [input.users]).map(Number).filter((n) => Number.isInteger(n) && n > 0))].slice(0, 200)
   if (!ids.length) fail(400, 'Kies minstens één account')
   const scope = await userScope(conn, user)
-  const found = await conn.execute(`SELECT u.id FROM users u WHERE u.status = 'active' AND u.id IN (${marks(ids)})${scope ? ' AND ' + scope.sql : ''}`, [...ids, ...(scope ? scope.args : [])])
+  const found = await conn.execute(`SELECT u.* FROM users u WHERE u.status = 'active' AND u.id IN (${marks(ids)})${scope ? ' AND ' + scope.sql : ''}`, [...ids, ...(scope ? scope.args : [])])
   if (found.length !== ids.length) fail(400, 'Onbekend account')
+  // Broeders alleen in een broedergroep, zusters alleen in een zustergroep.
+  if (role === 'student' && found.some((u) => u.gender && u.gender !== group.gender)) fail(400, group.gender === 'm' ? 'Dit is een groep voor broeders' : 'Dit is een groep voor zusters')
   if (role === 'student') {
     await conn.execute(`DELETE FROM class_group_members WHERE role = 'student' AND user_id IN (${marks(ids)})
       AND group_id IN (SELECT id FROM class_groups WHERE institute_id = ?)`, [...ids, group.institute_id])
