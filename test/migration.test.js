@@ -165,7 +165,7 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   }
   const cards = await conn.execute(`SELECT b.slug, COUNT(*) AS n FROM content_translations t JOIN content_versions v ON v.id = t.published_version_id
     JOIN chapters c ON c.id = t.entity_id JOIN books b ON b.id = c.book_id WHERE t.entity_type = 'study' AND v.body LIKE '%"scope":"unit"%' GROUP BY b.slug ORDER BY b.slug`)
-  assert.deepEqual(cards.map((r) => [r.slug, Number(r.n)]), [['talkhis-jam-al-jawami', 20], ['zad-n1-aqeedah', 8], ['zad-n1-arabic', 10], ['zad-n1-fiqh', 12], ['zad-n1-hadith', 8], ['zad-n1-seerah', 10], ['zad-n1-tafsir', 8], ['zad-n1-tarbiyah', 12], ['zad-n2-aqeedah', 10], ['zad-n2-arabic', 6], ['zad-n2-fiqh', 16], ['zad-n2-hadith', 8], ['zad-n2-seerah', 8], ['zad-n2-tafsir', 12], ['zad-n2-tarbiyah', 24], ['zad-n3-aqeedah', 12], ['zad-n3-arabic', 8], ['zad-n3-fiqh', 10], ['zad-n3-hadith', 8], ['zad-n3-seerah', 8], ['zad-n3-tafsir', 20], ['zad-n3-tarbiyah', 10], ['zad-n4-aqeedah', 12], ['zad-n4-arabic', 14], ['zad-n4-fiqh', 16], ['zad-n4-hadith', 8], ['zad-n4-seerah', 26], ['zad-n4-tafsir', 42], ['zad-n4-tarbiyah', 20]]) // per eenheid AR en NL
+  assert.deepEqual(cards.map((r) => [r.slug, Number(r.n)]), [['al-ashbah-wan-nazair', 2], ['talkhis-jam-al-jawami', 20], ['zad-n1-aqeedah', 8], ['zad-n1-arabic', 10], ['zad-n1-fiqh', 12], ['zad-n1-hadith', 8], ['zad-n1-seerah', 10], ['zad-n1-tafsir', 8], ['zad-n1-tarbiyah', 12], ['zad-n2-aqeedah', 10], ['zad-n2-arabic', 6], ['zad-n2-fiqh', 16], ['zad-n2-hadith', 8], ['zad-n2-seerah', 8], ['zad-n2-tafsir', 12], ['zad-n2-tarbiyah', 24], ['zad-n3-aqeedah', 12], ['zad-n3-arabic', 8], ['zad-n3-fiqh', 10], ['zad-n3-hadith', 8], ['zad-n3-seerah', 8], ['zad-n3-tafsir', 20], ['zad-n3-tarbiyah', 10], ['zad-n4-aqeedah', 12], ['zad-n4-arabic', 14], ['zad-n4-fiqh', 16], ['zad-n4-hadith', 8], ['zad-n4-seerah', 26], ['zad-n4-tafsir', 42], ['zad-n4-tarbiyah', 20]]) // per eenheid AR en NL
   // Niveau 3 en Tafsir (4): geïmporteerd en gepubliceerd (Mohammed, 29 okt 2026: "Je mag ze publiceren"); daarna Hadith (4) en Sīra (4) ("Je mag alles publiceren").
   const n3 = await conn.execute(`SELECT b.slug, b.status, (SELECT COUNT(*) FROM chapters c WHERE c.book_id = b.id AND c.archived_at IS NULL) AS lessons,
     (SELECT COUNT(*) FROM chapters c JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id
@@ -178,4 +178,10 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   const [ahkam] = await conn.execute("SELECT b.status, (SELECT COUNT(*) FROM chapters c WHERE c.book_id = b.id) AS n FROM books b WHERE b.slug = 'talkhis-ahkam-al-quran'")
   assert.equal(ahkam.status, 'published')
   assert.ok(Number(ahkam.n) > 40)
+  // الأشباه والنظائر (migratie 171): القاعدة الثانية in 13 onderdelen, alle in eenheid 2, blz. 50–76.
+  const ashbah = await conn.execute(`SELECT c.slug, c.unit, c.page_start FROM chapters c JOIN books b ON b.id = c.book_id
+    WHERE b.slug = 'al-ashbah-wan-nazair' AND b.status = 'published' ORDER BY c.position`)
+  assert.equal(ashbah.length, 13)
+  assert.ok(ashbah.every((c) => Number(c.unit) === 2))
+  assert.deepEqual([Number(ashbah[0].page_start), Number(ashbah[12].page_start)], [50, 72])
 })
