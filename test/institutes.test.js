@@ -23,6 +23,8 @@ import * as blocks from '../functions/api/student/groups/blocks.js'
 import * as days from '../functions/api/student/groups/days.js'
 import * as agenda from '../functions/api/student/agenda.js'
 import * as items from '../functions/api/student/agenda-items.js'
+import * as organizations from '../functions/api/admin/organizations/index.js'
+import * as orgMembers from '../functions/api/admin/organizations/[id]/members.js'
 
 const conn = await freshDb()
 after(() => conn.close())
@@ -282,4 +284,40 @@ test('broeder of zuster: verplicht bij aanmelden, alleen in de juiste groep', as
   const t1 = await call(conn, 'GET', '/api/student/agenda?from=2027-01-04&weeks=1&institute=1', agenda, { cookie: s.teacher1.cookie })
   assert.equal(t1.data.groups.length, 4)
   assert.equal(t1.data.groups.filter((g) => g.canTeach).length, 0)
+})
+
+test('organisaties: alleen de superbeheerder; beheerders zien alleen de instituten van hun organisatie', async () => {
+  const no = await call(conn, 'GET', '/api/admin/organizations', organizations, { cookie: s.admin1.cookie })
+  assert.equal(no.status, 403)
+  const list = await call(conn, 'GET', '/api/admin/organizations', organizations, { cookie: s.boss.cookie })
+  assert.equal(list.status, 200, JSON.stringify(list.data))
+  assert.deepEqual(list.data.organizations.find((o) => o.name_nl === 'Instituut Ibn Al-Qayyim').institutes, [1])
+  const made = await call(conn, 'POST', '/api/admin/organizations', organizations, { cookie: s.boss.cookie, body: { name_nl: 'Organisatie Twee', name_ar: 'المؤسسة الثانية' } })
+  assert.equal(made.status, 200, JSON.stringify(made.data))
+  const org = made.data.id
+  const noMove = await call(conn, 'PATCH', '/api/admin/institutes/x', institute, { cookie: s.admin2.cookie, params: { id: String(s.inst2) }, body: { name_nl: 'Instituut Twee', name_ar: 'المعهد الثاني', organization: org } })
+  assert.equal(noMove.status, 403)
+  const move = await call(conn, 'PATCH', '/api/admin/institutes/x', institute, { cookie: s.boss.cookie, params: { id: String(s.inst2) }, body: { name_nl: 'Instituut Twee', name_ar: 'المعهد الثاني', organization: org } })
+  assert.equal(move.status, 200, JSON.stringify(move.data))
+  const third = await call(conn, 'POST', '/api/admin/institutes', institutes, { cookie: s.boss.cookie, body: { slug: 'derde', name_nl: 'Derde', name_ar: 'الثالث', organization: org } })
+  assert.equal(third.status, 200, JSON.stringify(third.data))
+  // Een beheerder alleen via de organisatie gekoppeld: ziet beide instituten van de organisatie.
+  s.orgAdmin = await account('orgbeheer@example.org', 'admin')
+  const link = await call(conn, 'POST', '/api/admin/organizations/x/members', orgMembers, { cookie: s.boss.cookie, params: { id: String(org) }, body: { users: [s.orgAdmin.id] } })
+  assert.equal(link.status, 200, JSON.stringify(link.data))
+  const mine = await call(conn, 'GET', '/api/admin/institutes', institutes, { cookie: s.orgAdmin.cookie })
+  assert.deepEqual(mine.data.map((i) => i.id).sort(), [s.inst2, third.data.id].sort())
+  const other = await call(conn, 'GET', '/api/admin/institutes', institutes, { cookie: s.admin1.cookie })
+  assert.deepEqual(other.data.map((i) => i.id), [1])
+  const u1 = await call(conn, 'GET', '/api/admin/users', users, { cookie: s.admin1.cookie })
+  assert.ok(!u1.data.some((u) => u.email === 'orgbeheer@example.org'))
+  const uo = await call(conn, 'GET', '/api/admin/users', users, { cookie: s.orgAdmin.cookie })
+  assert.ok(uo.data.some((u) => u.email === 'beheer2@example.org'))
+  assert.ok(!uo.data.some((u) => u.email === 'beheer1@example.org'))
+  const g = await call(conn, 'GET', '/api/student/groups?institute=1', groups, { cookie: s.orgAdmin.cookie })
+  assert.ok(g.status === 403 || g.data.institute?.id !== 1, JSON.stringify(g.data).slice(0, 200))
+  const unlink = await call(conn, 'DELETE', '/api/admin/organizations/x/members?user=' + s.orgAdmin.id, orgMembers, { cookie: s.boss.cookie, params: { id: String(org) }, body: {} })
+  assert.equal(unlink.status, 200)
+  const none = await call(conn, 'GET', '/api/admin/institutes', institutes, { cookie: s.orgAdmin.cookie })
+  assert.deepEqual(none.data, [])
 })
