@@ -1,8 +1,8 @@
 // Studentenomgeving van De Zuivere Bron (NL/AR). Praat met /api/student; inloggen gaat
 // via /api/admin/login (zelfde account en sessie als de beheeromgeving). De server
 // controleert elk recht zelf; knoppen voor docenten worden alleen getoond als het mag.
-import { STRINGS } from './i18n.js?v=20261108c'
-import { serverError } from '/assets/server-errors.js?v=20261108c'
+import { STRINGS } from './i18n.js?v=20261108d'
+import { serverError } from '/assets/server-errors.js?v=20261108d'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -699,10 +699,24 @@ async function questionsView (slug, status = 'draft') {
 let agInst = Number(store.get('zb-institute')) || 0
 const setInst = (id) => { agInst = Number(id) || 0; store.set('zb-institute', agInst ? String(agInst) : null) }
 const instName = (i) => i ? tr(i, 'name') : ''
-const instPicker = (d) => d.institutes && d.institutes.length > 1
-  ? `<label class="instpick">${t.ag.institute} <select id="instPick">${d.institutes.map((i) => `<option value="${i.id}"${i.id === d.institute?.id ? ' selected' : ''}>${esc(instName(i))}</option>`).join('')}</select></label>`
-  : ''
-const bindInstPicker = (again) => { const sel = document.getElementById('instPick'); if (sel) sel.onchange = () => { setInst(sel.value); again() } }
+// Bij meer organisaties (superbeheerder) eerst een organisatie, dan de instituten daarvan.
+const orgsOf = (d) => (d.organizations || []).filter((o) => (d.institutes || []).some((i) => i.organization_id === o.id))
+const instPicker = (d) => {
+  pickData = d
+  const orgs = orgsOf(d)
+  const org = orgs.length > 1 ? d.institute?.organization_id : null
+  const insts = (d.institutes || []).filter((i) => !org || i.organization_id === org)
+  const orgSel = orgs.length > 1 ? `<label class="instpick">${t.ag.organization} <select id="orgPick">${orgs.map((o) => `<option value="${o.id}"${o.id === org ? ' selected' : ''}>${esc(tr(o, 'name'))}</option>`).join('')}</select></label> ` : ''
+  const instSel = insts.length > 1 ? `<label class="instpick">${t.ag.institute} <select id="instPick">${insts.map((i) => `<option value="${i.id}"${i.id === d.institute?.id ? ' selected' : ''}>${esc(instName(i))}</option>`).join('')}</select></label>` : ''
+  return orgSel || instSel ? orgSel + instSel + (orgSel && !instSel ? ` <b class="muted small">${esc(instName(d.institute))}</b>` : '') : ''
+}
+let pickData = null
+const bindInstPicker = (again) => {
+  const sel = document.getElementById('instPick')
+  if (sel) sel.onchange = () => { setInst(sel.value); again() }
+  const os = document.getElementById('orgPick')
+  if (os && pickData) os.onchange = () => { const first = pickData.institutes.find((i) => i.organization_id === Number(os.value)); setInst(first ? first.id : 0); again() }
+}
 const agDate = (s, opts = { weekday: 'short', day: 'numeric', month: 'short' }) => new Date(s + 'T12:00:00').toLocaleDateString(locale(), opts)
 const dayName = (n) => new Date(Date.UTC(2024, 0, n, 12)).toLocaleDateString(locale(), { weekday: 'long', timeZone: 'UTC' })
 const tr = (x, base) => x[base + '_' + lang] || x[base + '_' + (lang === 'ar' ? 'nl' : 'ar')] || ''

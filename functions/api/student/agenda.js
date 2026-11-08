@@ -6,7 +6,7 @@
 // Met lessen per dag, vakanties, examens, bijzondere dagen, toetsen en huiswerk, en de
 // aanwezigheid (eigen status voor studenten; ingevuld of niet voor docenten).
 import { json } from '../../../lib/http.js'
-import { allInstitutes, myInstituteIds } from '../../../lib/institutes.js'
+import { allInstitutes, organizationsByIds, myInstituteIds } from '../../../lib/institutes.js'
 import { allGroups, allBlocks, allDays, myGroups, managedInstitutes, canRecord, canTeach, schoolYear, calendar, today, monday, addDays, isoDate, marks } from '../../../lib/agenda.js'
 
 export async function onRequestGet ({ request, data: { conn, user } }) {
@@ -72,7 +72,7 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
       .map((r) => ({ group_id: Number(r.group_id), block_id: Number(r.block_id), date: String(r.lesson_date).slice(0, 10), n: Number(r.n), absent: Number(r.absent) }))
   }
   return json({
-    today: now, view, from, to, weeks, year, manager, institute: inst, institutes, recorder: canRecord(user) || manager,
+    today: now, view, from, to, weeks, year, manager, institute: inst, institutes, organizations: await organizationsByIds(conn, institutes.map((i) => i.organization_id)), recorder: canRecord(user) || manager,
     groups: visible.map((g) => ({ ...g, student: mine.student.includes(g.id), teacher: mine.teacher.includes(g.id), canTeach: teachIds.includes(g.id) })),
     blocks, days: days.filter((d) => usedDays.has(d.id)), calendar: cal, items, attendance: own, recorded
   })

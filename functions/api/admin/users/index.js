@@ -1,8 +1,8 @@
-// GET ?q=&role=&status=&institute=: gebruikers zoeken en filteren (users.manage), met hun
+// GET ?q=&role=&status=&institute=&organization=: gebruikers zoeken en filteren (users.manage), met hun
 // instituten. Wie niet alle instituten ziet, ziet alleen gebruikers van zijn instituten en
 // gebruikers die nog nergens bij horen.
 import { json, need } from '../../../../lib/http.js'
-import { userScope, institutesOfUsers } from '../../../../lib/institutes.js'
+import { userScope, institutesOfUsers, inOrganization, hasOrganizations } from '../../../../lib/institutes.js'
 
 export async function onRequestGet ({ request, data: { conn, user } }) {
   need(user, 'users.manage')
@@ -14,6 +14,8 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
   const scope = await userScope(conn, user)
   if (scope) { where.push(scope.sql); args.push(...scope.args) }
   if (p.get('institute')) { where.push('EXISTS (SELECT 1 FROM user_institutes x WHERE x.user_id = u.id AND x.institute_id = ?)'); args.push(Number(p.get('institute'))) }
+  // Eén organisatie (de superbeheerder kiest die bovenaan Gebruikers & rollen).
+  if (Number(p.get('organization')) && await hasOrganizations(conn)) { const o = Number(p.get('organization')); where.push(inOrganization('u')); args.push(o, o, o) }
   if (p.get('role')) { where.push('EXISTS (SELECT 1 FROM user_roles x WHERE x.user_id = u.id AND x.role_code = ?)'); args.push(p.get('role')) }
   const users = await conn.execute(`SELECT u.*, u.id, u.email, u.name, u.status, u.totp_enabled, u.last_login_at, u.created_at,
       (SELECT GROUP_CONCAT(role_code) FROM user_roles r WHERE r.user_id = u.id) AS roles

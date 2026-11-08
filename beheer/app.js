@@ -1,10 +1,10 @@
 // Beheeromgeving van De Zuivere Bron. Praat alleen met /api/admin; de sessie staat in
 // een HttpOnly-cookie. Knoppen worden verborgen als je een recht mist, maar de server
 // controleert elk recht zelf opnieuw.
-import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261108c'
+import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261108d'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261108c'
+import { serverError } from '/assets/server-errors.js?v=20261108d'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -32,7 +32,7 @@ const stripTags = (s) => String(s ?? '').replace(/<[^>]+>/g, '')
 const instName = (i) => i ? (lang === 'ar' ? i.name_ar : i.name_nl) : ''
 const myInst = () => me?.institutes || []
 const instNames = (ids = []) => ids.map((id) => myInst().find((i) => i.id === id)).filter(Boolean).map(instName).join(' · ')
-const instChecks = (selected = []) => myInst().map((i) => `<label class="inline"><input type="checkbox" data-inst value="${i.id}"${selected.includes(i.id) ? ' checked' : ''}> ${esc(instName(i))}</label>`).join(' ')
+const instChecks = (selected = [], list = myInst()) => list.map((i) => `<label class="inline"><input type="checkbox" data-inst value="${i.id}"${selected.includes(i.id) ? ' checked' : ''}> ${esc(instName(i))}</label>`).join(' ')
 const checkedInst = (root) => [...root.querySelectorAll('[data-inst]:checked')].map((x) => Number(x.value))
 
 async function api (path, method = 'GET', data) {
@@ -683,25 +683,37 @@ const USER_GROUPS = {
 }
 
 async function usersView () {
-  const [allUsers, invites, roles] = await Promise.all([api('users'), api('invitations'), api('roles')])
   const isSuper = me.roles.includes('superadmin')
   const q = new URLSearchParams(location.hash.split('?')[1] || '')
+  // Superbeheerder met meer organisaties: kies bovenaan een organisatie (0 = alle). Onthouden.
+  const orgs = isSuper ? (me.organizations || []) : []
+  let saved = 0
+  try { saved = Number(localStorage.getItem('zb-admin-org')) || 0 } catch (e) {}
+  const want = q.has('org') ? Number(q.get('org')) : saved
+  const org = orgs.length > 1 && orgs.some((o) => o.id === want) ? want : 0
+  try { localStorage.setItem('zb-admin-org', String(org)) } catch (e) {}
+  const orgQ = org ? '&org=' + org : ''
+  const orgInsts = org ? myInst().filter((i) => i.organization_id === org) : myInst()
+  const [allUsers, allInvites, roles] = await Promise.all([api('users' + (org ? '?organization=' + org : '')), api('invitations'), api('roles')])
+  const invites = org ? allInvites.filter((i) => i.organization === org || i.institutes.some((x) => orgInsts.some((o) => o.id === x))) : allInvites
   const group = USER_GROUPS[q.get('groep')] ? q.get('groep') : 'staff'
   const users = allUsers.filter(USER_GROUPS[group])
-  const tabs = `<nav class="tabs">${Object.keys(USER_GROUPS).map((g) => `<a href="#/gebruikers?groep=${g}"${g === group ? ' class="on" aria-current="page"' : ''}>${esc(t.userGroups[g])} <span class="pill">${allUsers.filter(USER_GROUPS[g]).length}</span></a>`).join('')}</nav>`
+  const orgPick = orgs.length > 1 ? `<p class="orgpick"><label><b>${t.orgCol}</b> <select id="orgPick">${options([['0', t.allOrgs], ...orgs.map((o) => [String(o.id), lang === 'ar' ? (o.name_ar || o.name_nl) : (o.name_nl || o.name_ar)])], String(org))}</select></label>
+    ${org ? `<a class="btn" href="#/organisatie/${org}">${t.manageOrg} →</a>` : ''}</p>` : ''
+  const tabs = `<nav class="tabs">${Object.keys(USER_GROUPS).map((g) => `<a href="#/gebruikers?groep=${g}${orgQ}"${g === group ? ' class="on" aria-current="page"' : ''}>${esc(t.userGroups[g])} <span class="pill">${allUsers.filter(USER_GROUPS[g]).length}</span></a>`).join('')}</nav>`
   const roleOpts = roles.roles.filter((r) => isSuper || r.code !== 'superadmin').map((r) => [r.code, roleName(r.code)])
   const permName = (p) => lang === 'ar' ? p.name_ar : p.name_nl
   render(html`<h1>${t.nav.users}</h1>
-    ${isSuper ? `<p class="muted">${t.usersOrgNote} <a class="btn" href="#/organisaties">${t.orgs} →</a></p>` : ''}
+    ${orgPick || (isSuper ? `<p class="muted">${t.usersOrgNote} <a class="btn" href="#/organisaties">${t.orgs} →</a></p>` : '')}
     <form class="card" id="addStudent"><h2>${t.addStudent || ''}</h2><p class="muted">${t.addStudentHelp || ''}</p><div class="grid3">
       <label>${t.email}<input name="email" type="email" required dir="ltr"></label>
       <span class="end"><button class="primary">${t.addStudentBtn || ''}</button></span></div>
-      ${myInst().length > 1 ? `<p class="insts"><b>${t.institutes}:</b> ${instChecks(myInst().map((i) => i.id))}</p>` : ''}<p class="msg"></p></form>
+      ${orgInsts.length > 1 || (org && orgInsts.length) ? `<p class="insts"><b>${t.institutes}:</b> ${instChecks(orgInsts.map((i) => i.id), orgInsts)}</p>` : ''}<p class="msg"></p></form>
     <form class="card" id="inv"><h2>${t.invite}</h2><div class="grid3">
       <label>${t.email}<input name="email" type="email" required dir="ltr"></label>
       <span class="end"><button class="primary">${t.invite}</button></span></div>
       <p class="roles invroles"><b>${t.roles}:</b> ${roleOpts.map(([c, n]) => `<label class="inline"><input type="checkbox" data-role value="${c}"${c === 'editor' ? ' checked' : ''}> ${esc(n)}</label>`).join(' ')}<br><small class="muted">${t.multiRoleHelp}</small></p>
-      ${myInst().length ? `<p class="insts"><b>${t.institutes}:</b> ${instChecks(myInst().map((i) => i.id))}</p>` : ''}<p class="msg"></p></form>
+      ${orgInsts.length ? `<p class="insts"><b>${t.institutes}:</b> ${instChecks(orgInsts.map((i) => i.id), orgInsts)}</p>` : ''}<p class="msg"></p></form>
     ${invites.length ? `<section class="card"><h2>${t.invitations}</h2><table class="tbl"><tbody>${invites.map((i) => `<tr><td dir="ltr">${esc(i.email)}</td><td>${esc(rolesName(i.role_code))}</td><td><small>${date(i.expires_at)}</small></td>
       <td class="nowrap"><button data-resend="${i.id}">${t.resend}</button> <button class="danger" data-revoke="${i.id}">${t.revoke}</button></td></tr>`).join('')}</tbody></table><div id="invlink" class="msg"></div></section>` : ''}
     ${tabs}
@@ -726,7 +738,8 @@ async function usersView () {
     <details class="card"><summary>${t.permMatrix}</summary><table class="tbl matrix"><thead><tr><th></th>${roles.roles.map((r) => `<th>${esc(roleName(r.code))}</th>`).join('')}</tr></thead>
       <tbody>${roles.permissions.map((p) => `<tr><td>${esc(permName(p))}</td>${roles.roles.map((r) => `<td>${r.permissions.includes(p.code) ? '✓' : ''}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`)
   const inviteHelp = (r) => linkBox(r.mailed ? (t.inviteMailed || t.inviteLink) : t.inviteLink, r.link)
-  const invInst = (f) => f.querySelector('[data-inst]') ? { institutes: checkedInst(f) } : {}
+  const invInst = (f) => ({ ...(f.querySelector('[data-inst]') ? { institutes: checkedInst(f) } : {}), ...(org ? { organization: org } : {}) })
+  $('#orgPick')?.addEventListener('change', (e) => { location.hash = `#/gebruikers?groep=${group}&org=${e.target.value}` })
   form($('#inv'), async (d) => {
     const roles = $$('[data-role]:checked', $('#inv')).map((x) => x.value)
     if (!roles.length) throw new Error(t.pickRole)

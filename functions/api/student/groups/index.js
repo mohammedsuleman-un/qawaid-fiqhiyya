@@ -4,7 +4,7 @@
 // waaraan je gekoppeld bent (een superbeheerder ziet alle).
 import { json, need, fail } from '../../../../lib/http.js'
 import { allGroups, allBlocks, allDays, marks } from '../../../../lib/agenda.js'
-import { allInstitutes, myInstituteIds, userScope } from '../../../../lib/institutes.js'
+import { allInstitutes, organizationsByIds, myInstituteIds, userScope, inOrganization } from '../../../../lib/institutes.js'
 
 export async function onRequestGet ({ request, data: { conn, user } }) {
   need(user, 'groups.manage')
@@ -18,11 +18,14 @@ export async function onRequestGet ({ request, data: { conn, user } }) {
   const members = ids.length ? await conn.execute(`SELECT m.group_id, m.user_id, m.role, u.name, u.email FROM class_group_members m JOIN users u ON u.id = m.user_id
     WHERE u.status = 'active' AND m.group_id IN (${marks(ids)}) ORDER BY u.name, u.email`, ids) : []
   const scope = await userScope(conn, user)
+  const org = inst.organization_id
   const users = await conn.execute(`SELECT u.*, (SELECT GROUP_CONCAT(r.role_code) FROM user_roles r WHERE r.user_id = u.id) AS roles FROM users u
-    WHERE u.status = 'active'${scope ? ' AND ' + scope.sql : ''} ORDER BY u.name, u.email`, scope ? scope.args : [])
+    WHERE u.status = 'active'${scope ? ' AND ' + scope.sql : ''}${org ? ' AND ' + inOrganization('u') : ''} ORDER BY u.name, u.email`,
+  [...(scope ? scope.args : []), ...(org ? [org, org, org] : [])])
   return json({
     institute: inst,
     institutes,
+    organizations: await organizationsByIds(conn, institutes.map((i) => i.organization_id)),
     groups: groups.map((g) => ({
       ...g,
       members: members.filter((m) => Number(m.group_id) === g.id).map((m) => ({ id: Number(m.user_id), name: m.name, email: m.email, role: m.role }))
