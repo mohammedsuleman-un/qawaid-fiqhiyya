@@ -312,7 +312,7 @@ test('feedback vanaf elke pagina: pagina en alinea onthouden, ingelogde afzender
 
 test('dashboard, auditlog en back-up', async () => {
   const d = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.superCookie })
-  assert.equal(d.data.books.published, 31) // talkhis, تلخيص أحكام القرآن, الأشباه والنظائر, ZAD Geloofsleer (1) t/m (4), niveau 3 en 4, Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1), Arabisch (1), Koranexegese (2), Hadith (2), Profetische biografie (2), Fiqh (2), Opvoeding (2) en Arabisch (2)
+  assert.equal(d.data.books.published, 32) // talkhis, الرسالة التدمرية, تلخيص أحكام القرآن, الأشباه والنظائر, ZAD Geloofsleer (1) t/m (4), niveau 3 en 4, Koranexegese (1), Hadith (1), Profetische biografie (1), Fiqh (1), Opvoeding (1), Arabisch (1), Koranexegese (2), Hadith (2), Profetische biografie (2), Fiqh (2), Opvoeding (2) en Arabisch (2)
   assert.ok(d.data.users.length >= 3)
   assert.ok(d.data.activity.length > 0)
   const ed = await call(conn, 'GET', '/api/admin/dashboard', dashboard, { cookie: s.editorCookie })

@@ -9,7 +9,7 @@ const LISTS = ['points', 'terms', 'diagrams', 'sections', 'keycards', 'hadith', 
 const slugs = new Set(register.map((p) => p.slug))
 let bad = 0
 // Ook de kaarten van الأشباه والنظائر (zelfde opzet).
-for (const dir of ['talkhis', 'ashbah', 'ahkam'].map((b) => new URL(`../db/seed/${b}/studie/`, import.meta.url))) for (const f of readdirSync(dir).filter((f) => /^eenheid\d+\.js$/.test(f)).sort((a, b) => parseInt(a.slice(7)) - parseInt(b.slice(7)))) {
+for (const dir of ['talkhis', 'ashbah', 'ahkam', 'tadmuriyya'].map((b) => new URL(`../db/seed/${b}/studie/`, import.meta.url))) for (const f of readdirSync(dir).filter((f) => /^eenheid\d+\.js$/.test(f)).sort((a, b) => parseInt(a.slice(7)) - parseInt(b.slice(7)))) {
   const card = (await import(new URL(f, dir))).default
   const counts = []
   for (const lang of ['ar', 'nl']) {

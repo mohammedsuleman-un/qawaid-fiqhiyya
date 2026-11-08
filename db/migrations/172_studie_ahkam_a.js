@@ -27,12 +27,12 @@ async function setUnits (conn) {
 }
 
 // Personen uit de kaarten koppelen aan dit boek (register per boek); alleen bestaande personen.
-export function linkPersons (cards) {
+export function linkPersons (cards, book = BOOK) {
   return async (conn) => {
     const slugs = [...new Set(cards.flatMap((c) => c.ar.persons.map((p) => p.slug)))]
     if (!slugs.length) return
     await conn.execute(`INSERT IGNORE INTO person_books (person_id, book_id)
-      SELECT p.id, b.id FROM persons p JOIN books b ON b.slug = ? WHERE p.slug IN (${slugs.map(() => '?').join(', ')})`, [BOOK, ...slugs])
+      SELECT p.id, b.id FROM persons p JOIN books b ON b.slug = ? WHERE p.slug IN (${slugs.map(() => '?').join(', ')})`, [book, ...slugs])
   }
 }
 
