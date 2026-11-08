@@ -376,3 +376,14 @@ test('uitnodigen voor een organisatie, ook zonder instituut', async () => {
   const mine = await call(conn, 'GET', '/api/admin/institutes', institutes, { cookie })
   assert.deepEqual(mine.data.map((i) => i.id), [inst.data.id])
 })
+
+test('superbeheerder kiest een organisatie: gebruikers en keuzelijsten per organisatie', async () => {
+  const two = (await conn.execute("SELECT id FROM organizations WHERE name_nl = 'Organisatie Twee'"))[0]
+  const id = Number(two.id)
+  const u = await call(conn, 'GET', '/api/admin/users?organization=' + id, users, { cookie: s.boss.cookie })
+  assert.equal(u.status, 200)
+  assert.ok(u.data.some((x) => x.email === 'beheer2@example.org'))
+  assert.ok(!u.data.some((x) => x.email === 'beheer1@example.org'))
+  const m = await call(conn, 'GET', '/api/admin/me', adminMe, { cookie: s.boss.cookie })
+  assert.ok(m.data.organizations.some((o) => o.id === id))
+})

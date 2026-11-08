@@ -55,7 +55,7 @@ export const STRINGS = {
     qcounts: 'Tussen haakjes: concept / goedgekeurd.', selectAll: 'Alles selecteren', selected: '{n} geselecteerd',
     approve: 'Goedkeuren', toDraft: 'Terug naar concept', reject: 'Afwijzen', selectFirst: 'Selecteer eerst vragen.',
     ag: {
-      institute: 'Instituut', adminInstHelp: 'Je ziet alleen de instituten waaraan je gekoppeld bent.',
+      institute: 'Instituut', organization: 'Organisatie', adminInstHelp: 'Je ziet alleen de instituten waaraan je gekoppeld bent.',
       title: 'Lesagenda', cohort: 'Groep {c}', noSubject: 'nog geen vak', absentN: '{n} afwezig', fillIn: 'aanwezigheid invullen',
       addItem: 'Toets of huiswerk toevoegen', kind: 'Soort', group: 'Groep', date: 'Datum', lesson: 'Les', wholeDay: 'Hele dag (geen bepaalde les)',
       titleNl: 'Omschrijving (Nederlands)', titleAr: 'Omschrijving (Arabisch)', infoNl: 'Toelichting (Nederlands)', infoAr: 'Toelichting (Arabisch)',
@@ -140,7 +140,7 @@ export const STRINGS = {
     qcounts: 'بين القوسين: مسودة / مقبول.', selectAll: 'تحديد الكل', selected: 'حُدِّد {n}',
     approve: 'قبول', toDraft: 'إرجاع إلى المسودة', reject: 'رفض', selectFirst: 'حدِّد أسئلة أولًا.',
     ag: {
-      institute: 'المعهد', adminInstHelp: 'لا ترى إلا المعاهد المرتبط بها.',
+      institute: 'المعهد', organization: 'المؤسسة', adminInstHelp: 'لا ترى إلا المعاهد المرتبط بها.',
       title: 'الجدول الدراسي', cohort: 'المجموعة {c}', noSubject: 'لم تُحدَّد المادة بعد', absentN: '{n} غائب', fillIn: 'تسجيل الحضور',
       addItem: 'إضافة اختبار أو واجب', kind: 'النوع', group: 'المجموعة', date: 'التاريخ', lesson: 'الحصة', wholeDay: 'اليوم كله (بلا حصة محددة)',
       titleNl: 'الوصف (بالهولندية)', titleAr: 'الوصف (بالعربية)', infoNl: 'تفاصيل (بالهولندية)', infoAr: 'تفاصيل (بالعربية)',
