@@ -353,3 +353,26 @@ test('dashboard en organisatiepagina: beheerder ziet alleen zijn organisatie', a
   const no = await call(conn, 'GET', '/api/admin/organizations/x', orgPage, { cookie: s.admin2.cookie, params: { id: String(two.id) } })
   assert.equal(no.status, 403)
 })
+
+test('uitnodigen voor een organisatie, ook zonder instituut', async () => {
+  const made = await call(conn, 'POST', '/api/admin/organizations', organizations, { cookie: s.boss.cookie, body: { name_nl: 'Leeg', name_ar: 'فارغة' } })
+  const org = made.data.id
+  const no = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.admin1.cookie, body: { email: 'x@example.org', roles: ['teacher'], organization: org } })
+  assert.equal(no.status, 403)
+  const wrong = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.boss.cookie, body: { email: 'x@example.org', roles: ['teacher'], organization: org, institutes: [1] } })
+  assert.equal(wrong.status, 400)
+  const inv = await call(conn, 'POST', '/api/admin/invitations', invitations, { cookie: s.boss.cookie, body: { email: 'orgdocent@example.org', roles: ['admin', 'teacher'], organization: org } })
+  assert.equal(inv.status, 200, JSON.stringify(inv.data))
+  const token = new URL(inv.data.link).searchParams.get('uitnodiging')
+  const acc = await call(conn, 'POST', '/api/admin/accept-invite', acceptInvite, { body: { token, name: 'Org Docent', password: 'nog-een-lang-wachtwoord' } })
+  assert.equal(acc.status, 200, JSON.stringify(acc.data))
+  const [row] = await conn.execute('SELECT u.id, (SELECT GROUP_CONCAT(organization_id) FROM user_organizations o WHERE o.user_id = u.id) AS orgs, (SELECT COUNT(*) FROM user_institutes x WHERE x.user_id = u.id) AS insts FROM users u WHERE email = ?', ['orgdocent@example.org'])
+  assert.equal(String(row.orgs), String(org))
+  assert.equal(Number(row.insts), 0)
+  // Het nieuwe instituut van die organisatie: de beheerder ziet het meteen.
+  const inst = await call(conn, 'POST', '/api/admin/institutes', institutes, { cookie: s.boss.cookie, body: { slug: 'leeg-1', name_nl: 'Leeg 1', name_ar: 'فارغ 1', organization: org } })
+  assert.equal(inst.status, 200)
+  const cookie = (await startSession(conn, Number(row.id), true)).split(';')[0]
+  const mine = await call(conn, 'GET', '/api/admin/institutes', institutes, { cookie })
+  assert.deepEqual(mine.data.map((i) => i.id), [inst.data.id])
+})

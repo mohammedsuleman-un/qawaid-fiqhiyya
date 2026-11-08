@@ -28,6 +28,7 @@ export async function onRequestPost ({ request, data: { conn } }) {
   const roles = parseRoles(inv.role_code)
   await conn.execute(`INSERT INTO user_roles (user_id, role_code) VALUES ${roles.map(() => '(?, ?)').join(', ')}`, roles.flatMap((r) => [userId, r]))
   await linkInvitedUser(conn, userId, inv.institutes)
+  if (inv.organization_id) await conn.execute('INSERT IGNORE INTO user_organizations (user_id, organization_id) VALUES (?, ?)', [userId, Number(inv.organization_id)])
   await setGender(conn, userId, input.gender)
   await conn.execute('UPDATE invitations SET accepted_at = NOW() WHERE id = ?', [inv.id])
   await conn.execute('UPDATE invitations SET revoked_at = NOW() WHERE email = ? AND id <> ? AND accepted_at IS NULL AND revoked_at IS NULL', [inv.email, inv.id])
