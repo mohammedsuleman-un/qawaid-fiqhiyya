@@ -142,7 +142,7 @@ export default kaart({
   ],
   persons: [
     ['ibn-abbas', 'text', [56], 'قال: لم يبعث الله نبيا إلا أخذ عليه الميثاق لئن بعث محمد وهو حي ليؤمنن به ولينصرنه.', 'Zei: Allah zond geen profeet zonder de belofte dat hij Muḥammad zou geloven en helpen als die tijdens zijn leven kwam.'],
-    ['ibn-masud', 'text', [67, 68], 'روى حديث «إنما هو الشرك» وخطبة «من يطع الله ورسوله».', 'Overleverde "het is alleen shirk" en de preek "wie Allah en Zijn Boodschapper gehoorzaamt".'],
+    ['ibn-masud', 'text', [67], 'روى حديث «إنما هو الشرك».', 'Overleverde "het is alleen shirk".'],
     ['jahm-ibn-safwan', 'text', [63], 'نفى الصفات وقال بالجبر والإرجاء.', 'Ontkende de eigenschappen en leerde dwang en irjāʾ.'],
     ['ibn-kullab', 'text', [64], 'أبو محمد عبد الله بن سعيد بن كلاب؛ إليه تنسب الكلابية، وسلك الأشعري خلفه.', 'Abū Muḥammad ʿAbdullāh ibn Saʿīd ibn Kullāb; naar hem zijn de Kullābiyya genoemd; al-Ashʿarī ging in zijn voetsporen.'],
     ['al-ashari', 'text', [64], 'سلك خلف ابن كلاب؛ والكلابية خير من الأشعرية.', 'Volgde Ibn Kullāb; de Kullābiyya zijn beter dan de Ashʿariyya.'],

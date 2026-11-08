@@ -6,7 +6,7 @@ export default kaart({
   unit: 3,
   subtitle: ['المثل الأول: نعيم الجنة يوافق ما في الدنيا في الأسماء دون الحقائق؛ المثل الثاني: الروح موصوفة بصفات ولا تدرك كيفيتها', 'Voorbeeld 1: het Paradijs deelt alleen de namen met deze wereld; voorbeeld 2: de ziel heeft eigenschappen waarvan we het hoe niet kennen'],
   summary: [
-    'ضرب المؤلف مثلين يقربان منهج السلف: الأول ما أخبر الله به من نعيم الجنة من لبن وعسل وخمر وحرير وذهب وقصور، وقد قال ابن عباس: ليس في الدنيا مما في الجنة إلا الأسماء؛ فإذا كانت المخلوقات المتفقة في الأسماء متباينة في الحقائق، فمباينة الخالق للمخلوق أعظم. وافترق الناس هنا ثلاث فرق: السلف آمنوا بالأمرين، والمعتزلة أثبتوا المعاد ونفوا كثيرا من الصفات، والباطنية والفلاسفة نفوا الأمرين، بل تأولوا الشرائع. ثم قرر أن الله لا يدخل مع خلقه في قياس تمثيل ولا شمول، بل له قياس الأولى. والمثل الثاني الروح: موصوفة بصفات ثبوتية وسلبية، تعرج وتقبض، والعقول عاجزة عن تكييفها، فالخالق أولى بذلك.',
+    'ضرب المؤلف مثلين يقربان منهج السلف: الأول ما أخبر الله به من نعيم الجنة من لبن وعسل وخمر وحرير وذهب وقصور، وقد قال ابن عباس: ليس في الدنيا شيء مما في الجنة إلا الأسماء؛ فإذا كانت المخلوقات المتفقة في الأسماء متباينة في الحقائق، فمباينة الخالق للمخلوق أعظم. وافترق الناس هنا ثلاث فرق: السلف آمنوا بالأمرين، والمعتزلة أثبتوا المعاد ونفوا كثيرا من الصفات، والباطنية والفلاسفة نفوا الأمرين، بل تأولوا الشرائع. ثم قرر أن الله لا يدخل مع خلقه في قياس تمثيل ولا شمول، بل له قياس الأولى. والمثل الثاني الروح: موصوفة بصفات ثبوتية وسلبية، تعرج وتقبض، والعقول عاجزة عن تكييفها، فالخالق أولى بذلك.',
     'Twee voorbeelden maken de weg van de salaf duidelijk. Eén: wat Allah over het Paradijs vertelt (melk, honing, wijn, zijde, goud, paleizen). Ibn ʿAbbās zei: van wat in het Paradijs is, bestaat in deze wereld alleen de naam. Als geschapen dingen met dezelfde naam in werkelijkheid zo verschillen, dan verschilt de Schepper nog veel meer van de schepping. Hier splitsen de mensen zich in drie: de salaf geloven beide; de Muʿtazila aanvaarden het hiernamaals maar ontkennen veel eigenschappen; de Bāṭiniyya en filosofen ontkennen beide en herinterpreteren zelfs de sharīʿa. Allah valt niet onder een vergelijking of een gelijk-makende regel met Zijn schepping; voor Hem geldt "het hoogste voorbeeld": wat bij schepselen volmaakt is, komt Hem eerder toe. Twee: de ziel. Ze heeft bevestigde en ontkende eigenschappen, stijgt op en wordt genomen, en het verstand kan haar hoe niet vatten. Dan geldt dat des te meer voor de Schepper.'
   ],
   map: {
@@ -15,7 +15,7 @@ export default kaart({
     intro: ['من الصفحة 17 إلى 20.', 'Van bladzijde 17 tot 20.'],
     root: [17, 'المثلان المضروبان', 'De twee voorbeelden', 'ولله المثل الأعلى', 'en aan Allah komt het hoogste voorbeeld toe'],
     nodes: [
-      [17, 'المثل الأول: الجنة', 'Voorbeeld 1: het Paradijs', 'ص 17–18', 'p. 17–18', [['ليس في الدنيا مما في الجنة إلا الأسماء', 'alleen de namen zijn gelijk'], ['مباينة الخالق أعظم', 'het verschil met de Schepper is groter']]],
+      [17, 'المثل الأول: الجنة', 'Voorbeeld 1: het Paradijs', 'ص 17–18', 'p. 17–18', [['ليس في الدنيا شيء مما في الجنة إلا الأسماء', 'alleen de namen zijn gelijk'], ['مباينة الخالق أعظم', 'het verschil met de Schepper is groter']]],
       [17, 'ثلاث فرق', 'Drie groepen', 'ص 17', 'p. 17', [['السلف: آمنوا بالأمرين', 'salaf: geloven beide'], ['المعتزلة: المعاد دون كثير من الصفات', 'Muʿtazila: het hiernamaals, niet veel eigenschappen'], ['الباطنية والفلاسفة: نفوا الأمرين', 'Bāṭiniyya en filosofen: ontkennen beide']]],
       [18, 'قياس الأولى', 'Het "hoogste voorbeeld"', 'ص 18', 'p. 18', [['لا قياس تمثيل', 'geen analogie'], ['ولا قياس شمول تستوي أفراده', 'geen regel die allen gelijk maakt'], ['كل كمال للمخلوق فالخالق أولى به', 'elke volmaaktheid komt Hem eerder toe']]],
       [18, 'المثل الثاني: الروح', 'Voorbeeld 2: de ziel', 'ص 18–20', 'p. 18–20', [['تعرج وتقبض وتسل', 'stijgt op, wordt genomen, wordt eruit getrokken'], ['اضطراب المتكلمين والفلاسفة فيها', 'verwarring van theologen en filosofen'], ['لفظ الجسم يحتاج إلى تفصيل', 'het woord "lichaam" vraagt onderscheid']]]
@@ -66,7 +66,7 @@ export default kaart({
       intro: ['ص 17', 'p. 17'],
       nodes: [
         [17, 'ما في الجنة يوافق ما في الدنيا في الأسماء', 'Wat in het Paradijs is, heeft dezelfde namen als hier', 'لبن، عسل، خمر، حرير...', 'melk, honing, wijn, zijde...'],
-        [17, 'وبينهما من التباين ما لا يعلمه إلا الله', 'Maar het verschil kent alleen Allah', 'ليس في الدنيا مما في الجنة إلا الأسماء', 'alleen de namen zijn van hier'],
+        [17, 'وبينهما من التباين ما لا يعلمه إلا الله', 'Maar het verschil kent alleen Allah', 'ليس في الدنيا شيء مما في الجنة إلا الأسماء', 'alleen de namen zijn van hier'],
         [17, 'والمخلوق أقرب إلى المخلوق من الخالق إلى المخلوق', 'Een schepsel staat dichter bij een schepsel dan de Schepper bij een schepsel', ''],
         [17, 'إذن مباينة الخالق لخلقه أعظم', 'Dus verschilt de Schepper nog meer', 'وإن اتفقت الأسماء', 'ook al zijn de namen gelijk']
       ],
@@ -138,7 +138,7 @@ export default kaart({
     { page: 19, q: ['هل الروح جسم؟', 'Is de ziel een lichaam?'], views: [['بمعنى البدن في اللغة: لا', 'Als "lijf" (taal): nee'], ['بمعنى ما يشار إليه: نعم', 'Als "waar je naar kunt wijzen": ja']], preferred: ['التفصيل بحسب المعنى.', 'Het hangt af van de betekenis.'] }
   ],
   pitfalls: [
-    [17, 'الظن أن نعيم الجنة مثل نعيم الدنيا', 'Denken dat het Paradijs is als deze wereld', 'ليس في الدنيا مما في الجنة إلا الأسماء.', 'Alleen de namen zijn gelijk.'],
+    [17, 'الظن أن نعيم الجنة مثل نعيم الدنيا', 'Denken dat het Paradijs is als deze wereld', 'ليس في الدنيا شيء مما في الجنة إلا الأسماء.', 'Alleen de namen zijn gelijk.'],
     [18, 'الظن أن نفي المثل يمنع كل قياس في حق الله', 'Denken dat er voor Allah helemaal geen redenering mogelijk is', 'الممنوع قياس التمثيل والشمول، أما قياس الأولى فمستعمل في حقه.', 'Verboden zijn analogie en gelijkmakende regel; "des te meer" wordt wel gebruikt.'],
     [19, 'الحكم على الروح بأنها جسم أو ليست جسما بإطلاق', 'Zonder meer zeggen dat de ziel wel of geen lichaam is', 'يحتاج إلى تفصيل في معنى الجسم.', 'Dat vraagt onderscheid in wat je met lichaam bedoelt.'],
     [19, 'الاستدلال بالكليات على وجود ما لا يشار إليه في الخارج', 'Met algemene begrippen bewijzen dat iets bestaat waar je niet naar kunt wijzen', 'الكليات لا توجد كلية إلا في الأذهان لا في العيان.', 'Algemene begrippen bestaan alleen in het hoofd als algemeen, niet daarbuiten.']
@@ -149,7 +149,7 @@ export default kaart({
   ],
   review: [
     ['المثل الأول: الجنة؛ الثاني: الروح.', 'Voorbeeld 1: het Paradijs; 2: de ziel.'],
-    ['ابن عباس: ليس في الدنيا مما في الجنة إلا الأسماء.', 'Ibn ʿAbbās: alleen de namen zijn van hier.'],
+    ['ابن عباس: ليس في الدنيا شيء مما في الجنة إلا الأسماء.', 'Ibn ʿAbbās: alleen de namen zijn van hier.'],
     ['مباينة الخالق للمخلوق أعظم من مباينة المخلوق للمخلوق.', 'De Schepper verschilt meer van de schepping dan schepselen van elkaar.'],
     ['ثلاث فرق: السلف، والمعتزلة، والباطنية والفلاسفة.', 'Drie groepen: salaf, Muʿtazila, Bāṭiniyya en filosofen.'],
     ['الباطنية أكفر من اليهود والنصارى بإجماع المسلمين.', 'De Bāṭiniyya zijn volgens de consensus ongeloviger dan joden en christenen.'],
@@ -159,7 +159,7 @@ export default kaart({
   ],
   quiz: [
     { type: 'mc', page: 17, q: ['ما المثلان المضروبان في الرسالة؟', 'Wat zijn de twee voorbeelden in de brief?'], options: [['الجنة والروح', 'الجنة والنار', 'العرش والكرسي', 'الروح والعقل'], ['Paradijs en ziel', 'Paradijs en Hel', 'Troon en voetenbank', 'ziel en verstand']], answer: 0 },
-    { type: 'mc', page: 17, q: ['قال ابن عباس: «ليس في الدنيا مما في الجنة إلا...»', 'Ibn ʿAbbās: "niets in deze wereld is als in het Paradijs, behalve..."'], options: [['الأسماء', 'الصفات', 'الألوان', 'الطعوم'], ['de namen', 'de eigenschappen', 'de kleuren', 'de smaken']], answer: 0 },
+    { type: 'mc', page: 17, q: ['قال ابن عباس: «ليس في الدنيا شيء مما في الجنة إلا...»', 'Ibn ʿAbbās: "niets in deze wereld is als in het Paradijs, behalve..."'], options: [['الأسماء', 'الصفات', 'الألوان', 'الطعوم'], ['de namen', 'de eigenschappen', 'de kleuren', 'de smaken']], answer: 0 },
     { type: 'mc', page: 17, q: ['من الذين أثبتوا الثواب والعقاب ونفوا كثيرا من الصفات؟', 'Wie aanvaarden beloning en straf maar ontkennen veel eigenschappen?'], options: [['المعتزلة ومن وافقهم', 'السلف', 'الباطنية', 'الفلاسفة المشاؤون'], ['de Muʿtazila en hun volgers', 'de salaf', 'de Bāṭiniyya', 'de peripatetici']], answer: 0 },
     { type: 'mc', page: 17, q: ['بماذا تأول الباطنية الحج؟', 'Hoe herinterpreteren de Bāṭiniyya de ḥajj?'], options: [['السفر إلى شيوخهم', 'معرفة أسرارهم', 'كتمان أسرارهم', 'طاعة إمامهم'], ['reizen naar hun shaykhs', 'hun geheimen kennen', 'hun geheimen verzwijgen', 'hun imam gehoorzamen']], answer: 0 },
     { type: 'tf', page: 18, q: ['يجوز أن يدخل الله مع خلقه في قياس شمول تستوي أفراده.', 'Allah mag met Zijn schepselen onder een regel vallen waarin allen gelijk zijn.'], answer: 1, explain: ['لا، وإنما يستعمل في حقه قياس الأولى.', 'Nee, alleen "des te meer" geldt voor Hem.'] },
