@@ -23,7 +23,7 @@ export async function onRequestPost ({ request, params, env, data: { conn, user 
   const inv = await load(conn, id(params.id))
   const roles = parseRoles(inv.role_code)
   if (roles.includes('superadmin') && !user.roles.includes('superadmin')) fail(403, 'Alleen een superbeheerder kan een superbeheerder aanwijzen')
-  const link = await createInvitation(conn, request, inv.email, roles, user.id, inv.institutes || '')
+  const link = await createInvitation(conn, request, inv.email, roles, user.id, inv.institutes || '', inv.organization_id ? Number(inv.organization_id) : null)
   await audit(conn, user, 'invitation.resend', 'invitation', inv.email)
   // Uitnodiging per mail; de link blijft ook zichtbaar zodat je hem zelf kunt doorsturen.
   const mail = await sendMail(env, (inv.role_code === 'student' ? studentInviteMail : inviteMail)({ email: inv.email, role: roles[0], roles, link, inviter: user.name || user.email, origin: new URL(request.url).origin }))

@@ -1,10 +1,10 @@
 // Beheeromgeving van De Zuivere Bron. Praat alleen met /api/admin; de sessie staat in
 // een HttpOnly-cookie. Knoppen worden verborgen als je een recht mist, maar de server
 // controleert elk recht zelf opnieuw.
-import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261108b'
+import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261108c'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261108b'
+import { serverError } from '/assets/server-errors.js?v=20261108c'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -692,6 +692,7 @@ async function usersView () {
   const roleOpts = roles.roles.filter((r) => isSuper || r.code !== 'superadmin').map((r) => [r.code, roleName(r.code)])
   const permName = (p) => lang === 'ar' ? p.name_ar : p.name_nl
   render(html`<h1>${t.nav.users}</h1>
+    ${isSuper ? `<p class="muted">${t.usersOrgNote} <a class="btn" href="#/organisaties">${t.orgs} →</a></p>` : ''}
     <form class="card" id="addStudent"><h2>${t.addStudent || ''}</h2><p class="muted">${t.addStudentHelp || ''}</p><div class="grid3">
       <label>${t.email}<input name="email" type="email" required dir="ltr"></label>
       <span class="end"><button class="primary">${t.addStudentBtn || ''}</button></span></div>
@@ -845,6 +846,7 @@ async function organizationView (oid) {
   const where = (u) => u.organizations.length ? t.inOtherOrg : t.unassigned
   const label = (u) => `${u.name || u.email} (${u.email})${u.roles.length ? ' · ' + rolesName(u.roles.join(',')) : ''} · ${where(u)}`
   const free = d.candidates.filter((u) => !u.organizations.length)
+  const orgInstChecks = d.institutes.length ? `<p class="insts"><b>${t.nav.institutes}:</b> ${d.institutes.map((i) => `<label class="inline"><input type="checkbox" data-oinst value="${i.id}" checked> ${esc(instName(i))}</label>`).join(' ')}</p>` : ''
   render(html`<p><a href="#/organisaties">← ${t.orgs}</a></p>
     <div class="head"><h1>${esc(orgName(d.organization))}</h1></div>
     <form class="card" id="orgName"><div class="grid3">
@@ -853,11 +855,23 @@ async function organizationView (oid) {
       <span class="end"><button>${t.save}</button></span></div><p class="msg"></p></form>
     <h2>${t.nav.institutes}</h2>
     <p class="orginst">${d.institutes.map((i) => `<a class="btn" href="#/instituut/${i.id}">${esc(instName(i))}</a>`).join(' ') || `<span class="muted">${t.noInstInOrg}</span>`}</p>
-    <p class="muted small">${t.orgInstHelp}</p>
+    <form class="card" id="orgNewInst"><h3>${t.newInstitute}</h3><div class="grid3">
+      <label>${t.nameNl}<input name="name_nl" required></label><label>${t.nameAr}<input name="name_ar" dir="rtl" required></label>
+      <label>${t.slug}<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required dir="ltr"></label></div>
+      <p class="muted"><small>${t.newInstituteHelp}</small></p><button class="primary">${t.create}</button><p class="msg"></p></form>
     ${free.length ? `<p class="warn">${fmt(t.unassignedN, { n: free.length })}</p>` : ''}
+    <div class="grid2 orgforms">
+      <form class="card" id="orgStudent"><h2>${t.addStudent}</h2><p class="muted small">${t.addStudentHelp}</p>
+        <label>${t.email}<input type="email" name="email" required dir="ltr"></label>
+        ${orgInstChecks}<button class="primary">${t.addStudentBtn}</button><div class="msg"></div></form>
+      <form class="card" id="orgInvite"><h2>${t.invite}</h2>
+        <label>${t.email}<input type="email" name="email" required dir="ltr"></label>
+        <p class="roles"><b>${t.roles}:</b> ${['admin', 'editor', 'teacher', 'student'].map((c) => `<label class="inline"><input type="checkbox" data-role value="${c}"${c === 'teacher' ? ' checked' : ''}> ${esc(roleName(c))}</label>`).join(' ')}</p>
+        ${orgInstChecks}<button class="primary">${t.invite}</button><div class="msg"></div></form>
+    </div>
     <form class="card" id="addOrgMem"><h2>${t.addToOrg}</h2><div class="grid3">
       <label>${t.chooseAccount}<select name="user" required><option value=""></option>${options([...free, ...d.candidates.filter((u) => u.organizations.length)].map((u) => [u.id, label(u)]))}</select></label>
-      <span class="end"><button class="primary">${t.add}</button> <a class="btn" href="#/gebruikers">${t.inviteNew}</a></span></div>
+      <span class="end"><button class="primary">${t.add}</button></span></div>
       <p class="muted"><small>${t.addToOrgHelp}</small></p><p class="msg"></p></form>
     <nav class="tabs">${Object.keys(ORG_TABS).map((k) => `<a href="#/organisatie/${d.organization.id}?tab=${k}"${k === tab ? ' class="on" aria-current="page"' : ''}>${esc(t.orgTabs[k])} <span class="pill">${d.members.filter(ORG_TABS[k]).length}</span></a>`).join('')}</nav>
     ${rows.length ? `<table class="tbl"><thead><tr><th>${t.name}</th><th>${t.roles}</th><th>${t.nav.institutes}</th><th></th></tr></thead><tbody>
@@ -867,6 +881,15 @@ async function organizationView (oid) {
         <td class="nowrap"><a class="btn small" href="#/gebruikers?groep=${tab === 'admins' ? 'staff' : tab}">${t.rolesBtn}</a> <button class="danger small" data-om-rm>${t.unlink}</button><div class="msg"></div></td></tr>`).join('')}</tbody></table>`
     : `<p class="muted">${t.noItems}</p>`}`)
   form($('#orgName'), async (x) => { await api('organizations/' + oid, 'PATCH', x); organizationView(oid) })
+  form($('#orgNewInst'), async (x) => { await api('institutes', 'POST', { ...x, organization: Number(oid) }); me = await api('me'); organizationView(oid) })
+  const insts = (f) => $$('[data-oinst]:checked', f).map((x) => Number(x.value))
+  const sent = (r) => linkBox(r.mailed ? t.inviteMailed : t.inviteLink, r.link)
+  form($('#orgStudent'), async (x) => sent(await api('invitations', 'POST', { email: x.email, role: 'student', organization: Number(oid), institutes: insts($('#orgStudent')) })))
+  form($('#orgInvite'), async (x) => {
+    const roles = $$('[data-role]:checked', $('#orgInvite')).map((c) => c.value)
+    if (!roles.length) throw new Error(t.pickRole)
+    return sent(await api('invitations', 'POST', { email: x.email, roles, organization: Number(oid), institutes: insts($('#orgInvite')) }))
+  })
   form($('#addOrgMem'), async (x) => { await api(`organizations/${oid}/members`, 'POST', { users: [Number(x.user)] }); organizationView(oid) })
   for (const row of $$('[data-om]')) {
     $('[data-om-rm]', row).onclick = async () => {
