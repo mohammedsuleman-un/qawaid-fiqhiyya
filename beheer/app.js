@@ -1,10 +1,10 @@
 // Beheeromgeving van De Zuivere Bron. Praat alleen met /api/admin; de sessie staat in
 // een HttpOnly-cookie. Knoppen worden verborgen als je een recht mist, maar de server
 // controleert elk recht zelf opnieuw.
-import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261107g'
+import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261108a'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261107g'
+import { serverError } from '/assets/server-errors.js?v=20261108a'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -767,30 +767,62 @@ async function usersView () {
 async function institutesView () {
   const list = await api('institutes')
   const edit = has('institutes.manage')
+  // Organisaties: alleen de superbeheerder (voor wie nog geen migratie 177 heeft: leeg).
+  const sup = edit && (me.roles || []).includes('superadmin')
+  const od = sup ? await api('organizations').catch(() => null) : null
+  const orgs = od?.organizations || []
+  const orgName = (o) => o ? (lang === 'ar' ? o.name_ar : o.name_nl) : ''
+  const orgOpts = (sel) => `<option value="">${t.noOrg}</option>` + options(orgs.map((o) => [o.id, orgName(o)]), sel)
   const nameCell = (i, f, dir) => edit ? `<input name="${f}" dir="${dir}" value="${esc(i[f])}">` : `<a href="#/instituut/${i.id}" dir="${dir}">${esc(i[f])}</a>`
+  const memberLabel = (u) => `${u.name || u.email} (${u.email})${u.roles.length ? ' · ' + rolesName(u.roles.join(',')) : ''}`
   render(html`<h1>${t.nav.institutes}</h1><p class="muted">${t.institutesHelp}</p>
-    <table class="tbl"><thead><tr><th>${t.nameNl}</th><th>${t.nameAr}</th><th>${t.groupsCol}</th><th>${t.nav.books}</th><th>${t.membersCol}</th><th></th></tr></thead><tbody>
+    ${od ? `<h2>${t.orgs}</h2><p class="muted">${t.orgsHelp}</p>
+      <div class="orgs">${orgs.map((o) => `<section class="card" data-org="${o.id}"><div class="grid3">
+        <label>${t.nameNl}<input name="name_nl" value="${esc(o.name_nl)}"></label><label>${t.nameAr}<input name="name_ar" dir="rtl" value="${esc(o.name_ar)}"></label>
+        <span class="end"><button data-save-org>${t.save}</button></span></div>
+        <p><b>${t.nav.institutes}:</b> ${o.institutes.map((iid) => { const i = od.institutes.find((x) => x.id === iid); return i ? `<a href="#/instituut/${i.id}">${esc(instName(i))}</a>` : '' }).join(' · ') || `<span class="muted">${t.noneYet}</span>`}</p>
+        <p><b>${t.orgAdmins}:</b></p>
+        <ul class="orgmem">${o.members.map((u) => `<li>${esc(memberLabel(u))} <button type="button" class="link danger" data-org-rm="${u.id}">${t.unlink}</button></li>`).join('') || `<li class="muted">${t.noneYet}</li>`}</ul>
+        <div class="grid3"><label>${t.chooseAccount}<select name="user"><option value=""></option>${options(od.staff.filter((u) => !o.members.some((m) => m.id === u.id)).map((u) => [u.id, memberLabel(u)]))}</select></label>
+          <span class="end"><button class="primary" data-org-add>${t.add}</button></span></div><p class="msg"></p></section>`).join('')}</div>
+      <form class="card" id="newOrg"><h3>${t.newOrg}</h3><div class="grid3">
+        <label>${t.nameNl}<input name="name_nl" required></label><label>${t.nameAr}<input name="name_ar" dir="rtl" required></label>
+        <span class="end"><button class="primary">${t.create}</button></span></div><p class="msg"></p></form>
+      <h2>${t.nav.institutes}</h2>` : ''}
+    <table class="tbl"><thead><tr><th>${t.nameNl}</th><th>${t.nameAr}</th>${od ? `<th>${t.orgCol}</th>` : ''}<th>${t.groupsCol}</th><th>${t.nav.books}</th><th>${t.membersCol}</th><th></th></tr></thead><tbody>
     ${list.map((i) => `<tr data-inst-row="${i.id}"><td>${nameCell(i, 'name_nl', 'ltr')}</td><td>${nameCell(i, 'name_ar', 'rtl')}</td>
+      ${od ? `<td><select name="organization">${orgOpts(od.institutes.find((x) => x.id === i.id)?.organization_id ?? '')}</select></td>` : ''}
       <td>${i.groups}</td><td><a href="#/boeken?instituut=${i.id}">${i.books}</a></td><td>${i.staff}</td>
       <td class="nowrap"><a class="btn primary" href="#/instituut/${i.id}">${t.openInstitute}</a> ${edit ? `<button data-save>${t.save}</button>` : ''} <a class="btn" href="/student/#/groepen?instituut=${i.id}">${t.nav.groups}</a><div class="msg"></div></td></tr>`).join('')}</tbody></table>
     ${edit ? '' : `<p class="muted"><small>${t.onlySuperCreates}</small></p>`}
     <form class="card" id="newInst"${edit ? '' : ' hidden'}><h2>${t.newInstitute}</h2><div class="grid3">
       <label>${t.nameNl}<input name="name_nl" required></label>
       <label>${t.nameAr}<input name="name_ar" dir="rtl" required></label>
-      <label>${t.slug}<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required dir="ltr"></label></div>
+      <label>${t.slug}<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required dir="ltr"></label>
+      ${od ? `<label>${t.orgCol}<select name="organization">${orgOpts('')}</select></label>` : ''}</div>
       <p class="muted"><small>${t.newInstituteHelp}</small></p>
       <button class="primary">${t.create}</button><p class="msg"></p></form>`)
   for (const row of $$('[data-inst-row]')) {
     $('[data-save]', row)?.addEventListener('click', async () => {
       const msg = $('.msg', row)
       try {
-        await api('institutes/' + row.dataset.instRow, 'PATCH', { name_nl: $('[name=name_nl]', row).value, name_ar: $('[name=name_ar]', row).value })
+        const org = $('[name=organization]', row)
+        await api('institutes/' + row.dataset.instRow, 'PATCH', { name_nl: $('[name=name_nl]', row).value, name_ar: $('[name=name_ar]', row).value, ...(org ? { organization: org.value ? Number(org.value) : null } : {}) })
         msg.className = 'msg ok'; msg.textContent = t.saved
         me = await api('me')
       } catch (e) { msg.className = 'msg err'; msg.textContent = e.message }
     })
   }
-  form($('#newInst'), async (d) => { await api('institutes', 'POST', d); me = await api('me'); institutesView() })
+  form($('#newInst'), async (d) => { await api('institutes', 'POST', { ...d, organization: d.organization ? Number(d.organization) : null }); me = await api('me'); institutesView() })
+  if (!od) return
+  form($('#newOrg'), async (d) => { await api('organizations', 'POST', d); institutesView() })
+  for (const sec of $$('[data-org]')) {
+    const oid = sec.dataset.org
+    const fail = (e) => { const m = $('.msg', sec); m.className = 'msg err'; m.textContent = e.message }
+    $('[data-save-org]', sec).onclick = async () => { try { await api('organizations/' + oid, 'PATCH', { name_nl: $('[name=name_nl]', sec).value, name_ar: $('[name=name_ar]', sec).value }); institutesView() } catch (e) { fail(e) } }
+    $('[data-org-add]', sec).onclick = async () => { const u = $('[name=user]', sec).value; if (!u) return; try { await api(`organizations/${oid}/members`, 'POST', { users: [Number(u)] }); institutesView() } catch (e) { fail(e) } }
+    for (const b of $$('[data-org-rm]', sec)) b.onclick = async () => { if (!confirm(t.confirmOrgUnlink)) return; try { await api(`organizations/${oid}/members?user=${b.dataset.orgRm}`, 'DELETE', {}); institutesView() } catch (e) { fail(e) } }
+  }
 }
 
 // Eén instituut: leden (medewerkers en studenten) toevoegen of loskoppelen, en de groepen.

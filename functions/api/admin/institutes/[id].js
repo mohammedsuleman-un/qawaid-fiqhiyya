@@ -1,10 +1,11 @@
 // GET (users.manage, eigen instituut): het instituut met zijn groepen, de leden (gekoppelde
 // medewerkers en studenten, en wie in een groep van dit instituut zit) en de accounts die je
 // nog kunt toevoegen.
-// PATCH {name_nl, name_ar} (institutes.manage): naam van een instituut wijzigen.
+// PATCH {name_nl, name_ar, organization} (institutes.manage): naam van een instituut wijzigen
+// en het instituut in een organisatie zetten (organization: id of null; alleen de superbeheerder).
 import { json, body, need, fail, str, id } from '../../../../lib/http.js'
 import { audit } from '../../../../lib/audit.js'
-import { allInstitutes, needInstitute, userScope } from '../../../../lib/institutes.js'
+import { allInstitutes, needInstitute, userScope, organizationId, needSuper } from '../../../../lib/institutes.js'
 
 export async function onRequestGet ({ params, data: { conn, user } }) {
   need(user, 'users.manage')
@@ -47,6 +48,12 @@ export async function onRequestPatch ({ request, params, data: { conn, user } })
   const [cur] = await conn.execute('SELECT id FROM institutes WHERE id = ?', [instituteId])
   if (!cur) fail(404, 'Instituut niet gevonden')
   await conn.execute('UPDATE institutes SET name_nl = ?, name_ar = ? WHERE id = ?', [nameNl, nameAr, instituteId])
-  await audit(conn, user, 'institute.edit', 'institute', instituteId, { name_nl: nameNl, name_ar: nameAr })
+  const change = { name_nl: nameNl, name_ar: nameAr }
+  if (input.organization !== undefined) {
+    needSuper(user)
+    change.organization = await organizationId(conn, input.organization)
+    await conn.execute('UPDATE institutes SET organization_id = ? WHERE id = ?', [change.organization, instituteId])
+  }
+  await audit(conn, user, 'institute.edit', 'institute', instituteId, change)
   return json({ ok: true })
 }
