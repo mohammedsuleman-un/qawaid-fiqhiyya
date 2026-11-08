@@ -7,6 +7,7 @@ import { insert } from '../../../lib/content.js'
 import { audit } from '../../../lib/audit.js'
 import { sendMail, welcomeMail } from '../../../lib/mail.js'
 import { GENDERS, setGender } from '../../../lib/users.js'
+import { linkDefaultOrganization } from '../../../lib/institutes.js'
 
 export async function onRequestPost ({ request, env, waitUntil, data: { conn } }) {
   const input = await body(request)
@@ -26,6 +27,7 @@ export async function onRequestPost ({ request, env, waitUntil, data: { conn } }
     [email, name, await hashPassword(String(input.password)), lang])
   await conn.execute("INSERT INTO user_roles (user_id, role_code) VALUES (?, 'student')", [id])
   await setGender(conn, id, input.gender)
+  await linkDefaultOrganization(conn, id)
   await audit(conn, { id }, 'student.register', 'user', id)
   // Bevestigingsmail op de achtergrond: de aanmelding wacht er niet op en faalt er niet door.
   const mail = sendMail(env, welcomeMail({ name, email, lang, origin: new URL(request.url).origin }))

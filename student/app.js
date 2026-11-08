@@ -1,8 +1,8 @@
 // Studentenomgeving van De Zuivere Bron (NL/AR). Praat met /api/student; inloggen gaat
 // via /api/admin/login (zelfde account en sessie als de beheeromgeving). De server
 // controleert elk recht zelf; knoppen voor docenten worden alleen getoond als het mag.
-import { STRINGS } from './i18n.js?v=20261108a'
-import { serverError } from '/assets/server-errors.js?v=20261108a'
+import { STRINGS } from './i18n.js?v=20261108b'
+import { serverError } from '/assets/server-errors.js?v=20261108b'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')

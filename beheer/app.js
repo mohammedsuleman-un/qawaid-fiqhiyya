@@ -1,10 +1,10 @@
 // Beheeromgeving van De Zuivere Bron. Praat alleen met /api/admin; de sessie staat in
 // een HttpOnly-cookie. Knoppen worden verborgen als je een recht mist, maar de server
 // controleert elk recht zelf opnieuw.
-import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261108a'
+import { STRINGS, ROLE_NAMES } from './i18n.js?v=20261108b'
 import { diffHtml } from './diff.js?v=20261101u'
 import { mountEditor } from './editor.js?v=20261101u'
-import { serverError } from '/assets/server-errors.js?v=20261108a'
+import { serverError } from '/assets/server-errors.js?v=20261108b'
 
 const view = document.getElementById('view')
 const navEl = document.getElementById('nav')
@@ -113,6 +113,7 @@ function setNav () {
     ['/student/#/vragen', t.nav.tests, has('content.edit') || has('tests.manage')],
     ['/student/#/groepen', t.nav.groups, has('groups.manage')],
     ['#/gebruikers', t.nav.users, has('users.manage')],
+    ['#/organisaties', t.orgs, has('institutes.manage') && isSuperUser()],
     ['#/instituten', t.nav.institutes, has('institutes.manage') || has('users.manage')],
     ['#/audit', t.nav.audit, has('audit.view')],
     ['#/instellingen', t.nav.settings, has('settings.manage')],
@@ -231,8 +232,16 @@ async function dashboardView () {
   const tile = (icon, label, href, enabled = true) => enabled
     ? `<a class="tile" href="${href}"><span class="ic">${icon}</span>${esc(label)}</a>`
     : `<div class="tile off" title="${esc(t.soon)}"><span class="ic">${icon}</span>${esc(label)}<small>${esc(t.soon)}</small></div>`
+  const orgs = d.organizations || []
+  const sup = isSuperUser()
   render(html`<h1>${fmt(t.hello, { name: me.name || me.email })}</h1>
+    ${!sup && orgs.length ? `<p class="muted">${t.yourOrg}: <b>${orgs.map((o) => esc(orgName(o))).join(' · ')}</b></p>` : ''}
     ${me.totp_enabled ? '' : `<p class="warn">${t.need2fa} <a href="#/profiel">${t.enable2fa}</a></p>`}
+    ${sup && orgs.length ? `<section class="dashorgs"><div class="head"><h2>${t.orgs}</h2><a class="btn" href="#/organisaties">${t.newOrg} / ${t.manageOrg}</a></div>
+      ${d.unassigned ? `<p class="warn">${fmt(t.unassignedN, { n: d.unassigned })}</p>` : ''}
+      <div class="orgcards">${orgs.map((o) => `<section class="card orgcard"><h3><a href="#/organisatie/${o.id}">${esc(orgName(o))}</a></h3>
+        <div class="stats mini">${[['admins', (o.roles?.admin || 0) + (o.roles?.editor || 0)], ['teachers', o.roles?.teacher || 0], ['students', o.roles?.student || 0]].map(([k, n]) => `<a class="stat" href="#/organisatie/${o.id}?tab=${k}"><b>${n}</b><span>${esc(t.orgTabs[k])}</span></a>`).join('')}
+          <a class="stat" href="#/organisatie/${o.id}"><b>${o.institutes ?? 0}</b><span>${t.nav.institutes}</span></a></div></section>`).join('')}</div></section>` : ''}
     <div class="stats">
       ${card(t.cards.books, d.books?.published ?? 0, '#/boeken', !!d.books)}
       ${card(t.cards.admins, staff, '#/gebruikers', !!d.users)}
@@ -774,21 +783,8 @@ async function institutesView () {
   const orgName = (o) => o ? (lang === 'ar' ? o.name_ar : o.name_nl) : ''
   const orgOpts = (sel) => `<option value="">${t.noOrg}</option>` + options(orgs.map((o) => [o.id, orgName(o)]), sel)
   const nameCell = (i, f, dir) => edit ? `<input name="${f}" dir="${dir}" value="${esc(i[f])}">` : `<a href="#/instituut/${i.id}" dir="${dir}">${esc(i[f])}</a>`
-  const memberLabel = (u) => `${u.name || u.email} (${u.email})${u.roles.length ? ' · ' + rolesName(u.roles.join(',')) : ''}`
   render(html`<h1>${t.nav.institutes}</h1><p class="muted">${t.institutesHelp}</p>
-    ${od ? `<h2>${t.orgs}</h2><p class="muted">${t.orgsHelp}</p>
-      <div class="orgs">${orgs.map((o) => `<section class="card" data-org="${o.id}"><div class="grid3">
-        <label>${t.nameNl}<input name="name_nl" value="${esc(o.name_nl)}"></label><label>${t.nameAr}<input name="name_ar" dir="rtl" value="${esc(o.name_ar)}"></label>
-        <span class="end"><button data-save-org>${t.save}</button></span></div>
-        <p><b>${t.nav.institutes}:</b> ${o.institutes.map((iid) => { const i = od.institutes.find((x) => x.id === iid); return i ? `<a href="#/instituut/${i.id}">${esc(instName(i))}</a>` : '' }).join(' · ') || `<span class="muted">${t.noneYet}</span>`}</p>
-        <p><b>${t.orgAdmins}:</b></p>
-        <ul class="orgmem">${o.members.map((u) => `<li>${esc(memberLabel(u))} <button type="button" class="link danger" data-org-rm="${u.id}">${t.unlink}</button></li>`).join('') || `<li class="muted">${t.noneYet}</li>`}</ul>
-        <div class="grid3"><label>${t.chooseAccount}<select name="user"><option value=""></option>${options(od.staff.filter((u) => !o.members.some((m) => m.id === u.id)).map((u) => [u.id, memberLabel(u)]))}</select></label>
-          <span class="end"><button class="primary" data-org-add>${t.add}</button></span></div><p class="msg"></p></section>`).join('')}</div>
-      <form class="card" id="newOrg"><h3>${t.newOrg}</h3><div class="grid3">
-        <label>${t.nameNl}<input name="name_nl" required></label><label>${t.nameAr}<input name="name_ar" dir="rtl" required></label>
-        <span class="end"><button class="primary">${t.create}</button></span></div><p class="msg"></p></form>
-      <h2>${t.nav.institutes}</h2>` : ''}
+    ${od ? `<p><a class="btn" href="#/organisaties">${t.orgs} →</a></p>` : ''}
     <table class="tbl"><thead><tr><th>${t.nameNl}</th><th>${t.nameAr}</th>${od ? `<th>${t.orgCol}</th>` : ''}<th>${t.groupsCol}</th><th>${t.nav.books}</th><th>${t.membersCol}</th><th></th></tr></thead><tbody>
     ${list.map((i) => `<tr data-inst-row="${i.id}"><td>${nameCell(i, 'name_nl', 'ltr')}</td><td>${nameCell(i, 'name_ar', 'rtl')}</td>
       ${od ? `<td><select name="organization">${orgOpts(od.institutes.find((x) => x.id === i.id)?.organization_id ?? '')}</select></td>` : ''}
@@ -814,14 +810,69 @@ async function institutesView () {
     })
   }
   form($('#newInst'), async (d) => { await api('institutes', 'POST', { ...d, organization: d.organization ? Number(d.organization) : null }); me = await api('me'); institutesView() })
-  if (!od) return
-  form($('#newOrg'), async (d) => { await api('organizations', 'POST', d); institutesView() })
-  for (const sec of $$('[data-org]')) {
-    const oid = sec.dataset.org
-    const fail = (e) => { const m = $('.msg', sec); m.className = 'msg err'; m.textContent = e.message }
-    $('[data-save-org]', sec).onclick = async () => { try { await api('organizations/' + oid, 'PATCH', { name_nl: $('[name=name_nl]', sec).value, name_ar: $('[name=name_ar]', sec).value }); institutesView() } catch (e) { fail(e) } }
-    $('[data-org-add]', sec).onclick = async () => { const u = $('[name=user]', sec).value; if (!u) return; try { await api(`organizations/${oid}/members`, 'POST', { users: [Number(u)] }); institutesView() } catch (e) { fail(e) } }
-    for (const b of $$('[data-org-rm]', sec)) b.onclick = async () => { if (!confirm(t.confirmOrgUnlink)) return; try { await api(`organizations/${oid}/members?user=${b.dataset.orgRm}`, 'DELETE', {}); institutesView() } catch (e) { fail(e) } }
+}
+
+// ---------- organisaties (alleen de superbeheerder) ----------
+const orgName = (o) => o ? (lang === 'ar' ? o.name_ar : o.name_nl) : ''
+const isSuperUser = () => (me?.roles || []).includes('superadmin')
+
+async function organizationsView () {
+  const d = await api('organizations')
+  const n = (o, role) => o.members.filter((u) => u.roles.includes(role)).length
+  render(html`<h1>${t.orgs}</h1><p class="muted">${t.orgsHelp}</p>
+    <div class="orgcards">${d.organizations.map((o) => `<a class="card orgcard" href="#/organisatie/${o.id}"><h2>${esc(orgName(o))}</h2>
+      <p class="muted small">${o.institutes.map((iid) => esc(instName(d.institutes.find((i) => i.id === iid)))).join(' · ') || t.noneYet}</p>
+      <span class="btn primary">${t.manageOrg} →</span></a>`).join('')}</div>
+    <form class="card" id="newOrg"><h2>${t.newOrg}</h2><div class="grid3">
+      <label>${t.nameNl}<input name="name_nl" required></label><label>${t.nameAr}<input name="name_ar" dir="rtl" required></label>
+      <span class="end"><button class="primary">${t.create}</button></span></div>
+      <p class="muted"><small>${t.newOrgHelp}</small></p><p class="msg"></p></form>`)
+  form($('#newOrg'), async (x) => { const r = await api('organizations', 'POST', x); location.hash = '#/organisatie/' + r.id })
+}
+
+const ORG_TABS = {
+  admins: (u) => u.roles.some((r) => r === 'admin' || r === 'editor'),
+  teachers: (u) => u.roles.includes('teacher'),
+  students: (u) => u.roles.includes('student') || !u.roles.length,
+  all: () => true
+}
+async function organizationView (oid) {
+  const d = await api('organizations/' + oid)
+  const q = new URLSearchParams(location.hash.split('?')[1] || '')
+  const tab = ORG_TABS[q.get('tab')] ? q.get('tab') : 'admins'
+  const rows = d.members.filter(ORG_TABS[tab])
+  const iName = (id) => instName(d.institutes.find((i) => i.id === id))
+  const where = (u) => u.organizations.length ? t.inOtherOrg : t.unassigned
+  const label = (u) => `${u.name || u.email} (${u.email})${u.roles.length ? ' · ' + rolesName(u.roles.join(',')) : ''} · ${where(u)}`
+  const free = d.candidates.filter((u) => !u.organizations.length)
+  render(html`<p><a href="#/organisaties">← ${t.orgs}</a></p>
+    <div class="head"><h1>${esc(orgName(d.organization))}</h1></div>
+    <form class="card" id="orgName"><div class="grid3">
+      <label>${t.nameNl}<input name="name_nl" value="${esc(d.organization.name_nl)}" required></label>
+      <label>${t.nameAr}<input name="name_ar" dir="rtl" value="${esc(d.organization.name_ar)}" required></label>
+      <span class="end"><button>${t.save}</button></span></div><p class="msg"></p></form>
+    <h2>${t.nav.institutes}</h2>
+    <p class="orginst">${d.institutes.map((i) => `<a class="btn" href="#/instituut/${i.id}">${esc(instName(i))}</a>`).join(' ') || `<span class="muted">${t.noInstInOrg}</span>`}</p>
+    <p class="muted small">${t.orgInstHelp}</p>
+    ${free.length ? `<p class="warn">${fmt(t.unassignedN, { n: free.length })}</p>` : ''}
+    <form class="card" id="addOrgMem"><h2>${t.addToOrg}</h2><div class="grid3">
+      <label>${t.chooseAccount}<select name="user" required><option value=""></option>${options([...free, ...d.candidates.filter((u) => u.organizations.length)].map((u) => [u.id, label(u)]))}</select></label>
+      <span class="end"><button class="primary">${t.add}</button> <a class="btn" href="#/gebruikers">${t.inviteNew}</a></span></div>
+      <p class="muted"><small>${t.addToOrgHelp}</small></p><p class="msg"></p></form>
+    <nav class="tabs">${Object.keys(ORG_TABS).map((k) => `<a href="#/organisatie/${d.organization.id}?tab=${k}"${k === tab ? ' class="on" aria-current="page"' : ''}>${esc(t.orgTabs[k])} <span class="pill">${d.members.filter(ORG_TABS[k]).length}</span></a>`).join('')}</nav>
+    ${rows.length ? `<table class="tbl"><thead><tr><th>${t.name}</th><th>${t.roles}</th><th>${t.nav.institutes}</th><th></th></tr></thead><tbody>
+      ${rows.map((u) => `<tr data-om="${u.id}"><td><b>${esc(u.name || '')}</b><br><small dir="ltr">${esc(u.email)}</small> ${u.status !== 'active' ? badge(u.status) : ''}</td>
+        <td>${esc(rolesName(u.roles.join(','))) || '—'}</td>
+        <td>${u.institutes.map((i) => esc(iName(i))).join('<br>') || `<small class="muted">${t.wholeOrg}</small>`}</td>
+        <td class="nowrap"><a class="btn small" href="#/gebruikers?groep=${tab === 'admins' ? 'staff' : tab}">${t.rolesBtn}</a> <button class="danger small" data-om-rm>${t.unlink}</button><div class="msg"></div></td></tr>`).join('')}</tbody></table>`
+    : `<p class="muted">${t.noItems}</p>`}`)
+  form($('#orgName'), async (x) => { await api('organizations/' + oid, 'PATCH', x); organizationView(oid) })
+  form($('#addOrgMem'), async (x) => { await api(`organizations/${oid}/members`, 'POST', { users: [Number(x.user)] }); organizationView(oid) })
+  for (const row of $$('[data-om]')) {
+    $('[data-om-rm]', row).onclick = async () => {
+      if (!confirm(t.confirmOrgUnlink)) return
+      try { await api(`organizations/${oid}/members?user=${row.dataset.om}`, 'DELETE', {}); organizationView(oid) } catch (e) { const m = $('.msg', row); m.className = 'msg err'; m.textContent = e.message }
+    }
   }
 }
 
@@ -933,6 +984,8 @@ const ROUTES = [
   [/^beoordelen$/, reviewView, 'content.edit'],
   [/^feedback$/, feedbackView, 'feedback.assigned'],
   [/^gebruikers$/, usersView, 'users.manage'],
+  [/^organisaties$/, organizationsView, 'institutes.manage'],
+  [/^organisatie\/(\d+)$/, organizationView, 'institutes.manage'],
   [/^instituten$/, institutesView, 'users.manage'],
   [/^instituut\/(\d+)$/, instituteView, 'users.manage'],
   [/^audit$/, auditView, 'audit.view'],

@@ -4,7 +4,7 @@
 // (zijn aanwezigheid blijft bewaard).
 import { json, body, need, fail, id } from '../../../../../lib/http.js'
 import { audit } from '../../../../../lib/audit.js'
-import { needInstitute, userScope } from '../../../../../lib/institutes.js'
+import { needInstitute, userScope, linkOrgsOfInstitutes } from '../../../../../lib/institutes.js'
 
 const qs = (a) => a.map(() => '?').join(', ')
 
@@ -19,6 +19,7 @@ export async function onRequestPost ({ request, params, data: { conn, user } }) 
   const found = await conn.execute(`SELECT u.id FROM users u WHERE u.id IN (${qs(ids)})${scope ? ' AND ' + scope.sql : ''}`, [...ids, ...(scope ? scope.args : [])])
   if (found.length !== ids.length) fail(403, 'Deze gebruiker hoort niet bij jouw instituut')
   await conn.execute(`INSERT IGNORE INTO user_institutes (user_id, institute_id) VALUES ${ids.map(() => '(?, ?)').join(', ')}`, ids.flatMap((u) => [u, instituteId]))
+  await linkOrgsOfInstitutes(conn, ids, [instituteId])
   await audit(conn, user, 'institute.members.add', 'institute', instituteId, { users: ids })
   return json({ ok: true, added: ids.length })
 }
