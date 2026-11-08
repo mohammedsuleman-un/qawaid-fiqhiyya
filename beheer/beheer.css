@@ -188,3 +188,14 @@ html[dir="rtl"] .side-foot .logout svg{transform:scaleX(-1)}
 .insts label.inline{display:inline-flex;margin-inline-end:12px}td.insts{min-width:160px}
 fieldset.gender{border:0;padding:0;margin:4px 0 8px;display:flex;gap:16px;flex-wrap:wrap}fieldset.gender legend{font-weight:600;margin-bottom:6px;padding:0}
 .hp{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);opacity:0;pointer-events:none}
+
+.orgcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,440px),1fr));gap:14px;margin:0 0 18px}
+.orgcard{display:block;color:inherit;text-decoration:none}
+a.orgcard:hover{border-color:var(--gold)}
+.orgcard h2,.orgcard h3{margin:0 0 6px}
+.stats.mini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0}
+.stats.mini .stat{padding:10px;min-width:0}
+.stats.mini .stat b{font-size:20px}
+.stats.mini .stat span{font-size:12px;overflow-wrap:anywhere}
+.orginst{display:flex;flex-wrap:wrap;gap:8px}
+.dashorgs{margin:0 0 18px}

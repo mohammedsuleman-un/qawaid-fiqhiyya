@@ -1,5 +1,6 @@
 // Beheerders (en andere medewerkers) aan een organisatie koppelen (alleen de superbeheerder).
-// POST {users: [id]}: koppelen. DELETE ?user=: loskoppelen.
+// POST {users: [id]}: koppelen. DELETE ?user=: loskoppelen, ook van de instituten en groepen
+// van deze organisatie (aanwezigheid blijft bewaard).
 import { json, body, need, fail, id } from '../../../../../lib/http.js'
 import { audit } from '../../../../../lib/audit.js'
 import { needSuper } from '../../../../../lib/institutes.js'
@@ -33,6 +34,9 @@ export async function onRequestDelete ({ request, params, data: { conn, user } }
   const orgId = await org(conn, params)
   const userId = id(new URL(request.url).searchParams.get('user'))
   await conn.execute('DELETE FROM user_organizations WHERE user_id = ? AND organization_id = ?', [userId, orgId])
+  await conn.execute('DELETE FROM user_institutes WHERE user_id = ? AND institute_id IN (SELECT id FROM institutes WHERE organization_id = ?)', [userId, orgId])
+  await conn.execute(`DELETE FROM class_group_members WHERE user_id = ? AND group_id IN
+    (SELECT g.id FROM class_groups g JOIN institutes i ON i.id = g.institute_id WHERE i.organization_id = ?)`, [userId, orgId])
   await audit(conn, user, 'organization.members.remove', 'organization', orgId, { user: userId })
   return json({ ok: true })
 }
