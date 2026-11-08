@@ -58,6 +58,8 @@ test('bestaande boeken en roosters horen bij Instituut Ibn Al-Qayyim', async () 
   const cal = calendar({ blocks: [blk], days: aiDays, from: '2026-11-01', to: '2027-01-17', cohorts: ['A'], year: schoolYear(aiDays, '2026-11-08') })
   const alt = cal.filter((x) => x.lessons.length).map((x) => x.date.slice(5) + (x.alt.length ? 'J' : 'A'))
   assert.deepEqual(alt, ['11-01J', '11-08A', '11-15J', '11-22A', '11-29J', '12-06A', '12-13J', '12-20A', '01-10J', '01-17A'])
+  const [{ o }] = await conn.execute('SELECT organization_id AS o FROM institutes WHERE id = ?', [ai.id])
+  assert.equal(Number(o), 1)
   // De rest van deze tests gaat uit van één instituut aan het begin.
   for (const sql of abuIsmail.down) await conn.execute(sql)
   const [inst] = await conn.execute('SELECT id, name_nl, name_ar FROM institutes')
@@ -291,7 +293,7 @@ test('organisaties: alleen de superbeheerder; beheerders zien alleen de institut
   assert.equal(no.status, 403)
   const list = await call(conn, 'GET', '/api/admin/organizations', organizations, { cookie: s.boss.cookie })
   assert.equal(list.status, 200, JSON.stringify(list.data))
-  assert.deepEqual(list.data.organizations.find((o) => o.name_nl === 'Instituut Ibn Al-Qayyim').institutes, [1])
+  assert.deepEqual(list.data.organizations.map((o) => [o.name_nl, o.institutes]), [['Stichting As-Soennah', [1]]])
   const made = await call(conn, 'POST', '/api/admin/organizations', organizations, { cookie: s.boss.cookie, body: { name_nl: 'Organisatie Twee', name_ar: 'المؤسسة الثانية' } })
   assert.equal(made.status, 200, JSON.stringify(made.data))
   const org = made.data.id
