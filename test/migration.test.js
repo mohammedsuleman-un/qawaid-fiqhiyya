@@ -198,4 +198,8 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
     WHERE b.slug = 'al-qawaid-al-fiqhiyya' AND b.status = 'published' ORDER BY c.position`)
   assert.ok(qf.length > 100)
   assert.ok(qf.some((c) => c.title.startsWith('١ ')) && qf.some((c) => c.title.startsWith('١٠٠ ')))
+  const [lijst] = await conn.execute(`SELECT v.body FROM chapters c JOIN books b ON b.id = c.book_id
+    JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
+    JOIN content_versions v ON v.id = t.published_version_id WHERE b.slug = 'al-qawaid-al-fiqhiyya' AND c.slug = '1'`)
+  assert.ok(lijst.body.includes('يغتفر في التابع')) // migratie 182: lijst aangevuld tot ١٠٠
 })

@@ -584,6 +584,54 @@ export default {
    "html": "<span class=\"n\">٩٢</span> الغرر اليسير معفو عنه."
   },
   {
+   "kind": "p",
+   "page": 4,
+   "anchor": null,
+   "html": "<span class=\"n\">٩٣</span> الحكم يدور مع علته وجودًا وعدمًا."
+  },
+  {
+   "kind": "p",
+   "page": 4,
+   "anchor": null,
+   "html": "<span class=\"n\">٩٤</span> لا عبرة للتوهم."
+  },
+  {
+   "kind": "p",
+   "page": 4,
+   "anchor": null,
+   "html": "<span class=\"n\">٩٥</span> لا حجة مع الاحتمال الناشئ عن دليل."
+  },
+  {
+   "kind": "p",
+   "page": 4,
+   "anchor": null,
+   "html": "<span class=\"n\">٩٦</span> لا عبرة بالظن البين خطؤه."
+  },
+  {
+   "kind": "p",
+   "page": 4,
+   "anchor": null,
+   "html": "<span class=\"n\">٩٧</span> المشغول لا يشغل."
+  },
+  {
+   "kind": "p",
+   "page": 4,
+   "anchor": null,
+   "html": "<span class=\"n\">٩٨</span> الشك بعد الفراغ من العبادة لا يؤثر."
+  },
+  {
+   "kind": "p",
+   "page": 4,
+   "anchor": null,
+   "html": "<span class=\"n\">٩٩</span> حديث النفس معفو عنه مالم يقارنه كلام أو عمل."
+  },
+  {
+   "kind": "p",
+   "page": 4,
+   "anchor": null,
+   "html": "<span class=\"n\">١٠٠</span> يغتفر في التابع مالا يغتفر في المتبوع."
+  },
+  {
    "kind": "page",
    "page": 5,
    "anchor": null,
