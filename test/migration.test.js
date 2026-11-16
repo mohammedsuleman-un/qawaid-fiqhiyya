@@ -202,4 +202,9 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
     JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
     JOIN content_versions v ON v.id = t.published_version_id WHERE b.slug = 'al-qawaid-al-fiqhiyya' AND c.slug = '1'`)
   assert.ok(lijst.body.includes('يغتفر في التابع')) // migratie 182: lijst aangevuld tot ١٠٠
+  // migratie 183: per regel blokken met zijn eigen kopjes, uitspraken als citaat
+  const [r6] = await conn.execute(`SELECT v.body FROM chapters c JOIN books b ON b.id = c.book_id
+    JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
+    JOIN content_versions v ON v.id = t.published_version_id WHERE b.slug = 'al-qawaid-al-fiqhiyya' AND c.slug = '8'`)
+  assert.ok(r6.body.includes('<div class="blk ex"><div class="blkh">أمثلة:</div>') && r6.body.includes('<blockquote><cite>قال السيوطي'))
 })
