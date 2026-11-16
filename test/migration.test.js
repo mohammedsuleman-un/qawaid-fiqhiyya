@@ -192,4 +192,10 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   const [{ np }] = await conn.execute(`SELECT COUNT(*) AS np FROM person_books pb JOIN books b ON b.id = pb.book_id JOIN persons p ON p.id = pb.person_id
     WHERE b.slug = 'at-tadmuriyya' AND p.slug IN ('jahm-ibn-safwan', 'ibn-kullab', 'ibn-abbas')`)
   assert.equal(Number(np), 3)
+  // القواعد الفقهية (migratie 181): Mohammeds notities, gepubliceerd onder Fiqh, met regel 1 en 100 als hoofdstuk.
+  const qf = await conn.execute(`SELECT t.title FROM chapters c JOIN books b ON b.id = c.book_id
+    JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
+    WHERE b.slug = 'al-qawaid-al-fiqhiyya' AND b.status = 'published' ORDER BY c.position`)
+  assert.ok(qf.length > 100)
+  assert.ok(qf.some((c) => c.title.startsWith('١ ')) && qf.some((c) => c.title.startsWith('١٠٠ ')))
 })
