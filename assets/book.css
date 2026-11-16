@@ -66,29 +66,44 @@ mark{color:inherit}
   .wrap{padding:20px 16px 60px}
   .book{font-size:calc(18px * var(--fsr,1))}
 }
-/* القواعد الفقهية: per regel blokken met de eigen kopjes uit het schrift (betekenis, bewijs, voorbeelden, uitspraken) */
+/* القواعد الفقهية: per regel vaste vakken (begrippen, betekenis, bewijzen, opmerkingen, voorbeelden, uitspraken) */
 :root{--ayah-bg:#e9f5ea;--hadith-bg:#f8efe4;--gold:#8a6a1f;--gold-bg:#fbf3dc}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ayah-bg:#19301f;--hadith-bg:#33271a;--gold:#e3c77a;--gold-bg:#2f2814}}
 :root[data-theme="dark"]{--ayah-bg:#19301f;--hadith-bg:#33271a;--gold:#e3c77a;--gold-bg:#2f2814}
 .book h2 .n{display:inline-grid;place-items:center;min-width:1.75em;height:1.75em;padding:0 .2em;border-radius:99px;border:2px solid var(--head-line);background:var(--surface);color:var(--head-ink);margin-inline-end:8px;font-size:.85em;line-height:1}
-.book .blk{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 16px 8px;margin:0 0 12px}
-.book .blk.lead{background:transparent;border:0;padding:0 2px;margin-bottom:14px}
-.book .blk.mn{background:var(--gold-bg);border-color:transparent}
-.book .blkh{font-family:var(--body);font-size:13.5px;font-weight:600;line-height:1.6;color:var(--muted);display:flex;align-items:center;gap:10px;margin:0 0 6px}
-.book .blkh::after{content:"";flex:1;border-top:1px solid var(--line)}
-.book .blk.mn .blkh{color:var(--gold)}
-.book .blk.ex .blkh{color:var(--b-ink)}
-.book .blk.dl .blkh{color:var(--ayah)}
-.book .blk.st .blkh{color:var(--head-ink)}
-.book .blkh mark,.book .blkh .lbl{background:none;color:inherit;padding:0;font-weight:inherit}
-.book .blk p{margin:0 0 6px}
-.book .blk p.li{margin:0;padding:3px 0;border-top:1px dashed var(--line)}
-.book .blk p.li:first-of-type,.book .blkh + p.li{border-top:0}
-.book .blk p.pt{color:var(--ink);padding-inline-start:4px}
-.book p.ev{border-radius:10px;padding:6px 14px;margin:6px 0}
-.book p.eva{background:var(--ayah-bg)}
-.book p.evh{background:var(--hadith-bg)}
-.book .blk blockquote{margin:6px 0 10px;background:var(--surface2);border-radius:10px;padding:6px 14px}
-.book .blk blockquote cite{display:block;font-style:normal;font-family:var(--body);font-size:13px;font-weight:600;color:var(--gold);line-height:1.8}
-.book .blk .pg{margin:10px 0 6px}
-@media (max-width:520px){.book .blk{padding:8px 12px 6px}}
+.book .qs-meta{font-family:var(--body);font-size:12.5px;color:var(--muted);margin:-4px 2px 14px}
+.book .qs{margin:0 0 18px}
+.book .qs>h3{font-family:var(--body);font-size:13.5px;font-weight:600;line-height:1.6;color:var(--muted);display:flex;align-items:center;gap:10px;margin:0 0 8px}
+.book .qs>h3::after{content:"";flex:1;border-top:1px solid var(--line)}
+.book .qs-core>h3,.book .qs-quotes>h3{color:var(--gold)}
+.book .qs-ev>h3{color:var(--ayah)}
+.book .qs-ex>h3{color:var(--b-ink)}
+.book .qs-terms>h3{color:var(--head-ink)}
+.book .qs p{margin:0 0 6px}
+.book .qs .side{margin:6px 0}
+.book .terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.book .term{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 16px;min-width:0}
+.book .term b{display:block;color:var(--head-ink);font-size:1.05em}
+.book .term p{margin:0}
+.book p.core{background:var(--gold-bg);border-radius:10px;padding:12px 18px;font-size:1.1em;text-align:center;text-wrap:balance;margin:0 0 8px}
+.book ul.points,.book ul.lst,.book ul.ev{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.book ul.points li{padding-inline-start:18px;position:relative}
+.book ul.points li::before{content:"*";position:absolute;inset-inline-start:0;color:var(--muted)}
+.book ul.lst li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 16px}
+.book ul li.sd{background:none;border:0;color:var(--sharh);font-size:.9em;padding-inline-start:18px}
+.book ul li.sd::before{content:none}
+.book ul.ev{gap:10px}
+.book ul.ev li{border-radius:10px;padding:8px 16px;min-width:0;background:var(--surface2)}
+.book ul.ev li.eva{background:var(--ayah-bg)}
+.book ul.ev li.evh{background:var(--hadith-bg)}
+.book ul.ev li.sd{background:none}
+.book .ev .src{display:block;font-family:var(--body);font-size:13px;color:var(--muted);line-height:1.8}
+.book .exl{display:flex;flex-direction:column;gap:8px}
+.book .exr{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 16px}
+.book .exr.one{grid-template-columns:minmax(0,1fr)}
+.book .exr .arrow{color:var(--muted);font-family:var(--body)}
+.book .exr .res{color:var(--ayah);font-weight:700}
+.book .qs blockquote{margin:0 0 10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 18px}
+.book .qs blockquote cite{display:block;font-style:normal;font-family:var(--body);font-size:13px;font-weight:600;color:var(--gold);line-height:1.8}
+.book .qs blockquote p{margin:0}
+@media (max-width:520px){.book .exr{grid-template-columns:minmax(0,1fr);gap:2px}.book .exr .arrow{display:none}.book .term,.book .exr,.book ul.ev li{padding-inline:12px}}
