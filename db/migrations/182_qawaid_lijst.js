@@ -12,6 +12,7 @@ export default {
   name: 'qawaid-lijst-93-100',
   up: [async (conn) => {
     const [first] = blocksToChapters(qawaid.blocks)
+    if (!first.title.includes('قائمة القواعد')) return // lijst is sinds migratie 184 niet meer in de seed
     const rows = await conn.execute(`SELECT t.id AS tid, t.published_version_id AS vid FROM chapters c JOIN books b ON b.id = c.book_id
       JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
       WHERE b.slug = ? AND c.slug = '1'`, [SLUG])
