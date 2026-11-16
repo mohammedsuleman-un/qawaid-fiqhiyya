@@ -60,7 +60,7 @@ while (i < article.length) {
   } else if (tag === 'h2') kind = 'heading'
   else if (tag === 'p') kind = cls === 'cont' ? 'cont' : 'p'
   else if (tag === 'div' && (cls === 'sharh' || cls === 'side')) kind = cls
-  else if (tag === 'div' && /^blk\b/.test(cls)) { blocks.push({ kind: 'raw', page, anchor: null, html: outer }); continue }
+  else if (tag === 'div' && /^(blk|qs)\b/.test(cls)) { blocks.push({ kind: 'raw', page, anchor: null, html: outer }); continue }
   else throw new Error(`Onbekend element: ${open[0]}`)
   blocks.push({ kind, page, anchor: kind === 'heading' ? id : null, html: inner })
 }

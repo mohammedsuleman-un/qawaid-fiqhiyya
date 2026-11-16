@@ -199,9 +199,9 @@ test('migraties zijn terug te draaien en opnieuw uit te voeren', async () => {
   assert.ok(qf.length > 100)
   assert.ok(qf.some((c) => c.title.startsWith('١ ')) && qf.some((c) => c.title.startsWith('١٠٠ ')))
   assert.ok(!qf.some((c) => c.title === 'قائمة القواعد')) // migratie 184: lijst alleen in de inhoudsopgave
-  // migratie 183: per regel blokken met zijn eigen kopjes, uitspraken als citaat
+  // migratie 186: per regel vaste vakken (begrippen, betekenis, bewijzen, voorbeelden), uitspraken als citaat
   const [r6] = await conn.execute(`SELECT v.body FROM chapters c JOIN books b ON b.id = c.book_id
     JOIN content_translations t ON t.entity_type = 'chapter' AND t.entity_id = c.id AND t.lang = 'ar'
     JOIN content_versions v ON v.id = t.published_version_id WHERE b.slug = 'al-qawaid-al-fiqhiyya' AND t.title LIKE '٦ اليقين%'`)
-  assert.ok(r6.body.includes('<div class="blk ex"><div class="blkh">أمثلة:</div>') && r6.body.includes('<blockquote><cite>قال السيوطي'))
+  assert.ok(r6.body.includes('<div class="qs qs-terms"><h3>التعريفات</h3>') && r6.body.includes('<div class="qs qs-ex"><h3>أمثلة:</h3>') && r6.body.includes('<blockquote><cite>قال السيوطي'))
 })
