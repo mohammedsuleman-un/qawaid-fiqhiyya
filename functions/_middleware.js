@@ -3,7 +3,10 @@
 // waar een bestand staat, daarom gebeurt het doorsturen hier.)
 const MOVED = {
   '/': ['/bibliotheek', 302],
-  '/index.html': ['/qawaid/', 301],
+  '/index.html': ['/boek/al-qawaid-al-fiqhiyya', 301],
+  '/qawaid': ['/boek/al-qawaid-al-fiqhiyya', 301],
+  '/qawaid/': ['/boek/al-qawaid-al-fiqhiyya', 301],
+  '/qawaid/index.html': ['/boek/al-qawaid-al-fiqhiyya', 301],
   '/library.html': ['/bibliotheek', 301],
   '/library': ['/bibliotheek', 301],
   '/talkhis-jam-al-jawami': ['/boek/talkhis-jam-al-jawami', 301],
