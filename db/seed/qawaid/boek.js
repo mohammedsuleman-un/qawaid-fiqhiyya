@@ -9,32 +9,14 @@ export default {
  "blocks": [
   {
    "kind": "page",
-   "page": 1,
+   "page": 5,
    "anchor": null,
    "html": ""
   },
   {
    "kind": "heading",
-   "page": 1,
+   "page": 5,
    "anchor": "h1",
-   "html": "قائمة القواعد"
-  },
-  {
-   "kind": "raw",
-   "page": 1,
-   "anchor": null,
-   "html": "<div class=\"blk lead\">\n<p><span class=\"n\">١</span> المقاصد والإعتقادات معتبرة في التصرفات والعبارات كما هي معتبرة في التقربات والعبادات.</p>\n<p><span class=\"n\">٢</span> العبرة في العقود بالمقاصد والمعاني لا الألفاظ والمباني.</p>\n<p><span class=\"n\">٣</span> لا ينسب إلى ساكت قول، والسكوت في معرض الحاجة بيان.</p>\n<p><span class=\"n\">٤</span> لا عبرة للدلالة في مقابلة التصريح.</p>\n<p><span class=\"n\">٥</span> ذكر ما لا يتجزأ كذكر كله.</p>\n<p><span class=\"n\">٦</span> اليقين لا يزول بالشك.</p>\n<p><span class=\"n\">٧</span> الأصل براءة الذمة.</p>\n<p><span class=\"n\">٨</span> الأصل بقاء ما كان على ما كان.</p>\n<p><span class=\"n\">٩</span> الأصل إضافة الحادث الى أقرب أوقاته.</p>\n<p><span class=\"n\">١٠</span> إذا ضاق الأمر اتسع وإذا اتسع ضاق.</p>\n<p><span class=\"n\">١١</span> المشقة تجلب التيسير.</p>\n<p><span class=\"n\">١٢</span> الضرورات تبيح المحظورات.</p>\n<p><span class=\"n\">١٣</span> الضرورات تقدر بقدرها.</p>\n<p><span class=\"n\">١٤</span> الحاجة تنزل منزلة الضرورة عامة أو خاصة.</p>\n<p><span class=\"n\">١٥</span> ما حرم سداً للذريعة أبيح للمصلحة الراجحة والحاجة.</p>\n<p><span class=\"n\">١٦</span> الإضطرار لا يبطل حق الغير.</p>\n<p><span class=\"n\">١٧</span> ما حرم أخذه حرم إعطاؤه.</p>\n<p><span class=\"n\">١٨</span> الضرر يزال</p>\n<p><span class=\"n\">١٩</span> الضرر لا يزال بمثله.</p>\n<p><span class=\"n\">٢٠</span> الضرر يدفع بقدر الإمكان</p>\n<p><span class=\"n\">٢١</span> يتحمل الضرر الخاص لدفع الضرر العام.</p>\n<p><span class=\"n\">٢٢</span> الضرر الأشد يزال بالضرر الأخف.</p>\n<p><span class=\"n\">٢٣</span> درأ المفاسد أولى من جلب المصالح.</p>\n<p><span class=\"n\">٢٤</span> لا ينكر تغير الأحكام بتغير الزمان والمكان.</p>\n<p><span class=\"n\">٢٥</span> العادة محكمة.</p>\n<p><span class=\"n\">٢٦</span> الممتنع عادة كالممتنع حقيقة.</p>\n<p><span class=\"n\">٢٧</span> العبرة للغالب الشائع لا النادر.</p>\n<p><span class=\"n\">٢٨</span> التابع تابع</p>\n<p><span class=\"n\">٢٩</span> البينة على المدعي واليمين على من أنكر.</p>\n<div class=\"pg\" id=\"p2\"><span>2</span></div>\n<p><span class=\"n\">٣٠</span> الخراج بالضمان <span class=\"n\">٣١</span> الأجر والضمان لا يجتمعان (الأحناف).</p>\n<p><span class=\"n\">٣٢</span> الجواز الشرعي (المطلق) ينافي الضمان.</p>\n<p><span class=\"n\">٣٣</span> إذا اجتمع المباشر والمتسبب يضاف الحكم إلى المباشر.</p>\n<p><span class=\"n\">٣٤</span> المتسبب لا يضمن إلا بالتعمد (التعدي).</p>\n<p><span class=\"n\">٣٥</span> تبدل سبب الملك قائم مقام تبدل الذات (والحكم).</p>\n<p><span class=\"n\">٣٦</span> من استعجل الشيء قبل أوانه عوقب بحرمانه.</p>\n<p><span class=\"n\">٣٧</span> من سعى في نقض ما تم من جهته. فسعيه مردود عليه.</p>\n<p><span class=\"n\">٣٨</span> إذا اجتمع الحلال (المباح) والحرام غُلب الحرام.</p>\n<p><span class=\"n\">٣٩</span> الأصل في الأبضاع التحريم.</p>\n<p><span class=\"n\">٤٠</span> الأصل في الأشياء الإباحة.</p>\n<p><span class=\"n\">٤١</span> الخروج من الخلاف مستحب.</p>\n<p><span class=\"n\">٤٢</span> الميسور لا يسقط بالمعسور.</p>\n<p><span class=\"n\">٤٣</span> الأصل في المضار التحريم.</p>\n<p><span class=\"n\">٤٤</span> الإيثار في القرب مكروه وفي غيره محبوب.</p>\n<p><span class=\"n\">٤٥</span> إذا اجتمع أمران من جنس واحد ولم يختلف مقصودهما دخل أحدهما في الآخر.</p>\n<p><span class=\"n\">٤٦</span> يغتفر في البقاء ما لا يغتفر في الإبتداء.</p>\n<p><span class=\"n\">٤٧</span> المواعيد بصورة التعاليق تكون لازمة.</p>\n<p><span class=\"n\">٤٨</span> المعلق بالشرط يجب ثبوته عند ثبوت الشرط.</p>\n<p><span class=\"n\">٤٩</span> الوصف في الحاضر لغو.</p>\n<p><span class=\"n\">٥٠</span> للأكثر حكم الكل.</p>\n<p><span class=\"n\">٥١</span> المجهول في الشريعة كالمعدوم والمعجوز عنه.</p>\n<p><span class=\"n\">٥٢</span> إذا تعذر الأصل يُصار إلى البدل.</p>\n<p><span class=\"n\">٥٣</span> الشروط في باب المأمورات لا تسقط بالجهل والنسيان، وفي باب التروك تسقط.</p>\n<p><span class=\"n\">٥٤</span> لا واجب مع العجز ولا محرم مع الضرورة.</p>\n<p><span class=\"n\">٥٥</span> من أتلف شيئا لينتفع به ضمنه، ومن أتلفه ليدفع ضرره عنه لم يضمن.</p>\n<p><span class=\"n\">٥٦</span> لا يضمن الأمين تلف العين، إلا بالتعدي والتفريط.</p>\n<p><span class=\"n\">٥٧</span> الأصل في الصفات العارضة العدم.</p>\n<p><span class=\"n\">٥٨</span> القديم يترك على قدمه.</p>\n<p><span class=\"n\">٥٩</span> الضرر لا يكون قديما.</p>\n<p><span class=\"n\">٦٠</span> ما ثبت بيقين لا يرتفع الا بيقين.</p>\n<div class=\"pg\" id=\"p3\"><span>3</span></div>\n<p><span class=\"n\">٦١</span> ترك الاستفصال في مقام الإحتمال، ينزل منزلة العموم من المقال.</p>\n<p><span class=\"n\">٦٢</span> إنما تعتبر العادة إذا اطردت أو غلبت.</p>\n<p><span class=\"n\">٦٣</span> المعروف عرفاً كالمشروط شرطاً</p>\n<p><span class=\"n\">٦٤</span> إعمال الكلام أولى من إهماله.</p>\n<p><span class=\"n\">٦٥</span> المطلق يجري على إطلاقه ما لم يقم دليل التقييد نصاً أو دلالة.</p>\n<p><span class=\"n\">٦٦</span> الحقيقة تترك بدلالة العادة.</p>\n<p><span class=\"n\">٦٧</span> السؤال معاد في الجواب.</p>\n<p><span class=\"n\">٦٨</span> التأسيس أولى من التأكيد.</p>\n<p><span class=\"n\">٦٩</span> إذا سقط الأصل سقط الفرع.</p>\n<p><span class=\"n\">٧٠</span> الأصل لا يجتمع مع البدل.</p>\n<p><span class=\"n\">٧١</span> الكتاب كالخطاب.</p>\n<p><span class=\"n\">٧٢</span> الشرط الباطل لا يؤثر بالعقد.</p>\n<p><span class=\"n\">٧٣</span> الساقط لا يعود.</p>\n<p><span class=\"n\">٧٤</span> الإسقاط قبل سبب الوجوب يكون لغواً.</p>\n<p><span class=\"n\">٧٥</span> ما يضمن بالعمد يضمن بالخطأ.</p>\n<p><span class=\"n\">٧٦</span> كل عقد فاسد مردود إلى صحيحه.</p>\n<p><span class=\"n\">٧٧</span> كل ما يصح تأبيده من عقود المعاوضات لا يصح توقيته.</p>\n<p><span class=\"n\">٧٨</span> الإطلاق محمول على العادة.</p>\n<p><span class=\"n\">٧٩</span> ما لا يمكن الإحتراز منه فهو معفو عنه.</p>\n<p><span class=\"n\">٨٠</span> يغتفر في الوسائل ما لا يغتفر في المقاصد.</p>\n<p><span class=\"n\">٨١</span> كل ما أدى إثباته إلى نفيه فنفيه أولى.</p>\n<p><span class=\"n\">٨٢</span> الأيمان مبنية على الألفاظ لا على الأغراض (حنفية).</p>\n<p><span class=\"n\">٨٣</span> العدل واجب في كل شيئ، والفضل مسنون</p>\n<p><span class=\"n\">٨٤</span> تضمن المثليات بمثلها والمتقومات بقيمتها.</p>\n<p><span class=\"n\">٨٥</span> إذا تعذر المسمى رجع إلى القيمة.</p>\n<p><span class=\"n\">٨٦</span> من سبق إلى المباحات فهو أحق بها من غيره.</p>\n<p><span class=\"n\">٨٧</span> تستعمل القرعة عند التزاحم ولا مميز لأحدهما.</p>\n<p><span class=\"n\">٨٨</span> قد تتبعض الأحكام بحسب تفاوت أسبابها.</p>\n<p><span class=\"n\">٨٩</span> إذا تزاحمت المصالح قدم الأعلى منها.</p>\n<p><span class=\"n\">٩٠</span> الحوائج الأصلية للإنسان لا تعد مالا فاضلا</p>\n<div class=\"pg\" id=\"p4\"><span>4</span></div>\n<p><span class=\"n\">٩١</span> إذا قويت القرائن قدمت على الأصل</p>\n<p><span class=\"n\">٩٢</span> الغرر اليسير معفو عنه.</p>\n<p><span class=\"n\">٩٣</span> الحكم يدور مع علته وجودًا وعدمًا.</p>\n<p><span class=\"n\">٩٤</span> لا عبرة للتوهم.</p>\n<p><span class=\"n\">٩٥</span> لا حجة مع الاحتمال الناشئ عن دليل.</p>\n<p><span class=\"n\">٩٦</span> لا عبرة بالظن البين خطؤه.</p>\n<p><span class=\"n\">٩٧</span> المشغول لا يشغل.</p>\n<p><span class=\"n\">٩٨</span> الشك بعد الفراغ من العبادة لا يؤثر.</p>\n<p><span class=\"n\">٩٩</span> حديث النفس معفو عنه مالم يقارنه كلام أو عمل.</p>\n<p><span class=\"n\">١٠٠</span> يغتفر في التابع مالا يغتفر في المتبوع.</p>\n</div>"
-  },
-  {
-   "kind": "page",
-   "page": 5,
-   "anchor": null,
-   "html": ""
-  },
-  {
-   "kind": "heading",
-   "page": 5,
-   "anchor": "h2",
    "html": "القواعد الفقهية:"
   },
   {
@@ -112,7 +94,7 @@ export default {
   {
    "kind": "heading",
    "page": 7,
-   "anchor": "h3",
+   "anchor": "h2",
    "html": "<span class=\"n\">١</span> [المقاصد والإعتقادات معتبرة في التصرفات والعبارات كما هي معتبرة في التقربات والعبادات]"
   },
   {
@@ -124,7 +106,7 @@ export default {
   {
    "kind": "heading",
    "page": 7,
-   "anchor": "h4",
+   "anchor": "h3",
    "html": "<span class=\"n\">٢</span> العبرة في العقود بالمقاصد والمعاني لا الألفاظ والمباني:"
   },
   {
@@ -142,7 +124,7 @@ export default {
   {
    "kind": "heading",
    "page": 7,
-   "anchor": "h5",
+   "anchor": "h4",
    "html": "<span class=\"n\">٣</span> لا ينسب إلى ساكت قول، والسكوت في معرض الحاجة هو بيان."
   },
   {
@@ -172,7 +154,7 @@ export default {
   {
    "kind": "heading",
    "page": 7,
-   "anchor": "h6",
+   "anchor": "h5",
    "html": "<span class=\"n\">٤</span> لا عبرة للدلالة في مقابلة التصريح."
   },
   {
@@ -190,7 +172,7 @@ export default {
   {
    "kind": "heading",
    "page": 10,
-   "anchor": "h7",
+   "anchor": "h6",
    "html": "<span class=\"n\">٥</span> ذكر بعض ما لا يتجزأ كذكره كله:"
   },
   {
@@ -214,7 +196,7 @@ export default {
   {
    "kind": "heading",
    "page": 10,
-   "anchor": "h8",
+   "anchor": "h7",
    "html": "<span class=\"n\">٦</span> اليقين لا يزول بالشك. (أي حكمه)."
   },
   {
@@ -232,7 +214,7 @@ export default {
   {
    "kind": "heading",
    "page": 10,
-   "anchor": "h9",
+   "anchor": "h8",
    "html": "<span class=\"n\">٧</span> الأصل براءة الذمة: (متولدة من القاعدة الأولى)."
   },
   {
@@ -256,7 +238,7 @@ export default {
   {
    "kind": "heading",
    "page": 10,
-   "anchor": "h10",
+   "anchor": "h9",
    "html": "<span class=\"n\">٨</span> الأصل بقاء ما كان على ما كان."
   },
   {
@@ -286,7 +268,7 @@ export default {
   {
    "kind": "heading",
    "page": 10,
-   "anchor": "h11",
+   "anchor": "h10",
    "html": "<span class=\"n\">٩</span> الأصل إضافة الحادث إلى أقرب أوقاته."
   },
   {
@@ -310,7 +292,7 @@ export default {
   {
    "kind": "heading",
    "page": 10,
-   "anchor": "h12",
+   "anchor": "h11",
    "html": "<span class=\"n\">١٠</span> إذا ضاق الأمر إتسع وإذا اتسع ضاق."
   },
   {
@@ -340,7 +322,7 @@ export default {
   {
    "kind": "heading",
    "page": 10,
-   "anchor": "h13",
+   "anchor": "h12",
    "html": "<span class=\"n\">١١</span> المشقة تجلب التيسير:"
   },
   {
@@ -358,7 +340,7 @@ export default {
   {
    "kind": "heading",
    "page": 10,
-   "anchor": "h14",
+   "anchor": "h13",
    "html": "<span class=\"n\">١٢</span> الضرورات تبيح المحظورات:"
   },
   {
@@ -376,7 +358,7 @@ export default {
   {
    "kind": "heading",
    "page": 10,
-   "anchor": "h15",
+   "anchor": "h14",
    "html": "<span class=\"n\">١٣</span> الضرورات تقدر بقدرها."
   },
   {
@@ -412,7 +394,7 @@ export default {
   {
    "kind": "heading",
    "page": 15,
-   "anchor": "h16",
+   "anchor": "h15",
    "html": "<span class=\"n\">١٤</span> الحاجة تنزل منزلة الضرورة عامة أو خاصة."
   },
   {
@@ -424,7 +406,7 @@ export default {
   {
    "kind": "heading",
    "page": 15,
-   "anchor": "h17",
+   "anchor": "h16",
    "html": "<span class=\"n\">١٥</span> ما حرم سدا للذريعة أبيح للمصلحة الراجحة والحاجة."
   },
   {
@@ -454,7 +436,7 @@ export default {
   {
    "kind": "heading",
    "page": 15,
-   "anchor": "h18",
+   "anchor": "h17",
    "html": "<span class=\"n\">١٦</span> الاضطرار لا يبطل حق الغير."
   },
   {
@@ -472,7 +454,7 @@ export default {
   {
    "kind": "heading",
    "page": 15,
-   "anchor": "h19",
+   "anchor": "h18",
    "html": "<span class=\"n\">١٧</span> ما حرم أخذه حرم إعطاؤه."
   },
   {
@@ -484,7 +466,7 @@ export default {
   {
    "kind": "heading",
    "page": 15,
-   "anchor": "h20",
+   "anchor": "h19",
    "html": "<span class=\"n\">١٨</span> الضرر يزال. (قاعدة كلية كبرى)"
   },
   {
@@ -508,7 +490,7 @@ export default {
   {
    "kind": "heading",
    "page": 15,
-   "anchor": "h21",
+   "anchor": "h20",
    "html": "<span class=\"n\">٢٠</span> الضرر يدفع بقدر الإمكان."
   },
   {
@@ -526,7 +508,7 @@ export default {
   {
    "kind": "heading",
    "page": 15,
-   "anchor": "h22",
+   "anchor": "h21",
    "html": "<span class=\"n\">٢١</span> يتحمل الضرر الخاص لدفع الضرر العام."
   },
   {
@@ -568,7 +550,7 @@ export default {
   {
    "kind": "heading",
    "page": 19,
-   "anchor": "h23",
+   "anchor": "h22",
    "html": "<span class=\"n\">٢٢</span> الضرر الأشد يزال بالضرر الأخف."
   },
   {
@@ -592,7 +574,7 @@ export default {
   {
    "kind": "heading",
    "page": 19,
-   "anchor": "h24",
+   "anchor": "h23",
    "html": "<span class=\"n\">١٩</span> الضرر لا يزال بمثله."
   },
   {
@@ -604,7 +586,7 @@ export default {
   {
    "kind": "heading",
    "page": 19,
-   "anchor": "h25",
+   "anchor": "h24",
    "html": "<span class=\"n\">٢٣</span> درأ المفاسد أولى من جلب المصالح."
   },
   {
@@ -646,7 +628,7 @@ export default {
   {
    "kind": "heading",
    "page": 21,
-   "anchor": "h26",
+   "anchor": "h25",
    "html": "<span class=\"n\">٢٤</span> لا ينكر تغير الأحكام بتغير الأزمان والمكان."
   },
   {
@@ -676,7 +658,7 @@ export default {
   {
    "kind": "heading",
    "page": 21,
-   "anchor": "h27",
+   "anchor": "h26",
    "html": "<span class=\"n\">٢٥</span> العادة محكمة:"
   },
   {
@@ -706,7 +688,7 @@ export default {
   {
    "kind": "heading",
    "page": 21,
-   "anchor": "h28",
+   "anchor": "h27",
    "html": "<span class=\"n\">٢٦</span> الممتنع عادة كالممتنع حقيقة."
   },
   {
@@ -730,7 +712,7 @@ export default {
   {
    "kind": "heading",
    "page": 23,
-   "anchor": "h29",
+   "anchor": "h28",
    "html": "<span class=\"n\">٢٧</span> العبرة للغالب الشائع لا النادر:"
   },
   {
@@ -760,7 +742,7 @@ export default {
   {
    "kind": "heading",
    "page": 23,
-   "anchor": "h30",
+   "anchor": "h29",
    "html": "<span class=\"n\">٢٨</span> التابع تابع:"
   },
   {
@@ -784,7 +766,7 @@ export default {
   {
    "kind": "heading",
    "page": 23,
-   "anchor": "h31",
+   "anchor": "h30",
    "html": "<span class=\"n\">٢٩</span> البينة على المدعي واليمين على من أنكر."
   },
   {
@@ -820,7 +802,7 @@ export default {
   {
    "kind": "heading",
    "page": 23,
-   "anchor": "h32",
+   "anchor": "h31",
    "html": "<span class=\"n\">٣٠</span> الخراج بالضمان:"
   },
   {
@@ -856,7 +838,7 @@ export default {
   {
    "kind": "heading",
    "page": 26,
-   "anchor": "h33",
+   "anchor": "h32",
    "html": "<span class=\"n\">٣١</span> الأجر والضمان لا يجتمعان: (الأحناف)."
   },
   {
@@ -880,7 +862,7 @@ export default {
   {
    "kind": "heading",
    "page": 26,
-   "anchor": "h34",
+   "anchor": "h33",
    "html": "<span class=\"n\">٣٢</span> الجواز الشرعي <span class=\"side\">(المطلق)</span> ينافي الضمان:"
   },
   {
@@ -904,7 +886,7 @@ export default {
   {
    "kind": "heading",
    "page": 27,
-   "anchor": "h35",
+   "anchor": "h34",
    "html": "الأجر والضمان لا يجتمعان."
   },
   {
@@ -922,7 +904,7 @@ export default {
   {
    "kind": "heading",
    "page": 27,
-   "anchor": "h36",
+   "anchor": "h35",
    "html": "<span class=\"n\">٣٣</span> إذا اجتمع المباشر والمتسبب يضاف الحكم إلى المباشر."
   },
   {
@@ -958,7 +940,7 @@ export default {
   {
    "kind": "heading",
    "page": 27,
-   "anchor": "h37",
+   "anchor": "h36",
    "html": "<span class=\"n\">٣٤</span> المتسبب لا يضمن إلا بالتعمد (بالتعدي)."
   },
   {
@@ -994,7 +976,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h38",
+   "anchor": "h37",
    "html": "<span class=\"n\">٣٥</span> تبدل سبب الملك قائم مقام تبدل الذات (والحكم)"
   },
   {
@@ -1024,7 +1006,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h39",
+   "anchor": "h38",
    "html": "<span class=\"n\">٣٦</span> من استعجل الشيء قبل أوانه عوقب بحرمانه"
   },
   {
@@ -1054,7 +1036,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h40",
+   "anchor": "h39",
    "html": "<span class=\"n\">٣٧</span> من سعى في نقض ما تم من جهته فسعيه مردود عليه."
   },
   {
@@ -1084,7 +1066,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h41",
+   "anchor": "h40",
    "html": "<span class=\"n\">٣٨</span> إذا اجتمع الحلال (المباح) والحرام، غُلّب الحرام."
   },
   {
@@ -1138,7 +1120,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h42",
+   "anchor": "h41",
    "html": "<span class=\"n\">٣٩</span> الأصل في الأبضاع التحريم:"
   },
   {
@@ -1186,7 +1168,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h43",
+   "anchor": "h42",
    "html": "<span class=\"n\">٤٠</span> الأصل في الأشياء الإباحة:"
   },
   {
@@ -1204,7 +1186,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h44",
+   "anchor": "h43",
    "html": "<span class=\"n\">٤١</span> الخروج من الخلاف مستحب:"
   },
   {
@@ -1234,7 +1216,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h45",
+   "anchor": "h44",
    "html": "<span class=\"n\">٤٢</span> الميسور لا يسقط بالمعسور."
   },
   {
@@ -1276,7 +1258,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h46",
+   "anchor": "h45",
    "html": "<span class=\"n\">٤٣</span> الأصل في المضار التحريم: <span class=\"side\">(والأصل في المنافع الإباحة)</span>"
   },
   {
@@ -1318,7 +1300,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h47",
+   "anchor": "h46",
    "html": "<span class=\"n\">٤٤</span> الإيثار في القُرَب مكروه وفي غيرها محبوب."
   },
   {
@@ -1348,7 +1330,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h48",
+   "anchor": "h47",
    "html": "<span class=\"n\">٤٥</span> إذا اجتمع أمران من جنس واحد ولم يختلف مقصودهما دخل أحدهما في الآخر."
   },
   {
@@ -1378,7 +1360,7 @@ export default {
   {
    "kind": "heading",
    "page": 30,
-   "anchor": "h49",
+   "anchor": "h48",
    "html": "<span class=\"n\">٤٦</span> يغتفر في البقاء ما لا يغتفر في الإبتداء. <span class=\"side\">(البقاء أسهل من الإبتداء)</span>"
   },
   {
@@ -1420,7 +1402,7 @@ export default {
   {
    "kind": "heading",
    "page": 42,
-   "anchor": "h50",
+   "anchor": "h49",
    "html": "<span class=\"n\">٤٧</span> المواعيد بصورة التعاليق تكون لازمة. <span class=\"side\">(هي قاعدة في الوعود)</span>"
   },
   {
@@ -1444,7 +1426,7 @@ export default {
   {
    "kind": "heading",
    "page": 42,
-   "anchor": "h51",
+   "anchor": "h50",
    "html": "<span class=\"n\">٤٨</span> المعلق بالشرط يجب ثبوته عند ثبوت الشرط:"
   },
   {
@@ -1498,7 +1480,7 @@ export default {
   {
    "kind": "heading",
    "page": 42,
-   "anchor": "h52",
+   "anchor": "h51",
    "html": "<span class=\"n\">٤٩</span> الوصف في الحاضر لغو، <span class=\"side\">وفي الغائب معتبر.</span>"
   },
   {
@@ -1528,7 +1510,7 @@ export default {
   {
    "kind": "heading",
    "page": 42,
-   "anchor": "h53",
+   "anchor": "h52",
    "html": "<span class=\"n\">٥٠</span> الأكثر حكم الكل <span class=\"side\">(في الأمور المحرمة لغيرها لا لذاتها)</span>."
   },
   {
@@ -1552,7 +1534,7 @@ export default {
   {
    "kind": "heading",
    "page": 42,
-   "anchor": "h54",
+   "anchor": "h53",
    "html": "<span class=\"n\">٥١</span> المجهول في الشريعة كالمعدوم والمعجوز عنه. <span class=\"side\">(لها علاقة برفع الحرج)</span>"
   },
   {
@@ -1582,7 +1564,7 @@ export default {
   {
    "kind": "heading",
    "page": 42,
-   "anchor": "h55",
+   "anchor": "h54",
    "html": "<span class=\"n\">٥٢</span> إذا تعذر الأصل يصار إلى البدل"
   },
   {
@@ -1630,7 +1612,7 @@ export default {
   {
    "kind": "heading",
    "page": 42,
-   "anchor": "h56",
+   "anchor": "h55",
    "html": "<span class=\"n\">٥٣</span> الشروط في باب المأمورات لا تسقط بالجهل والنسيان وفي باب التروك تسقط بهما."
   },
   {
@@ -1654,7 +1636,7 @@ export default {
   {
    "kind": "heading",
    "page": 48,
-   "anchor": "h57",
+   "anchor": "h56",
    "html": "<span class=\"n\">٥٣</span> الشروط في باب المأمورات لا تسقط بالجهل والنسيان وفي باب التروك تسقط بهما."
   },
   {
@@ -1714,7 +1696,7 @@ export default {
   {
    "kind": "heading",
    "page": 48,
-   "anchor": "h58",
+   "anchor": "h57",
    "html": "<span class=\"n\">٥٤</span> لا واجب مع العجز ولا محرم مع الضرورة."
   },
   {
@@ -1756,7 +1738,7 @@ export default {
   {
    "kind": "heading",
    "page": 48,
-   "anchor": "h59",
+   "anchor": "h58",
    "html": "<span class=\"n\">٥٥</span> من أتلف شيئا لينتفع به ضمنه، ومن أتلفه ليدفع ضرره عنه لم يضمنه."
   },
   {
@@ -1792,7 +1774,7 @@ export default {
   {
    "kind": "heading",
    "page": 48,
-   "anchor": "h60",
+   "anchor": "h59",
    "html": "<span class=\"n\">٥٦</span> لا يضمن الأمين تلف العين إلا بالتعدي والتفريط."
   },
   {
@@ -1822,7 +1804,7 @@ export default {
   {
    "kind": "heading",
    "page": 48,
-   "anchor": "h61",
+   "anchor": "h60",
    "html": "<span class=\"n\">٥٧</span> الأصل في الصفات العارضة العدم."
   },
   {
@@ -1840,7 +1822,7 @@ export default {
   {
    "kind": "heading",
    "page": 48,
-   "anchor": "h62",
+   "anchor": "h61",
    "html": "<span class=\"n\">٥٨</span> القديم يترك على قدمه. (القديم على قدمه)."
   },
   {
@@ -1870,7 +1852,7 @@ export default {
   {
    "kind": "heading",
    "page": 48,
-   "anchor": "h63",
+   "anchor": "h62",
    "html": "<span class=\"n\">٥٩</span> الضرر لا يكون قديما. <span class=\"side\">(تقيد للقاعدة السابقة)</span>"
   },
   {
@@ -1906,7 +1888,7 @@ export default {
   {
    "kind": "heading",
    "page": 48,
-   "anchor": "h64",
+   "anchor": "h63",
    "html": "<span class=\"n\">٦٠</span> ما ثبت بيقين لا يرتفع إلا بيقين."
   },
   {
@@ -1930,7 +1912,7 @@ export default {
   {
    "kind": "heading",
    "page": 48,
-   "anchor": "h65",
+   "anchor": "h64",
    "html": "<span class=\"n\">٦١</span> ترك الاستفصال في مقام الاحتمال ينزل منزلة العموم من المقال."
   },
   {
@@ -1954,7 +1936,7 @@ export default {
   {
    "kind": "heading",
    "page": 57,
-   "anchor": "h66",
+   "anchor": "h65",
    "html": "<span class=\"n\">٦٢</span> إنما تعتبر العادة إذا اطردت أو غلبت:"
   },
   {
@@ -1990,7 +1972,7 @@ export default {
   {
    "kind": "heading",
    "page": 58,
-   "anchor": "h67",
+   "anchor": "h66",
    "html": "<span class=\"n\">٦٣</span> المعروف عرفا كالمشروط شرطا."
   },
   {
@@ -2032,7 +2014,7 @@ export default {
   {
    "kind": "heading",
    "page": 59,
-   "anchor": "h68",
+   "anchor": "h67",
    "html": "<span class=\"n\">٦٤</span> إعمال الكلام أولى من إهماله."
   },
   {
@@ -2056,7 +2038,7 @@ export default {
   {
    "kind": "heading",
    "page": 59,
-   "anchor": "h69",
+   "anchor": "h68",
    "html": "<span class=\"n\">٦٥</span> المطلق يجري على إطلاقه ما لم يقم دليل التقييد نصًا أو دلالة:"
   },
   {
@@ -2092,7 +2074,7 @@ export default {
   {
    "kind": "heading",
    "page": 61,
-   "anchor": "h70",
+   "anchor": "h69",
    "html": "<span class=\"n\">٦٦</span> الحقيقةُ تُترك بدلالة العادة."
   },
   {
@@ -2110,7 +2092,7 @@ export default {
   {
    "kind": "heading",
    "page": 61,
-   "anchor": "h71",
+   "anchor": "h70",
    "html": "<span class=\"n\">٦٧</span> السؤال مُعاد في الجواب."
   },
   {
@@ -2158,7 +2140,7 @@ export default {
   {
    "kind": "heading",
    "page": 61,
-   "anchor": "h72",
+   "anchor": "h71",
    "html": "<span class=\"n\">٦٨</span> التأسيس أولى من التأكيد."
   },
   {
@@ -2176,7 +2158,7 @@ export default {
   {
    "kind": "heading",
    "page": 61,
-   "anchor": "h73",
+   "anchor": "h72",
    "html": "<span class=\"n\">٦٩</span> إذا سقط الأصل سقط الفرع."
   },
   {
@@ -2212,7 +2194,7 @@ export default {
   {
    "kind": "heading",
    "page": 61,
-   "anchor": "h74",
+   "anchor": "h73",
    "html": "<span class=\"n\">٧٠</span> الأصل لا يجتمع مع البدل:"
   },
   {
@@ -2236,7 +2218,7 @@ export default {
   {
    "kind": "heading",
    "page": 61,
-   "anchor": "h75",
+   "anchor": "h74",
    "html": "<span class=\"n\">٧١</span> الكتاب كالخطاب."
   },
   {
@@ -2260,7 +2242,7 @@ export default {
   {
    "kind": "heading",
    "page": 61,
-   "anchor": "h76",
+   "anchor": "h75",
    "html": "<span class=\"n\">٧٢</span> الشرطُ الباطل لا يؤثر بالعقد."
   },
   {
@@ -2308,7 +2290,7 @@ export default {
   {
    "kind": "heading",
    "page": 68,
-   "anchor": "h77",
+   "anchor": "h76",
    "html": "<span class=\"n\">٧٣</span> الساقط لا يعود."
   },
   {
@@ -2362,7 +2344,7 @@ export default {
   {
    "kind": "heading",
    "page": 69,
-   "anchor": "h78",
+   "anchor": "h77",
    "html": "<span class=\"n\">٧٤</span> الإسقاط قبل سبب الوجوب يكون لغواً."
   },
   {
@@ -2398,7 +2380,7 @@ export default {
   {
    "kind": "heading",
    "page": 70,
-   "anchor": "h79",
+   "anchor": "h78",
    "html": "<span class=\"n\">٧٥</span> ما يضمن بالعمد يضمن بالخطأ"
   },
   {
@@ -2440,7 +2422,7 @@ export default {
   {
    "kind": "heading",
    "page": 71,
-   "anchor": "h80",
+   "anchor": "h79",
    "html": "<span class=\"n\">٧٦</span> كل عقد فاسد مردود إلى صحيحه"
   },
   {
@@ -2458,7 +2440,7 @@ export default {
   {
    "kind": "heading",
    "page": 71,
-   "anchor": "h81",
+   "anchor": "h80",
    "html": "<span class=\"n\">٧٧</span> كل ما يصح تأبيده من عقود المعاوضات لا يصح توقيته."
   },
   {
@@ -2476,7 +2458,7 @@ export default {
   {
    "kind": "heading",
    "page": 71,
-   "anchor": "h82",
+   "anchor": "h81",
    "html": "<span class=\"n\">٧٨</span> الإطلاق محمول على العادة."
   },
   {
@@ -2494,7 +2476,7 @@ export default {
   {
    "kind": "heading",
    "page": 71,
-   "anchor": "h83",
+   "anchor": "h82",
    "html": "<span class=\"n\">٧٩</span> ما لا يمكن الإحتراز منه فهو معفو عنه."
   },
   {
@@ -2530,7 +2512,7 @@ export default {
   {
    "kind": "heading",
    "page": 71,
-   "anchor": "h84",
+   "anchor": "h83",
    "html": "<span class=\"n\">٨٠</span> كل ما أدى إثباته إلى نفيه فنفيه أولى."
   },
   {
@@ -2542,7 +2524,7 @@ export default {
   {
    "kind": "heading",
    "page": 75,
-   "anchor": "h85",
+   "anchor": "h84",
    "html": "<span class=\"n\">٨١</span> يغتفر في الوسائل ما لا يغتفر في المقاصد."
   },
   {
@@ -2578,7 +2560,7 @@ export default {
   {
    "kind": "heading",
    "page": 76,
-   "anchor": "h86",
+   "anchor": "h85",
    "html": "<span class=\"n\">٨٢</span> الأيمان مبنية على الألفاظ لا على الأغراض <span class=\"side\">(النيات)</span>. (القاعدة حنفية)"
   },
   {
@@ -2626,7 +2608,7 @@ export default {
   {
    "kind": "heading",
    "page": 77,
-   "anchor": "h87",
+   "anchor": "h86",
    "html": "<span class=\"n\">٨٣</span> العدل واجب في كل شيء والفضل مسنون."
   },
   {
@@ -2656,7 +2638,7 @@ export default {
   {
    "kind": "heading",
    "page": 77,
-   "anchor": "h88",
+   "anchor": "h87",
    "html": "<span class=\"n\">٨٤</span> تضمن المثليات بمثلها والمتقومات بقيمتها."
   },
   {
@@ -2674,7 +2656,7 @@ export default {
   {
    "kind": "heading",
    "page": 77,
-   "anchor": "h89",
+   "anchor": "h88",
    "html": "<span class=\"n\">٨٥</span> إذا تعذر المسمى رُجع إلى القيمة."
   },
   {
@@ -2704,7 +2686,7 @@ export default {
   {
    "kind": "heading",
    "page": 79,
-   "anchor": "h90",
+   "anchor": "h89",
    "html": "<span class=\"n\">٨٦</span> من سبق إلى المباحات فهو أحق بها من غيره."
   },
   {
@@ -2740,7 +2722,7 @@ export default {
   {
    "kind": "heading",
    "page": 80,
-   "anchor": "h91",
+   "anchor": "h90",
    "html": "<span class=\"n\">٨٧</span> تستعمل القرعة عند التزاحم ولا مميز لأحدهما."
   },
   {
@@ -2770,7 +2752,7 @@ export default {
   {
    "kind": "heading",
    "page": 80,
-   "anchor": "h92",
+   "anchor": "h91",
    "html": "<span class=\"n\">٨٨</span> قد تتبعض الأحكام بحسب تفاوت أسبابها."
   },
   {
@@ -2794,7 +2776,7 @@ export default {
   {
    "kind": "heading",
    "page": 80,
-   "anchor": "h93",
+   "anchor": "h92",
    "html": "<span class=\"n\">٨٩</span> إذا تزاحمت المصالح قُدم الأعلى منها."
   },
   {
@@ -2818,7 +2800,7 @@ export default {
   {
    "kind": "heading",
    "page": 80,
-   "anchor": "h94",
+   "anchor": "h93",
    "html": "<span class=\"n\">٩٠</span> الحوائج الأصلية للإنسان لا تُعد مالا فاضلا."
   },
   {
@@ -2836,7 +2818,7 @@ export default {
   {
    "kind": "heading",
    "page": 80,
-   "anchor": "h95",
+   "anchor": "h94",
    "html": "<span class=\"n\">٩١</span> إذا قويت القرائن قُدمت على الأصل."
   },
   {
@@ -2860,7 +2842,7 @@ export default {
   {
    "kind": "heading",
    "page": 80,
-   "anchor": "h96",
+   "anchor": "h95",
    "html": "<span class=\"n\">٩٢</span> الغرر اليسير معفو عنه."
   },
   {
@@ -2872,7 +2854,7 @@ export default {
   {
    "kind": "heading",
    "page": 80,
-   "anchor": "h97",
+   "anchor": "h96",
    "html": "<span class=\"n\">٩٣</span> الحكم يدور مع علته وجودًا وعدمًا."
   },
   {
@@ -2890,7 +2872,7 @@ export default {
   {
    "kind": "heading",
    "page": 80,
-   "anchor": "h98",
+   "anchor": "h97",
    "html": "<span class=\"n\">٩٤</span> لا عبرة للتوهم."
   },
   {
@@ -2908,7 +2890,7 @@ export default {
   {
    "kind": "heading",
    "page": 80,
-   "anchor": "h99",
+   "anchor": "h98",
    "html": "<span class=\"n\">٩٥</span> لا حجة مع الاحتمال الناشئ عن دليل."
   },
   {
@@ -2932,7 +2914,7 @@ export default {
   {
    "kind": "heading",
    "page": 80,
-   "anchor": "h100",
+   "anchor": "h99",
    "html": "<span class=\"n\">٩٦</span> لا عبرة بالظن البين خطؤه."
   },
   {
@@ -2956,7 +2938,7 @@ export default {
   {
    "kind": "heading",
    "page": 87,
-   "anchor": "h101",
+   "anchor": "h100",
    "html": "<span class=\"n\">٩٧</span> المشغول لا يشغل."
   },
   {
@@ -2998,7 +2980,7 @@ export default {
   {
    "kind": "heading",
    "page": 88,
-   "anchor": "h102",
+   "anchor": "h101",
    "html": "<span class=\"n\">٩٨</span> الشك بعد الفراغ من العبادة لا يؤثر."
   },
   {
@@ -3034,7 +3016,7 @@ export default {
   {
    "kind": "heading",
    "page": 89,
-   "anchor": "h103",
+   "anchor": "h102",
    "html": "<span class=\"n\">٩٩</span> حديث النفس معفو عنه مالم يقارنه كلام أو عمل."
   },
   {
@@ -3058,7 +3040,7 @@ export default {
   {
    "kind": "heading",
    "page": 89,
-   "anchor": "h104",
+   "anchor": "h103",
    "html": "<span class=\"n\">١٠٠</span> يغتفر في التابع مالا يغتفر في المتبوع."
   },
   {
