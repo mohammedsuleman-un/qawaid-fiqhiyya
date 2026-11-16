@@ -66,3 +66,29 @@ mark{color:inherit}
   .wrap{padding:20px 16px 60px}
   .book{font-size:calc(18px * var(--fsr,1))}
 }
+/* القواعد الفقهية: per regel blokken met de eigen kopjes uit het schrift (betekenis, bewijs, voorbeelden, uitspraken) */
+:root{--ayah-bg:#e9f5ea;--hadith-bg:#f8efe4;--gold:#8a6a1f;--gold-bg:#fbf3dc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ayah-bg:#19301f;--hadith-bg:#33271a;--gold:#e3c77a;--gold-bg:#2f2814}}
+:root[data-theme="dark"]{--ayah-bg:#19301f;--hadith-bg:#33271a;--gold:#e3c77a;--gold-bg:#2f2814}
+.book h2 .n{display:inline-grid;place-items:center;min-width:1.75em;height:1.75em;padding:0 .2em;border-radius:99px;border:2px solid var(--head-line);background:var(--surface);color:var(--head-ink);margin-inline-end:8px;font-size:.85em;line-height:1}
+.book .blk{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 16px 8px;margin:0 0 12px}
+.book .blk.lead{background:transparent;border:0;padding:0 2px;margin-bottom:14px}
+.book .blk.mn{background:var(--gold-bg);border-color:transparent}
+.book .blkh{font-family:var(--body);font-size:13.5px;font-weight:600;line-height:1.6;color:var(--muted);display:flex;align-items:center;gap:10px;margin:0 0 6px}
+.book .blkh::after{content:"";flex:1;border-top:1px solid var(--line)}
+.book .blk.mn .blkh{color:var(--gold)}
+.book .blk.ex .blkh{color:var(--b-ink)}
+.book .blk.dl .blkh{color:var(--ayah)}
+.book .blk.st .blkh{color:var(--head-ink)}
+.book .blkh mark,.book .blkh .lbl{background:none;color:inherit;padding:0;font-weight:inherit}
+.book .blk p{margin:0 0 6px}
+.book .blk p.li{margin:0;padding:3px 0;border-top:1px dashed var(--line)}
+.book .blk p.li:first-of-type,.book .blkh + p.li{border-top:0}
+.book .blk p.pt{color:var(--ink);padding-inline-start:4px}
+.book p.ev{border-radius:10px;padding:6px 14px;margin:6px 0}
+.book p.eva{background:var(--ayah-bg)}
+.book p.evh{background:var(--hadith-bg)}
+.book .blk blockquote{margin:6px 0 10px;background:var(--surface2);border-radius:10px;padding:6px 14px}
+.book .blk blockquote cite{display:block;font-style:normal;font-family:var(--body);font-size:13px;font-weight:600;color:var(--gold);line-height:1.8}
+.book .blk .pg{margin:10px 0 6px}
+@media (max-width:520px){.book .blk{padding:8px 12px 6px}}
